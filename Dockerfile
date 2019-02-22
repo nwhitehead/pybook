@@ -28,3 +28,12 @@ WORKDIR /cpython-emscripten/3.5.2
 
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
 
+WORKDIR /cpython-emscripten/examples
+
+COPY src src
+
+WORKDIR /cpython-emscripten/examples/src
+
+RUN mkdir -p /out
+
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
