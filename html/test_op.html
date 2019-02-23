@@ -20,6 +20,7 @@ function spawn(fn, setup) {
     return new Worker(url);
 }
 
+
 var worker = spawn(function(e) {
     console.log('Worker got a message', e);
     if (!Module.calledRun)
@@ -27,12 +28,13 @@ var worker = spawn(function(e) {
         console.log('Not ready yet');
     } else {
         pyexec('print("Hello from python")');
+        pyexec(program);
     }
 }, function() {
     // Emscripten asm.js file needs to load data file
     // Inside Web Worker the url needs to be absolute
     console.log('Worker setup');
-    Module = {};
+    if (typeof(Module) === "undefined") Module = {};
     Module.locateFile = function(path, prefix) {
         return absurl + '/' + path;
     };
@@ -42,6 +44,19 @@ var worker = spawn(function(e) {
         console.log('Worker ready');
         postMessage('ready');
     };
+
+program = '\
+import os                                           \n\
+                                                    \n\
+for dirname, dirnames, filenames in os.walk(\'/lib\'):   \n\
+    # print path to all subdirectories first.       \n\
+    for subdirname in dirnames:                     \n\
+        print(os.path.join(dirname, subdirname))    \n\
+                                                    \n\
+    # print path to all filenames.                  \n\
+    for filename in filenames:                      \n\
+        print(os.path.join(dirname, filename))      \n\
+';
 
     // Wait for the module to be ready before calling any functions.
     var interval = setInterval(function () {
@@ -57,51 +72,6 @@ worker.onmessage = function(e) {
     worker.postMessage('tryagain');
 };
 
-            //~ const spawn = threads.spawn;
-            
-            
-            //~ const worker = spawn(function() {});
-            
-            //~ console.log(document.currentScript.src);
-            //~ worker
-                //~ .run(function(input, done) {
-                    //~ console.log('Worker thread starting up');
-                    //~ console.log('Got input url: ', input.url);
-//~ //                    importScripts('/python.asm.js');
-//~ //                    importScripts('http://localhost:8063/python.asm.js');
-//~ //                    importScripts(input.url + '//' + 'python.asm.js');
-                    //~ const pyexec = Module.cwrap('PyRun_SimpleString', 'number', ['string']);
-
-                    //~ done({ integer : parseInt(input.string) });
-                //~ })
-                //~ .send({url: document.location.protocol + '//' + document.location.host});
-
-//                    done({ integer : parseInt(input.string) });
-
-            //~ var onReady = function() {
-                //~ console.log('Running a python statement using pyexec();');
-                //~ pyexec('print("Success!")');
-                //~ console.log('Sending worker 5');
-                //~ worker
-                    //~ .send({ string : '5' })
-                    //~ .on('message', function(response) {
-                        //~ console.log('Got response ', response.integer);
-                    //~ })
-                    //~ .on('error', function(error) {
-                        //~ console.log('Worker got error ', error);
-                    //~ })
-                    //~ .on('exit', function() {
-                        //~ console.log('Worker exited');
-                    //~ })                    
-            //~ };
-
-            // Wait for the module to be ready before calling any functions.
-            //~ var interval = setInterval(function () {
-                //~ if (Module.calledRun) {
-                    //~ window.clearInterval(interval);
-                    //~ onReady();
-                //~ }
-            //~ }, 100);
         </script>
 
 </head>
