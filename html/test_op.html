@@ -38,6 +38,10 @@ var worker = spawn(function(e) {
     Module.locateFile = function(path, prefix) {
         return absurl + '/' + path;
     };
+    Module["preInit"] = function() {
+        FS.mkdir('/lib');
+        FS.createLazyFile('/lib', "bigfile", "http://localhost:11111/bogus_file_path", true, false);
+    };
     importScripts(absurl + '/python.asm.js');
     pyexec = Module.cwrap('PyRun_SimpleString', 'number', ['string']);
     var onReady = function() {
@@ -56,6 +60,9 @@ for dirname, dirnames, filenames in os.walk(\'/lib\'):   \n\
     # print path to all filenames.                  \n\
     for filename in filenames:                      \n\
         print(os.path.join(dirname, filename))      \n\
+                                                    \n\
+with open("/lib/python3.5/abc.py") as f:            \n\
+    print(f.read())                                 \n\
 ';
 
     // Wait for the module to be ready before calling any functions.

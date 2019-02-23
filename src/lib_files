@@ -16,3 +16,4 @@ lib/python3.5/abc.py
 lib/python3.5/encodings/aliases.py
 lib/python3.5/_sysconfigdata.py
 lib/python3.5/os.py
+lib/python3.5/encodings/ascii.py
