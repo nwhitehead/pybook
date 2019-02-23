@@ -9,7 +9,7 @@
 function createWorker(fn) {
     // Set variable inside Blob to record absolute url to here
     var absurl = document.location.protocol + '//' + document.location.host;
-    var blob = new Blob(['self.absurl = ', '"' + absurl + '"', ';', 'self.onmessage = ', fn.toString()], { type: 'text/javascript' });
+    var blob = new Blob(['self.absurl = "', absurl, '";', 'self.onmessage = ', fn.toString()], { type: 'text/javascript' });
     var url = URL.createObjectURL(blob);
     return new Worker(url);
 }
@@ -22,6 +22,7 @@ var worker = createWorker(function(e) {
         return absurl + '/' + path;
     };
     importScripts(absurl + '/python.asm.js');
+    const pyexec = Module.cwrap('PyRun_SimpleString', 'number', ['string']);
     console.log('Worker got a message', e);
     postMessage('response');
 });
