@@ -6,7 +6,18 @@
 
 <script>
 
-function spawn(fn, setup) {
+//!
+//! \brief Spawn a new thread
+//!
+//! \param config Data that is available to thread from startup
+//! \param setup Function to run in thread at creation to setup, or undefined
+//! \param fn Function that is called to handle events
+//!           fn(input, done)
+//!           \param input Data sent to thread in message
+//!           \param done Function called to end processing
+//!           done(msg)
+//!
+function spawn(setup, fn, config) {
     // Set variable inside Blob to record absolute url to here
     var absurl = document.location.protocol + '//' + document.location.host;
     if (setup === undefined) {
@@ -14,65 +25,86 @@ function spawn(fn, setup) {
     }
     var blob = new Blob([
         'absurl = "', absurl, '";',
-        '(', setup.toString(), ')();',
-        'onmessage = ', fn.toString(), ';'], { type: 'text/javascript' });
-    var url = URL.createObjectURL(blob);
-    return new Worker(url);
+        '_handler = ', fn.toString(), ';',
+        'done = function(msg) { postMessage(msg); };',
+        'onmessage = function(e) {                             \
+             config = e.data;                                  \
+             console.log("Received WebWorker config", config); \
+             (', setup.toString(), ')();                       \
+             onmessage = _handler;                             \
+         };',
+        ], { type: 'text/javascript' });
+    worker = new Worker(URL.createObjectURL(blob));
+    console.log('Sending WebWorker config', config);
+    worker.postMessage(config);
+    return worker;
 }
 
+var config = { absurl: document.location.protocol + '//' + document.location.host };
 
-var worker = spawn(function(e) {
+var worker = spawn(function() {
+    // Emscripten asm.js file needs to load data file
+    // Inside Web Worker the url needs to be absolute
+    console.log('Worker setup');
+    console.log('onmessage in setup is', onmessage);
+    console.log('Config in setup is', config);
+    if (typeof(Module) === "undefined") Module = {};
+    Module.locateFile = function(path, prefix) {
+        return absurl + '/' + path;
+    };
+    list = ['random', 'warnings', 'types', 'functools', 'collections'];
+    Module["preInit"] = function() {
+        FS.mkdir('/lib');
+        FS.mkdir('/lib/python3.5');
+        for (var i = 0; i < list.length; i++) {
+            var elem = list[i];
+            FS.createLazyFile('/lib/python3.5', elem + '.py', absurl + '/lib/python3.5/' + elem + '.py', true, false);
+        }
+    };
+    importScripts(absurl + '/python.asm.js');
+    pyexec = Module.cwrap('PyRun_SimpleString', 'number', ['string']);
+
+    program = '\
+    import os                                           \n\
+                                                        \n\
+    for dirname, dirnames, filenames in os.walk(\'/lib\'):   \n\
+        # print path to all subdirectories first.       \n\
+        for subdirname in dirnames:                     \n\
+            print(os.path.join(dirname, subdirname))    \n\
+                                                        \n\
+        # print path to all filenames.                  \n\
+        for filename in filenames:                      \n\
+            print(os.path.join(dirname, filename))      \n\
+                                                        \n\
+    with open("/lib/python3.5/abc.py") as f:            \n\
+        print(f.read())                                 \n\
+    with open("/lib/python3.5/random.py") as f:         \n\
+        print(f.read())                                 \n\
+    ';
+
+    console.log('onmessage in setup/end is', onmessage);
+    // Wait for the module to be ready before calling any functions.
+    var interval = setInterval(function () {
+        if (Module.calledRun) {
+            clearInterval(interval);
+            console.log('Worker ready');
+            postMessage('ready');
+        }
+    }, 100);
+},
+function(e) {
     console.log('Worker got a message', e);
     if (!Module.calledRun)
     {
         console.log('Not ready yet');
     } else {
+        console.log('YES ready');
         pyexec('print("Hello from python")');
-        pyexec(program);
+        //pyexec(program);
+        pyexec('import random');
     }
-}, function() {
-    // Emscripten asm.js file needs to load data file
-    // Inside Web Worker the url needs to be absolute
-    console.log('Worker setup');
-    if (typeof(Module) === "undefined") Module = {};
-    Module.locateFile = function(path, prefix) {
-        return absurl + '/' + path;
-    };
-    Module["preInit"] = function() {
-        FS.mkdir('/lib');
-        FS.createLazyFile('/lib', "bigfile", "http://localhost:11111/bogus_file_path", true, false);
-    };
-    importScripts(absurl + '/python.asm.js');
-    pyexec = Module.cwrap('PyRun_SimpleString', 'number', ['string']);
-    var onReady = function() {
-        console.log('Worker ready');
-        postMessage('ready');
-    };
-
-program = '\
-import os                                           \n\
-                                                    \n\
-for dirname, dirnames, filenames in os.walk(\'/lib\'):   \n\
-    # print path to all subdirectories first.       \n\
-    for subdirname in dirnames:                     \n\
-        print(os.path.join(dirname, subdirname))    \n\
-                                                    \n\
-    # print path to all filenames.                  \n\
-    for filename in filenames:                      \n\
-        print(os.path.join(dirname, filename))      \n\
-                                                    \n\
-with open("/lib/python3.5/abc.py") as f:            \n\
-    print(f.read())                                 \n\
-';
-
-    // Wait for the module to be ready before calling any functions.
-    var interval = setInterval(function () {
-        if (Module.calledRun) {
-            clearInterval(interval);
-            onReady();
-        }
-    }, 100);
-});
+},
+config);
 
 worker.onmessage = function(e) {
     console.log('Main thread got response', e);
