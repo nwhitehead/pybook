@@ -19,23 +19,21 @@
 //!
 function spawn(setup, fn, config) {
     // Set variable inside Blob to record absolute url to here
-    var absurl = document.location.protocol + '//' + document.location.host;
     if (setup === undefined) {
         setup = function(){};
     }
     var blob = new Blob([
-        'absurl = "', absurl, '";',
         '_handler = ', fn.toString(), ';',
         'done = function(msg) { postMessage(msg); };',
+        // First message is config data
+        // Make sure to set onmessage handler after calling setup
         'onmessage = function(e) {                             \
              config = e.data;                                  \
-             console.log("Received WebWorker config", config); \
              (', setup.toString(), ')();                       \
              onmessage = _handler;                             \
          };',
         ], { type: 'text/javascript' });
     worker = new Worker(URL.createObjectURL(blob));
-    console.log('Sending WebWorker config', config);
     worker.postMessage(config);
     return worker;
 }
@@ -46,11 +44,9 @@ var worker = spawn(function() {
     // Emscripten asm.js file needs to load data file
     // Inside Web Worker the url needs to be absolute
     console.log('Worker setup');
-    console.log('onmessage in setup is', onmessage);
-    console.log('Config in setup is', config);
     if (typeof(Module) === "undefined") Module = {};
     Module.locateFile = function(path, prefix) {
-        return absurl + '/' + path;
+        return config.absurl + '/' + path;
     };
     list = ['random', 'warnings', 'types', 'functools', 'collections'];
     Module["preInit"] = function() {
@@ -58,10 +54,10 @@ var worker = spawn(function() {
         FS.mkdir('/lib/python3.5');
         for (var i = 0; i < list.length; i++) {
             var elem = list[i];
-            FS.createLazyFile('/lib/python3.5', elem + '.py', absurl + '/lib/python3.5/' + elem + '.py', true, false);
+            FS.createLazyFile('/lib/python3.5', elem + '.py', config.absurl + '/lib/python3.5/' + elem + '.py', true, false);
         }
     };
-    importScripts(absurl + '/python.asm.js');
+    importScripts(config.absurl + '/python.asm.js');
     pyexec = Module.cwrap('PyRun_SimpleString', 'number', ['string']);
 
     program = '\
@@ -82,7 +78,6 @@ var worker = spawn(function() {
         print(f.read())                                 \n\
     ';
 
-    console.log('onmessage in setup/end is', onmessage);
     // Wait for the module to be ready before calling any functions.
     var interval = setInterval(function () {
         if (Module.calledRun) {
@@ -98,7 +93,7 @@ function(e) {
     {
         console.log('Not ready yet');
     } else {
-        console.log('YES ready');
+        console.log('Ready for python');
         pyexec('print("Hello from python")');
         //pyexec(program);
         pyexec('import random');
