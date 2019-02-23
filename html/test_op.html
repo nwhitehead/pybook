@@ -4,22 +4,24 @@
 <meta charset="utf-8" />
 <title>CPyton Emscripten Test</title>
 
-        <script>
-            
+<script>
+
 function createWorker(fn) {
-  var blob = new Blob(['self.onmessage = ', fn.toString()], { type: 'text/javascript' });
-  var url = URL.createObjectURL(blob);
-  
-  return new Worker(url);
+    // Set variable inside Blob to record absolute url to here
+    var absurl = document.location.protocol + '//' + document.location.host;
+    var blob = new Blob(['self.absurl = ', '"' + absurl + '"', ';', 'self.onmessage = ', fn.toString()], { type: 'text/javascript' });
+    var url = URL.createObjectURL(blob);
+    return new Worker(url);
 }
 
 var worker = createWorker(function(e) {
+    // Emscripten asm.js file needs to load data file
+    // Inside Web Worker the url needs to be absolute
     Module = {};
     Module.locateFile = function(path, prefix) {
-        console.log('Module.locateFile called!', path, prefix);
-        return 'http://localhost:8063/' + path;
+        return absurl + '/' + path;
     };
-    importScripts('http://localhost:8063/python.asm.js');
+    importScripts(absurl + '/python.asm.js');
     console.log('Worker got a message', e);
     postMessage('response');
 });
