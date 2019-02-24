@@ -1,15 +1,15 @@
 PYVERSION=3.5.2
 PYMINOR=$(basename $(PYVERSION))
 
-CC=emcc
+CXX=em++
 OPTFLAGS=-O2
-CFLAGS=-std=gnu99 $(OPTFLAGS) -g -I ../../installs/python-$(PYVERSION)/include/python$(PYMINOR)/ -Wno-warn-absolute-paths
+CXXFLAGS=-std=c++14 -Wall -Werror $(OPTFLAGS) -g -I ../../installs/python-$(PYVERSION)/include/python$(PYMINOR)/ -Wno-warn-absolute-paths
 LDFLAGS=$(OPTFLAGS) ../../installs/python-$(PYVERSION)/lib/libpython$(PYMINOR).a \
   -s TOTAL_MEMORY=268435456 \
   -s ASSERTIONS=2 \
   -s EMULATE_FUNCTION_POINTER_CASTS=1 \
   -s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap']" \
-  -s "EXPORTED_FUNCTIONS=['_main', '_PyRun_SimpleString', '_PyRun_String', '_PyDict_New', '_PyImport_AddModule', '_PyModule_GetDict', '_CustomEval']" \
+  -s "EXPORTED_FUNCTIONS=['_main', '_Kernel_new', '_Kernel_delete', '_Kernel_eval']" \
   -s BUILD_AS_WORKER=1 \
   --memory-init-file 0
 
@@ -22,12 +22,12 @@ all: python.asm.js
 
 
 python.asm.js: main.bc root
-	$(CC) -o $@ $(filter %.bc,$^) $(LDFLAGS) \
+	$(CXX) -o $@ $(filter %.bc,$^) $(LDFLAGS) \
 		$(foreach d,$(wildcard root/*),--preload-file $d@/$(notdir $d))
 
 
-%.bc: %.c ../../installs/python-$(PYVERSION)/lib/python$(PYMINOR)
-	$(CC) -o $@ $< $(CFLAGS)
+%.bc: %.cpp ../../installs/python-$(PYVERSION)/lib/python$(PYMINOR)
+	$(CXX) -o $@ $< $(CXXFLAGS)
 
 
 root: ../../installs/python-$(PYVERSION)/lib/python$(PYMINOR) lib_files

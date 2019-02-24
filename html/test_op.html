@@ -28,12 +28,7 @@ var worker = spawn({
         }
     };
     importScripts(config.absurl + '/python.asm.js');
-    pyrunSimpleString = Module.cwrap('PyRun_SimpleString', 'number', ['string']);
-    pyrunString = Module.cwrap('PyRun_String', 'number', ['string', 'number', 'number', 'number']);
-    pydictNew = Module.cwrap('PyDict_New', 'number', []);
-    pyimportAddModule = Module.cwrap('PyImport_AddModule', 'number', ['string']);
-    pymoduleGetDict = Module.cwrap('PyModule_GetDict', 'number', ['number']);
-    customEval = Module.cwrap('CustomEval', 'string', ['string']);
+    Kernel_new = Module.cwrap('Kernel_new', 'number', []);
 
     program = '\
     import os                                           \n\
