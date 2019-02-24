@@ -4,51 +4,10 @@
 <meta charset="utf-8" />
 <title>CPyton Emscripten Test</title>
 
+<script src="spawn.js"></script>
+
 <script>
 
-//!
-//! \brief Spawn a new thread
-//!
-//! \param opts Dictionary of arguments
-//!
-//! fn Function that is called to handle events
-//!           fn(input, done)
-//!           \param input Data sent to thread in message
-//!           \param done Function called to end processing
-//!           done(msg)
-//! config Data that is available to thread from startup (optional)
-//! setup Function to run in thread at creation to setup (optional)
-//!
-function spawn(opts) {
-    if (opts === undefined)
-    {
-        opts = {};
-    }
-    if (opts.setup === undefined) {
-        setup = function(){};
-    }
-    if (opts.fn === undefined) {
-        throw 'Need to specify fn argument to spawn';
-    }
-    var blob = new Blob([
-        '_handler = ', opts.fn.toString(), ';',
-        '_done = function(msg) { postMessage(msg); };',
-        // First message is config data
-        // Make sure to set onmessage handler after calling setup
-        'onmessage = function(e) {                             \
-             config = e.data;                                  \
-             (', opts.setup.toString(), ')();                       \
-             onmessage = function(e) {                         \
-               _handler(e, _done);                             \
-             };                                                \
-         };',
-        ], { type: 'text/javascript' });
-    var worker = new Worker(URL.createObjectURL(blob));
-    worker.postMessage(opts.config);
-    return worker;
-}
-
-var config = {  };
 
 var worker = spawn({
   setup: function() {
@@ -94,20 +53,24 @@ var worker = spawn({
         if (Module.calledRun) {
             clearInterval(interval);
             console.log('Worker ready');
-            postMessage('ready');
+            send({ type:'ready' });
         }
     }, 100);
   },
-  fn: function(e, done) {
-    console.log('Worker got a message', e);
-    if (!Module.calledRun)
-    {
-        console.log('Not ready yet');
+  fn: function(input, done) {
+    console.log('Worker got a message', input);
+    if (input.type === 'execute') {
+        if (!Module.calledRun)
+        {
+            console.log('Not ready yet');
+            done({ type:'notready' });
+        } else {
+            console.log('Ready for python');
+            var result = pyexec(input.data);
+            done({ type: 'response', data: result });
+        }
     } else {
-        console.log('Ready for python');
-        pyexec('print("Hello from python")');
-        //pyexec(program);
-        pyexec('import random');
+        throw 'Unknown message type in webworker onmessage';
     }
   },
   config: {
@@ -115,17 +78,23 @@ var worker = spawn({
   }
 });
 
-worker.onmessage = function(e) {
-    console.log('Main thread got response', e);
-    worker.postMessage('tryagain');
-};
+worker.on('message', function(msg) {
+    console.log('Main thread got a message', msg);
+    if (msg.type === 'ready') {
+        console.log('Sending a python request');
+        worker.send({ type:'execute', data:'print("42"); 5' });
+    } else if (msg.type === 'response') {
+        console.log('Got response');
+    } else {
+        console.log('Unknown response in main thread onmessage', msg);
+        throw 'Unknown response in main thread onmessage';
+    }
+});
 
         </script>
 
 </head>
 <body>
-
-<p>This is a test.</p>
 
 </body>
 </html>
