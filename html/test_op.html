@@ -28,7 +28,12 @@ var worker = spawn({
         }
     };
     importScripts(config.absurl + '/python.asm.js');
-    pyexec = Module.cwrap('PyRun_SimpleString', 'number', ['string']);
+    pyrunSimpleString = Module.cwrap('PyRun_SimpleString', 'number', ['string']);
+    pyrunString = Module.cwrap('PyRun_String', 'number', ['string', 'number', 'number', 'number']);
+    pydictNew = Module.cwrap('PyDict_New', 'number', []);
+    pyimportAddModule = Module.cwrap('PyImport_AddModule', 'number', ['string']);
+    pymoduleGetDict = Module.cwrap('PyModule_GetDict', 'number', ['number']);
+    customEval = Module.cwrap('CustomEval', 'string', ['string']);
 
     program = '\
     import os                                           \n\
@@ -66,7 +71,8 @@ var worker = spawn({
             done({ type:'notready' });
         } else {
             console.log('Ready for python');
-            var result = pyexec(input.data);
+            var result = customEval(input.data);
+            console.log('PyRun_String result', result);
             done({ type: 'response', data: result });
         }
     } else {
@@ -82,7 +88,7 @@ worker.on('message', function(msg) {
     console.log('Main thread got a message', msg);
     if (msg.type === 'ready') {
         console.log('Sending a python request');
-        worker.send({ type:'execute', data:'print("42"); 5' });
+        worker.send({ type:'execute', data:'print("42")' });
     } else if (msg.type === 'response') {
         console.log('Got response');
     } else {

@@ -9,7 +9,7 @@ LDFLAGS=$(OPTFLAGS) ../../installs/python-$(PYVERSION)/lib/libpython$(PYMINOR).a
   -s ASSERTIONS=2 \
   -s EMULATE_FUNCTION_POINTER_CASTS=1 \
   -s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap']" \
-  -s "EXPORTED_FUNCTIONS=['_main', '_PyRun_SimpleString']" \
+  -s "EXPORTED_FUNCTIONS=['_main', '_PyRun_SimpleString', '_PyRun_String', '_PyDict_New', '_PyImport_AddModule', '_PyModule_GetDict', '_CustomEval']" \
   -s BUILD_AS_WORKER=1 \
   --memory-init-file 0
 
