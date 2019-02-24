@@ -9,38 +9,49 @@
 //!
 //! \brief Spawn a new thread
 //!
-//! \param config Data that is available to thread from startup
-//! \param setup Function to run in thread at creation to setup, or undefined
-//! \param fn Function that is called to handle events
+//! \param opts Dictionary of arguments
+//!
+//! fn Function that is called to handle events
 //!           fn(input, done)
 //!           \param input Data sent to thread in message
 //!           \param done Function called to end processing
 //!           done(msg)
+//! config Data that is available to thread from startup (optional)
+//! setup Function to run in thread at creation to setup (optional)
 //!
-function spawn(setup, fn, config) {
-    // Set variable inside Blob to record absolute url to here
-    if (setup === undefined) {
+function spawn(opts) {
+    if (opts === undefined)
+    {
+        opts = {};
+    }
+    if (opts.setup === undefined) {
         setup = function(){};
     }
+    if (opts.fn === undefined) {
+        throw 'Need to specify fn argument to spawn';
+    }
     var blob = new Blob([
-        '_handler = ', fn.toString(), ';',
-        'done = function(msg) { postMessage(msg); };',
+        '_handler = ', opts.fn.toString(), ';',
+        '_done = function(msg) { postMessage(msg); };',
         // First message is config data
         // Make sure to set onmessage handler after calling setup
         'onmessage = function(e) {                             \
              config = e.data;                                  \
-             (', setup.toString(), ')();                       \
-             onmessage = _handler;                             \
+             (', opts.setup.toString(), ')();                       \
+             onmessage = function(e) {                         \
+               _handler(e, _done);                             \
+             };                                                \
          };',
         ], { type: 'text/javascript' });
-    worker = new Worker(URL.createObjectURL(blob));
-    worker.postMessage(config);
+    var worker = new Worker(URL.createObjectURL(blob));
+    worker.postMessage(opts.config);
     return worker;
 }
 
-var config = { absurl: document.location.protocol + '//' + document.location.host };
+var config = {  };
 
-var worker = spawn(function() {
+var worker = spawn({
+  setup: function() {
     // Emscripten asm.js file needs to load data file
     // Inside Web Worker the url needs to be absolute
     console.log('Worker setup');
@@ -86,8 +97,8 @@ var worker = spawn(function() {
             postMessage('ready');
         }
     }, 100);
-},
-function(e) {
+  },
+  fn: function(e, done) {
     console.log('Worker got a message', e);
     if (!Module.calledRun)
     {
@@ -98,8 +109,11 @@ function(e) {
         //pyexec(program);
         pyexec('import random');
     }
-},
-config);
+  },
+  config: {
+      absurl: document.location.protocol + '//' + document.location.host
+  }
+});
 
 worker.onmessage = function(e) {
     console.log('Main thread got response', e);
