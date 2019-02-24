@@ -8,8 +8,8 @@ LDFLAGS=$(OPTFLAGS) ../../installs/python-$(PYVERSION)/lib/libpython$(PYMINOR).a
   -s TOTAL_MEMORY=268435456 \
   -s ASSERTIONS=2 \
   -s EMULATE_FUNCTION_POINTER_CASTS=1 \
-  -s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap']" \
-  -s "EXPORTED_FUNCTIONS=['_main', '_Kernel_new', '_Kernel_delete', '_Kernel_eval']" \
+  -s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap', 'UTF8ToString']" \
+  -s "EXPORTED_FUNCTIONS=['_main', '_Kernel_new', '_Kernel_delete', '_Kernel_eval', '_Result_delete']" \
   -s BUILD_AS_WORKER=1 \
   --memory-init-file 0
 

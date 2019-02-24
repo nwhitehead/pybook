@@ -64,12 +64,14 @@ private:
 };
 
 typedef void* KernelP;
+typedef void* ResultP;
 
 extern "C" {
 
 KernelP Kernel_new();
-void Kernel_eval(KernelP kernel, char *input, char *output, size_t output_size);
 void Kernel_delete(KernelP kernel);
+ResultP Kernel_eval(KernelP kernel, char *input);
+void Result_delete(ResultP result);
 
 }
 
@@ -83,10 +85,14 @@ void Kernel_delete(KernelP kernel)
     delete reinterpret_cast<Kernel*>(kernel);
 }
 
-void Kernel_eval(KernelP kernel, char *input, char *output, size_t output_size)
+ResultP Kernel_eval(KernelP kernel, char *input)
 {
     Kernel *k = reinterpret_cast<Kernel*>(kernel);
     std::string result = k->eval(input);
-    size_t len = result.copy(output, output_size);
-    output[len] = 0;
+    return reinterpret_cast<ResultP>(new std::string(result));
+}
+
+void Result_delete(ResultP result)
+{
+    delete reinterpret_cast<std::string*>(result);
 }

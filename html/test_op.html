@@ -29,6 +29,9 @@ var worker = spawn({
     };
     importScripts(config.absurl + '/python.asm.js');
     Kernel_new = Module.cwrap('Kernel_new', 'number', []);
+    Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
+    Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
+    Result_delete = Module.cwrap('Result_delete', null, ['number']);
 
     program = '\
     import os                                           \n\
@@ -54,6 +57,8 @@ var worker = spawn({
             clearInterval(interval);
             console.log('Worker ready');
             send({ type:'ready' });
+            kernel = Kernel_new();
+            console.log('Kernel pointer is', kernel);
         }
     }, 100);
   },
@@ -66,9 +71,11 @@ var worker = spawn({
             done({ type:'notready' });
         } else {
             console.log('Ready for python');
-            var result = customEval(input.data);
-            console.log('PyRun_String result', result);
-            done({ type: 'response', data: result });
+            var result = Kernel_eval(kernel, input.data);
+            var result_repr = UTF8ToString(result);
+            console.log('Kernel_eval result', result_repr);
+            done({ type: 'response', data: result_repr });
+            Result_delete(result);
         }
     } else {
         throw 'Unknown message type in webworker onmessage';
