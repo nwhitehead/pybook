@@ -5,104 +5,139 @@
 <title>CPyton Emscripten Test</title>
 
 <script src="spawn.js"></script>
-
-<script>
-
-
-var worker = spawn({
-  setup: function() {
-    // Emscripten asm.js file needs to load data file
-    // Inside Web Worker the url needs to be absolute
-    console.log('Worker setup');
-    if (typeof(Module) === "undefined") Module = {};
-    Module.locateFile = function(path, prefix) {
-        return config.absurl + '/' + path;
-    };
-    list = ['random', 'warnings', 'types', 'functools', 'collections'];
-    Module["preInit"] = function() {
-        FS.mkdir('/lib');
-        FS.mkdir('/lib/python3.5');
-        for (var i = 0; i < list.length; i++) {
-            var elem = list[i];
-            FS.createLazyFile('/lib/python3.5', elem + '.py', config.absurl + '/lib/python3.5/' + elem + '.py', true, false);
-        }
-    };
-    importScripts(config.absurl + '/python.asm.js');
-    Kernel_new = Module.cwrap('Kernel_new', 'number', []);
-    Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
-    Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
-    Result_delete = Module.cwrap('Result_delete', null, ['number']);
-
-    program = '\
-    import os                                           \n\
-                                                        \n\
-    for dirname, dirnames, filenames in os.walk(\'/lib\'):   \n\
-        # print path to all subdirectories first.       \n\
-        for subdirname in dirnames:                     \n\
-            print(os.path.join(dirname, subdirname))    \n\
-                                                        \n\
-        # print path to all filenames.                  \n\
-        for filename in filenames:                      \n\
-            print(os.path.join(dirname, filename))      \n\
-                                                        \n\
-    with open("/lib/python3.5/abc.py") as f:            \n\
-        print(f.read())                                 \n\
-    with open("/lib/python3.5/random.py") as f:         \n\
-        print(f.read())                                 \n\
-    ';
-
-    // Wait for the module to be ready before calling any functions.
-    var interval = setInterval(function () {
-        if (Module.calledRun) {
-            clearInterval(interval);
-            console.log('Worker ready');
-            send({ type:'ready' });
-            kernel = Kernel_new();
-            console.log('Kernel pointer is', kernel);
-        }
-    }, 100);
-  },
-  fn: function(input, done) {
-    console.log('Worker got a message', input);
-    if (input.type === 'execute') {
-        if (!Module.calledRun)
-        {
-            console.log('Not ready yet');
-            done({ type:'notready' });
-        } else {
-            console.log('Ready for python');
-            var result = Kernel_eval(kernel, input.data);
-            var result_repr = UTF8ToString(result);
-            console.log('Kernel_eval result', result_repr);
-            done({ type: 'response', data: result_repr });
-            Result_delete(result);
-        }
-    } else {
-        throw 'Unknown message type in webworker onmessage';
-    }
-  },
-  config: {
-      absurl: document.location.protocol + '//' + document.location.host
-  }
-});
-
-worker.on('message', function(msg) {
-    console.log('Main thread got a message', msg);
-    if (msg.type === 'ready') {
-        console.log('Sending a python request');
-        worker.send({ type:'execute', data:'print("42")' });
-    } else if (msg.type === 'response') {
-        console.log('Got response');
-    } else {
-        console.log('Unknown response in main thread onmessage', msg);
-        throw 'Unknown response in main thread onmessage';
-    }
-});
-
-        </script>
+<script src="codemirror/codemirror.js"></script>
+<link rel="stylesheet" href="codemirror/codemirror.css">
+<script src="codemirror/python.js"></script>
 
 </head>
 <body>
+
+<textarea id='inputarea'></textarea>
+<textarea id='outputarea'></textarea>
+
+<script>
+function onready(f) {
+    if (window.onload) {
+        var curronload = window.onload;
+        var newonload = function(evt) {
+            curronload(evt);
+            f(evt);
+        };
+        window.onload = newonload;
+    } else {
+        window.onload = f;
+    }
+}
+
+onready(function() {
+    console.log('Ready for DOM manip');
+
+    var worker = spawn({
+      setup: function() {
+        // Emscripten asm.js file needs to load data file
+        // Inside Web Worker the url needs to be absolute
+        console.log('Worker setup');
+        if (typeof(Module) === "undefined") Module = {};
+        Module.locateFile = function(path, prefix) {
+            return config.absurl + '/' + path;
+        };
+        list = ['random', 'warnings', 'types', 'functools', 'collections'];
+        Module["preInit"] = function() {
+            FS.mkdir('/lib');
+            FS.mkdir('/lib/python3.5');
+            for (var i = 0; i < list.length; i++) {
+                var elem = list[i];
+                FS.createLazyFile('/lib/python3.5', elem + '.py', config.absurl + '/lib/python3.5/' + elem + '.py', true, false);
+            }
+        };
+        importScripts(config.absurl + '/python.asm.js');
+        Kernel_new = Module.cwrap('Kernel_new', 'number', []);
+        Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
+        Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
+        Result_str = Module.cwrap('Result_str', 'number', ['number']);
+        Result_delete = Module.cwrap('Result_delete', null, ['number']);
+
+        program = '\
+        import os                                           \n\
+                                                            \n\
+        for dirname, dirnames, filenames in os.walk(\'/lib\'):   \n\
+            # print path to all subdirectories first.       \n\
+            for subdirname in dirnames:                     \n\
+                print(os.path.join(dirname, subdirname))    \n\
+                                                            \n\
+            # print path to all filenames.                  \n\
+            for filename in filenames:                      \n\
+                print(os.path.join(dirname, filename))      \n\
+                                                            \n\
+        with open("/lib/python3.5/abc.py") as f:            \n\
+            print(f.read())                                 \n\
+        with open("/lib/python3.5/random.py") as f:         \n\
+            print(f.read())                                 \n\
+        ';
+
+        // Wait for the module to be ready before calling any functions.
+        var interval = setInterval(function () {
+            if (Module.calledRun) {
+                clearInterval(interval);
+                console.log('Worker ready');
+                send({ type:'ready' });
+                kernel = Kernel_new();
+                console.log('Kernel pointer is', kernel);
+            }
+        }, 100);
+      },
+      fn: function(input, done) {
+        console.log('Worker got a message', input);
+        if (input.type === 'execute') {
+            if (!Module.calledRun)
+            {
+                console.log('Not ready yet');
+                done({ type:'notready' });
+            } else {
+                console.log('Ready for python');
+                var result = Kernel_eval(kernel, input.data);
+                console.log('Raw result', result);
+                var result_str = Result_str(result);
+                console.log('Raw result_str', result_str);
+                var result_repr = UTF8ToString(result_str);
+                console.log('Kernel_eval result', result_repr);
+                done({ type: 'response', data: result_repr });
+                //Result_delete(result);
+            }
+        } else {
+            throw 'Unknown message type in webworker onmessage';
+        }
+      },
+      config: {
+          absurl: document.location.protocol + '//' + document.location.host
+      }
+    });
+
+    var inputarea = CodeMirror.fromTextArea(document.getElementById('inputarea'));
+    inputarea.setOption('extraKeys', {
+        'Ctrl-Enter': function(cm) {
+            console.log('CTRL-ENTER');
+            worker.send({ type:'execute', data:inputarea.doc.getValue() });
+        }
+    });
+    var outputarea = CodeMirror.fromTextArea(document.getElementById('outputarea'));
+
+    worker.on('message', function(msg) {
+        console.log('Main thread got a message', msg);
+        if (msg.type === 'ready') {
+            console.log('Kernel ready for responses');
+        } else if (msg.type === 'response') {
+            console.log('Got response');
+            outputarea.setValue(msg.data);
+        } else {
+            console.log('Unknown response in main thread onmessage', msg);
+            throw 'Unknown response in main thread onmessage';
+        }
+    });
+
+});
+
+</script>
 
 </body>
 </html>

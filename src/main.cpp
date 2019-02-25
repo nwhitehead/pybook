@@ -71,6 +71,7 @@ extern "C" {
 KernelP Kernel_new();
 void Kernel_delete(KernelP kernel);
 ResultP Kernel_eval(KernelP kernel, char *input);
+const char* Result_str(ResultP result);
 void Result_delete(ResultP result);
 
 }
@@ -82,17 +83,26 @@ KernelP Kernel_new()
 
 void Kernel_delete(KernelP kernel)
 {
+    assert(kernel);
     delete reinterpret_cast<Kernel*>(kernel);
 }
 
 ResultP Kernel_eval(KernelP kernel, char *input)
 {
     Kernel *k = reinterpret_cast<Kernel*>(kernel);
+    assert(k);
     std::string result = k->eval(input);
     return reinterpret_cast<ResultP>(new std::string(result));
 }
 
+const char* Result_str(ResultP result)
+{
+    assert(result);
+    return reinterpret_cast<std::string*>(result)->c_str();
+}
+
 void Result_delete(ResultP result)
 {
+    assert(result);
     delete reinterpret_cast<std::string*>(result);
 }
