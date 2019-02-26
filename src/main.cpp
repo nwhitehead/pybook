@@ -30,7 +30,7 @@ public:
     }
     std::string eval(std::string input)
     {
-        PyObject *result = PyRun_String(input.c_str(), Py_eval_input, globals, locals);
+        PyObject *result = PyRun_String(input.c_str(), Py_single_input, globals, locals);
         if (!result)
         {
             PyErr_Print();
