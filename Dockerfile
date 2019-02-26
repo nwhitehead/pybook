@@ -30,7 +30,7 @@ RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
 
 WORKDIR /cpython-emscripten/examples
 
-COPY src src
+COPY dockerSrc src
 
 WORKDIR /cpython-emscripten/examples/src
 

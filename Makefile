@@ -5,7 +5,7 @@ all: generate build/localroot.zip
 generate: build/out/python.asm.js
 .PHONY:generate
 
-build/out/python.asm.js: src/
+build/out/python.asm.js: dockerSrc/
 	docker build . -t cpython-emscripten
 	mkdir -p build
 	docker create -it --name artifacts cpython-emscripten /bin/bash
@@ -17,5 +17,5 @@ serve: all
 	cd html; python3 -m http.server 8063
 .PHONY:serve
 
-build/localroot.zip: src/local_files src/
-	cd src; zip ../build/localroot.zip -r . -i@local_files 
+build/localroot.zip: src/
+	cd src; zip ../build/localroot.zip -r .
