@@ -33,8 +33,6 @@ python.asm.js: main.bc root
 root: ../../installs/python-$(PYVERSION)/lib/python$(PYMINOR) lib_files
 	mkdir -p root/lib
 	tar -C ../../installs/python-$(PYVERSION) -cf - --files-from lib_files | tar -C root -xvf -
-#	cp -r ../../installs/python-3.5.2/lib/python3.5/ root/lib
-
 
 ../../installs/python-$(PYVERSION)/lib/python$(PYMINOR):
 	make -C ../../$(PYVERSION)

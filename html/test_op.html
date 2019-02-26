@@ -49,6 +49,7 @@ onready(function() {
                 var elem = list[i];
                 FS.createLazyFile('/lib/python3.5', elem + '.py', config.absurl + '/lib/python3.5/' + elem + '.py', true, false);
             }
+            FS.createLazyFile('/lib/python3.5', 'localroot.zip', config.absurl + '/localroot.zip', true, false);
         };
         importScripts(config.absurl + '/python.asm.js');
         Kernel_new = Module.cwrap('Kernel_new', 'number', []);

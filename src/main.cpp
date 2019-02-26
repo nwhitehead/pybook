@@ -9,6 +9,8 @@
 int main(int argc, char** argv) {
     setenv("PYTHONHOME", "/", 0);
 
+    Py_SetPath(L"/lib/python3.5:/lib/python3.5/localroot.zip");
+
     Py_InitializeEx(0);
 
     emscripten_exit_with_live_runtime();
@@ -30,7 +32,7 @@ public:
     }
     std::string eval(std::string input)
     {
-        PyObject *result = PyRun_String(input.c_str(), Py_single_input, globals, locals);
+        PyObject *result = PyRun_String(input.c_str(), Py_eval_input, globals, locals);
         if (!result)
         {
             PyErr_Print();
