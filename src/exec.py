@@ -25,7 +25,7 @@ def run_cell(script, globals_=None, locals_=None):
     if globals_ is None:
         globals_ = globals()
     if locals_ is None:
-        locals_ = {}
+        locals_ = globals_
     cell = _wrap(script)
     node = ast.parse(cell)
     # Dig into ast to get to usercode list of statements/expressions
@@ -37,4 +37,5 @@ def run_cell(script, globals_=None, locals_=None):
     ast.fix_missing_locations(node)
     # Compile wrapped script, run wrapper definition
     exec(compile(node, filename='<ast>', mode='exec'), globals_, locals_)
+    print(locals_)
     return locals_['__wrapper__']()

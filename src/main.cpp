@@ -1,5 +1,6 @@
 #include <cassert>
 #include <cstdlib>
+#include <iostream>
 #include <string>
 
 #include <emscripten.h>
@@ -25,6 +26,10 @@ public:
         PyObject *main_module = PyImport_AddModule("__main__");
         globals = PyModule_GetDict(main_module);
         locals = PyDict_New();
+        int res = PyRun_SimpleString("from exec import run_cell");
+        std::cout << "import of run_cell: " << res << std::endl;
+        run_cell = PyRun_String("run_cell", Py_eval_input, globals, globals);
+        std::cout << "run_cell=" << (void*)run_cell << std::endl;
     }
     ~Kernel()
     {
@@ -32,7 +37,8 @@ public:
     }
     std::string eval(std::string input)
     {
-        PyObject *result = PyRun_String(input.c_str(), Py_eval_input, globals, locals);
+//        PyObject *result = PyRun_String(input.c_str(), Py_eval_input, globals, locals);
+        PyObject *result = PyObject_CallFunction(run_cell, "sO", input.c_str(), globals);
         if (!result)
         {
             PyErr_Print();
@@ -63,6 +69,7 @@ public:
 private:
     PyObject *globals = nullptr;
     PyObject *locals = nullptr;
+    PyObject *run_cell = nullptr;
 };
 
 typedef void* KernelP;

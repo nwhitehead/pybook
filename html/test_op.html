@@ -41,7 +41,7 @@ onready(function() {
         Module.locateFile = function(path, prefix) {
             return config.absurl + '/' + path;
         };
-        list = ['random', 'warnings', 'types', 'functools', 'collections'];
+        list = ['random', 'warnings'];
         Module["preInit"] = function() {
             FS.mkdir('/lib');
             FS.mkdir('/lib/python3.5');
