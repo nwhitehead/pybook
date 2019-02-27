@@ -10,7 +10,7 @@
 int main(int argc, char** argv) {
     setenv("PYTHONHOME", "/", 0);
 
-    Py_SetPath(L"/lib/python3.5:/lib/python3.5/localroot.zip");
+    Py_SetPath(L"/lib/python3.5:/lib/python3.5/localroot.zip:/lib/python3.5/python3.5.zip");
 
     Py_InitializeEx(0);
 

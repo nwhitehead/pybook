@@ -36,4 +36,8 @@ WORKDIR /cpython-emscripten/examples/src
 
 RUN mkdir -p /out
 
+RUN apt-get install -y --no-install-recommends \
+    zip
+
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make python.asm.js"
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"

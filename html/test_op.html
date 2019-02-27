@@ -41,15 +41,11 @@ onready(function() {
         Module.locateFile = function(path, prefix) {
             return config.absurl + '/' + path;
         };
-        list = ['random', 'warnings'];
         Module["preInit"] = function() {
             FS.mkdir('/lib');
             FS.mkdir('/lib/python3.5');
-            for (var i = 0; i < list.length; i++) {
-                var elem = list[i];
-                FS.createLazyFile('/lib/python3.5', elem + '.py', config.absurl + '/lib/python3.5/' + elem + '.py', true, false);
-            }
             FS.createLazyFile('/lib/python3.5', 'localroot.zip', config.absurl + '/localroot.zip', true, false);
+            FS.createLazyFile('/lib/python3.5', 'python3.5.zip', config.absurl + '/python3.5.zip', true, false);
         };
         importScripts(config.absurl + '/python.asm.js');
         Kernel_new = Module.cwrap('Kernel_new', 'number', []);
