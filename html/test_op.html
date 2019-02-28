@@ -30,6 +30,7 @@ function onready(f) {
 }
 
 function newWorker() {
+    var sharedBuffer = new SharedArrayBuffer(32*4);
     var spawn_data = {
       setup: function() {
         // Emscripten asm.js file needs to load data file
@@ -51,6 +52,7 @@ function newWorker() {
         Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
         Result_str = Module.cwrap('Result_str', 'number', ['number']);
         Result_delete = Module.cwrap('Result_delete', null, ['number']);
+        sharedArray = new Int32Array(config.shared);
 
         // Wait for the module to be ready before calling any functions.
         var interval = setInterval(function () {
@@ -86,11 +88,14 @@ function newWorker() {
         }
       },
       config: {
-          absurl: document.location.protocol + '//' + document.location.host
+          absurl: document.location.protocol + '//' + document.location.host,
+          shared: sharedBuffer
       }
     };
 
     var worker = spawn(spawn_data);
+    worker.sharedBuffer = sharedBuffer;
+    worker.sharedArray = new Int32Array(sharedBuffer);
     return worker;
 }
 
@@ -123,11 +128,15 @@ onready(function() {
             console.log('CTRL-ENTER');
             worker.send({ type:'execute', data:inputarea.doc.getValue() });
         },
-        'Ctrl-C': function(cm) {
-            console.log('CTRL-C');
+        'Ctrl-Q': function(cm) {
+            console.log('CTRL-Q');
             worker.terminate();
             worker = newWorker();
             setupCallbacks(worker, outputarea);
+        },
+        'Ctrl-C': function(cm) {
+            console.log('CTRL-C');
+            worker.sharedArray[16] = 5;
         }
     });
 

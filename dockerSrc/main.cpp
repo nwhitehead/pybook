@@ -1,11 +1,12 @@
 #include <cassert>
 #include <cstdlib>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include <emscripten.h>
 #include <Python.h>
-
+#include <frameobject.h>
 
 int main(int argc, char** argv) {
     setenv("PYTHONHOME", "/", 0);
@@ -18,6 +19,11 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+extern "C" int pycallback(void* arg);
+
+extern "C" int tracefunc(PyObject *obj, PyFrameObject *frame, int what, PyObject *arg);
+
+
 class Kernel
 {
 public:
@@ -27,9 +33,25 @@ public:
         globals = PyModule_GetDict(main_module);
         locals = PyDict_New();
         int res = PyRun_SimpleString("from exec import run_cell");
-        std::cout << "import of run_cell: " << res << std::endl;
+        if (res)
+        {
+            std::cout << "import of run_cell: " << res << std::endl;
+            PyErr_Print();
+            throw std::runtime_error("import of run_cell failed");
+        }
         run_cell = PyRun_String("run_cell", Py_eval_input, globals, globals);
-        std::cout << "run_cell=" << (void*)run_cell << std::endl;
+        if (!run_cell)
+        {
+            PyErr_Print();
+            throw std::runtime_error("eval of run_cell failed");
+        }
+        int r = Py_AddPendingCall(&pycallback, this);
+        if (r)
+        {
+            std::cout << "Py_AddPendingCall failed" << std::endl;
+            throw std::runtime_error("Py_AddPendingCall failed");
+        }
+        //~ PyEval_SetProfile(&tracefunc, nullptr);
     }
     ~Kernel()
     {
@@ -37,7 +59,6 @@ public:
     }
     std::string eval(std::string input)
     {
-//        PyObject *result = PyRun_String(input.c_str(), Py_eval_input, globals, locals);
         PyObject *result = PyObject_CallFunction(run_cell, "sO", input.c_str(), globals);
         if (!result)
         {
@@ -71,6 +92,35 @@ private:
     PyObject *locals = nullptr;
     PyObject *run_cell = nullptr;
 };
+
+EM_JS(int, get_shared_interrupt, (int n), {
+    console.log("get_shared_interrupt n=", n);
+    return sharedArray[n];
+});
+
+
+
+int count = 0;
+
+int pycallback(void* arg)
+{
+    int res = get_shared_interrupt(0x10);
+    std::cout << "(C) get_shared_interrupt returned " << res << std::endl;
+    int r = Py_AddPendingCall(&pycallback, arg);
+    if (r)
+    {
+        std::cout << "Py_AddPendingCall(2) failed" << std::endl;
+        throw std::runtime_error("Py_AddPendingCall(2) failed");
+    }
+    return 0;
+}
+
+int tracefunc(PyObject *obj, PyFrameObject *frame, int what, PyObject *arg)
+{
+    std::cout << "tracefunc obj=" << (void*)obj << " frame=" << (void*)frame << " what=" << what << " arg=" << (void*)arg << std::endl;
+    return 0;
+}
+
 
 typedef void* KernelP;
 typedef void* ResultP;
