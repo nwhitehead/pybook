@@ -29,10 +29,8 @@ function onready(f) {
     }
 }
 
-onready(function() {
-    console.log('Ready for DOM manip');
-
-    var worker = spawn({
+function newWorker() {
+    var spawn_data = {
       setup: function() {
         // Emscripten asm.js file needs to load data file
         // Inside Web Worker the url needs to be absolute
@@ -53,24 +51,6 @@ onready(function() {
         Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
         Result_str = Module.cwrap('Result_str', 'number', ['number']);
         Result_delete = Module.cwrap('Result_delete', null, ['number']);
-
-        program = '\
-        import os                                           \n\
-                                                            \n\
-        for dirname, dirnames, filenames in os.walk(\'/lib\'):   \n\
-            # print path to all subdirectories first.       \n\
-            for subdirname in dirnames:                     \n\
-                print(os.path.join(dirname, subdirname))    \n\
-                                                            \n\
-            # print path to all filenames.                  \n\
-            for filename in filenames:                      \n\
-                print(os.path.join(dirname, filename))      \n\
-                                                            \n\
-        with open("/lib/python3.5/abc.py") as f:            \n\
-            print(f.read())                                 \n\
-        with open("/lib/python3.5/random.py") as f:         \n\
-            print(f.read())                                 \n\
-        ';
 
         // Wait for the module to be ready before calling any functions.
         var interval = setInterval(function () {
@@ -99,7 +79,7 @@ onready(function() {
                 var result_repr = UTF8ToString(result_str);
                 console.log('Kernel_eval result', result_repr);
                 done({ type: 'response', data: result_repr });
-                //Result_delete(result);
+                Result_delete(result);
             }
         } else {
             throw 'Unknown message type in webworker onmessage';
@@ -108,17 +88,13 @@ onready(function() {
       config: {
           absurl: document.location.protocol + '//' + document.location.host
       }
-    });
+    };
 
-    var inputarea = CodeMirror.fromTextArea(document.getElementById('inputarea'));
-    inputarea.setOption('extraKeys', {
-        'Ctrl-Enter': function(cm) {
-            console.log('CTRL-ENTER');
-            worker.send({ type:'execute', data:inputarea.doc.getValue() });
-        }
-    });
-    var outputarea = CodeMirror.fromTextArea(document.getElementById('outputarea'));
+    var worker = spawn(spawn_data);
+    return worker;
+}
 
+function setupCallbacks(worker, outputarea) {
     worker.on('message', function(msg) {
         console.log('Main thread got a message', msg);
         if (msg.type === 'ready') {
@@ -131,7 +107,31 @@ onready(function() {
             throw 'Unknown response in main thread onmessage';
         }
     });
+}
 
+onready(function() {
+    console.log('Ready for DOM manip');
+
+    var worker = newWorker();
+
+    var inputarea = CodeMirror.fromTextArea(document.getElementById('inputarea'));
+
+    var outputarea = CodeMirror.fromTextArea(document.getElementById('outputarea'));
+
+    inputarea.setOption('extraKeys', {
+        'Ctrl-Enter': function(cm) {
+            console.log('CTRL-ENTER');
+            worker.send({ type:'execute', data:inputarea.doc.getValue() });
+        },
+        'Ctrl-C': function(cm) {
+            console.log('CTRL-C');
+            worker.terminate();
+            worker = newWorker();
+            setupCallbacks(worker, outputarea);
+        }
+    });
+
+    setupCallbacks(worker, outputarea);
 });
 
 </script>
