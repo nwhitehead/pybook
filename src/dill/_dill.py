@@ -42,11 +42,13 @@ PY34 = (0x30400f0 <= sys.hexversion < 0x30500f0)
 if PY3: #XXX: get types from .objtypes ?
     import builtins as __builtin__
     from pickle import _Pickler as StockPickler, Unpickler as StockUnpickler
-    from _thread import LockType
-    if (sys.hexversion >= 0x30200f0):
-        from _thread import RLock as RLockType
-    else:
-        from threading import _RLock as RLockType
+    #from _thread import LockType
+    #if (sys.hexversion >= 0x30200f0):
+    #    from _thread import RLock as RLockType
+    #else:
+    #    from threading import _RLock as RLockType
+    LockType = None
+    RLockType = None
    #from io import IOBase
     from types import CodeType, FunctionType, MethodType, GeneratorType, \
         TracebackType, FrameType, ModuleType, BuiltinMethodType
@@ -62,8 +64,10 @@ if PY3: #XXX: get types from .objtypes ?
 else:
     import __builtin__
     from pickle import Pickler as StockPickler, Unpickler as StockUnpickler
-    from thread import LockType
-    from threading import _RLock as RLockType
+    #from thread import LockType
+    #from threading import _RLock as RLockType
+    LockType = None
+    RLockType = None
     from types import CodeType, FunctionType, ClassType, MethodType, \
          GeneratorType, DictProxyType, XRangeType, SliceType, TracebackType, \
          NotImplementedType, EllipsisType, FrameType, ModuleType, \
@@ -195,13 +199,15 @@ def get_file_type(*args, **kwargs):
 
 FileType = get_file_type('rb', buffering=0)
 TextWrapperType = get_file_type('r', buffering=-1)
-BufferedRandomType = get_file_type('r+b', buffering=-1)
+#BufferedRandomType = get_file_type('r+b', buffering=-1)
+BufferedRandomType = get_file_type('rb', buffering=-1)
 BufferedReaderType = get_file_type('rb', buffering=-1)
 BufferedWriterType = get_file_type('wb', buffering=-1)
 try:
     from _pyio import open as _open
     PyTextWrapperType = get_file_type('r', buffering=-1, open=_open)
-    PyBufferedRandomType = get_file_type('r+b', buffering=-1, open=_open)
+    #PyBufferedRandomType = get_file_type('r+b', buffering=-1, open=_open)
+    PyBufferedRandomType = get_file_type('rb', buffering=-1, open=_open)
     PyBufferedReaderType = get_file_type('rb', buffering=-1, open=_open)
     PyBufferedWriterType = get_file_type('wb', buffering=-1, open=_open)
 except ImportError:

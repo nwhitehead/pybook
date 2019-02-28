@@ -20,5 +20,5 @@ serve: all
 localroot: build/localroot.zip
 .PHONY:localroot
 
-build/localroot.zip: src/
+build/localroot.zip: src/ src/dill/
 	cd src; zip ../build/localroot.zip -r .
