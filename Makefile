@@ -22,4 +22,3 @@ localroot: build/localroot.zip
 
 build/localroot.zip: src/
 	cd src; zip ../build/localroot.zip -r .
-	#cd external/tinynumpy; zip ../../build/localroot.zip -r tinynumpy/

@@ -10,7 +10,6 @@ LDFLAGS=$(OPTFLAGS) ../../installs/python-$(PYVERSION)/lib/libpython$(PYMINOR).a
   -s EMULATE_FUNCTION_POINTER_CASTS=1 \
   -s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap', 'UTF8ToString']" \
   -s "EXPORTED_FUNCTIONS=['_main', '_Kernel_new', '_Kernel_delete', '_Kernel_eval', '_Result_str', '_Result_delete']" \
-  -s BUILD_AS_WORKER=1 \
   --memory-init-file 0
 
 dist: all
