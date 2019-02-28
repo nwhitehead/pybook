@@ -17,5 +17,9 @@ serve: all
 	cd html; python3 -m http.server 8063
 .PHONY:serve
 
+localroot: build/localroot.zip
+.PHONY:localroot
+
 build/localroot.zip: src/
 	cd src; zip ../build/localroot.zip -r .
+	#cd external/tinynumpy; zip ../../build/localroot.zip -r tinynumpy/
