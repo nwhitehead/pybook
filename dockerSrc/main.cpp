@@ -55,7 +55,7 @@ public:
     }
     std::string eval(std::string input)
     {
-        PyObject *result = PyObject_CallFunction(run_cell, "sO", input.c_str(), globals);
+        PyObject *result = PyObject_CallFunction(run_cell, "sO", input.c_str(), locals);
         if (!result)
         {
             PyErr_Print();

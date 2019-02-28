@@ -39,7 +39,9 @@ def run_cell(script, globals_=None, locals_=None):
     # Compile wrapped script, run wrapper definition
     exec(compile(node, filename='<ast>', mode='exec'), globals_, locals_)
     if expr:
-        return locals_[resultid]
+        result = locals_[resultid]
+        del locals_[resultid]
+        return result
     else:
         return None
 
