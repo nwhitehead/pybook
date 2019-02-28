@@ -25,7 +25,12 @@ def run_cell(script, globals_=None, locals_=None):
     if locals_ is None:
         locals_ = globals_
     cell = script
-    node = ast.parse(cell)
+    try:
+        node = ast.parse(cell)
+    except SyntaxError as err:
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        traceback.print_exception(exc_type, exc_value, exc_tb.tb_next.tb_next)
+        return None
     # Dig into ast to get to usercode list of statements/expressions
     statements = node.body
     # If last statement is Expr, turn it into assignment to store result
@@ -50,7 +55,7 @@ def run_cell(script, globals_=None, locals_=None):
     except SyntaxError as err:
         exc_type, exc_value, exc_tb = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
-    except SyntaxError as err:
+    except Exception as err:
         exc_type, exc_value, exc_tb = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
     return None
