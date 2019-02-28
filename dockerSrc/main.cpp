@@ -21,9 +21,6 @@ int main(int argc, char** argv) {
 
 extern "C" int pycallback(void* arg);
 
-extern "C" int tracefunc(PyObject *obj, PyFrameObject *frame, int what, PyObject *arg);
-
-
 class Kernel
 {
 public:
@@ -51,7 +48,6 @@ public:
             std::cout << "Py_AddPendingCall failed" << std::endl;
             throw std::runtime_error("Py_AddPendingCall failed");
         }
-        //~ PyEval_SetProfile(&tracefunc, nullptr);
     }
     ~Kernel()
     {
@@ -94,8 +90,10 @@ private:
 };
 
 EM_JS(int, get_shared_interrupt, (int n), {
-    console.log("get_shared_interrupt n=", n);
-    return sharedArray[n];
+//    console.log("get_shared_interrupt n=", n);
+    var result = sharedArray[n];
+    sharedArray[n] = 0;
+    return result;
 });
 
 
@@ -104,13 +102,22 @@ int count = 0;
 
 int pycallback(void* arg)
 {
-    int res = get_shared_interrupt(0x10);
-    std::cout << "(C) get_shared_interrupt returned " << res << std::endl;
+    int res = get_shared_interrupt(0);
+    //std::cout << "(C) get_shared_interrupt returned " << res << std::endl;
     int r = Py_AddPendingCall(&pycallback, arg);
     if (r)
     {
         std::cout << "Py_AddPendingCall(2) failed" << std::endl;
         throw std::runtime_error("Py_AddPendingCall(2) failed");
+    }
+    if (res)
+    {
+        std::cout << "(C) get_shared_interrupt returned " << res << std::endl;
+        std::cout << "KEYBOARD INTERRUPT" << std::endl;
+        PyErr_SetString(PyExc_KeyboardInterrupt, "Keyboard Interrupt");
+//        PyErr_SetInterrupt();
+        return -1;
+//        throw std::runtime_error("KEYBOARD INTERRUPT");
     }
     return 0;
 }
