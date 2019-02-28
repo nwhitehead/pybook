@@ -6,6 +6,8 @@ the value of the last expression.
 """
 
 import ast
+import sys
+import traceback
 
 # Global counter for fresh id creation
 uid = 1
@@ -37,14 +39,21 @@ def run_cell(script, globals_=None, locals_=None):
         node.body[-1] = ast.Assign(targets=[ast.Name(id=resultid, ctx=ast.Store())], value=value)
     ast.fix_missing_locations(node)
     # Compile wrapped script, run wrapper definition
-    exec(compile(node, filename='<ast>', mode='exec'), globals_, locals_)
-    if expr:
-        result = locals_[resultid]
-        del locals_[resultid]
-        return result
-    else:
-        return None
-
+    try:
+        exec(compile(node, filename='<ast>', mode='exec'), globals_, locals_)
+        if expr:
+            result = locals_[resultid]
+            del locals_[resultid]
+            return result
+        else:
+            return None
+    except SyntaxError as err:
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
+    except SyntaxError as err:
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
+    return None
 
 def dotest():
     test='''x = 5; 12'''
