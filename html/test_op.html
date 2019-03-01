@@ -27,6 +27,9 @@
     border: 2px solid #888;
     height: auto;
 }
+.stderr {
+    background-color: #f00;
+}
 </style>
 
 </head>
@@ -68,6 +71,22 @@ function newWorker() {
             FS.createLazyFile('/lib/python3.5', 'localroot.zip', config.absurl + '/localroot.zip', true, false);
             FS.createLazyFile('/lib/python3.5', 'python3.5.zip', config.absurl + '/python3.5.zip', true, false);
         };
+        Module['print'] = function(text) {
+            if (Module.calledRun) {
+                send({ type:'stdout', data: text });
+            } else {
+                // Pre-load messages go to console
+                console.log(text);
+            }
+        };
+        Module['printErr'] = function(text) {
+            if (Module.calledRun) {
+                send({ type:'stderr', data: text });
+            } else {
+                // Pre-load messages go to console
+                console.warn(text);
+            }
+        };
         importScripts(config.absurl + '/python.asm.js');
         Kernel_new = Module.cwrap('Kernel_new', 'number', []);
         Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
@@ -75,6 +94,7 @@ function newWorker() {
         Result_str = Module.cwrap('Result_str', 'number', ['number']);
         Result_delete = Module.cwrap('Result_delete', null, ['number']);
         sharedArray = new Int32Array(config.shared);
+
 
         // Wait for the module to be ready before calling any functions.
         var interval = setInterval(function () {
@@ -122,7 +142,13 @@ function setupCallbacks(worker, outputarea, evaloutputarea) {
         if (msg.type === 'ready') {
             console.log('CPython-Emscripten Ready');
         } else if (msg.type === 'stdout') {
-            outputarea.setValue(outputarea.getValue() + msg.data);
+            outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
+        } else if (msg.type === 'stderr') {
+            var from = CodeMirror.Pos(outputarea.lastLine());
+            outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
+            var to = CodeMirror.Pos(outputarea.lastLine());
+            console.log(from, to);
+            outputarea.markText(from, to, { className: 'stderr' });
         } else if (msg.type === 'response') {
             evaloutputarea.setValue(msg.data);
         } else {
