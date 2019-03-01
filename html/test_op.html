@@ -35,7 +35,6 @@ function newWorker() {
       setup: function() {
         // Emscripten asm.js file needs to load data file
         // Inside Web Worker the url needs to be absolute
-        console.log('Worker setup');
         if (typeof(Module) === "undefined") Module = {};
         Module.locateFile = function(path, prefix) {
             return config.absurl + '/' + path;
@@ -58,28 +57,20 @@ function newWorker() {
         var interval = setInterval(function () {
             if (Module.calledRun) {
                 clearInterval(interval);
-                console.log('Worker ready');
                 send({ type:'ready' });
                 kernel = Kernel_new();
-                console.log('Kernel pointer is', kernel);
             }
         }, 100);
       },
       fn: function(input, done) {
-        console.log('Worker got a message', input);
         if (input.type === 'execute') {
             if (!Module.calledRun)
             {
-                console.log('Not ready yet');
                 done({ type:'notready' });
             } else {
-                console.log('Ready for python');
                 var result = Kernel_eval(kernel, input.data);
-                console.log('Raw result', result);
                 var result_str = Result_str(result);
-                console.log('Raw result_str', result_str);
                 var result_repr = UTF8ToString(result_str);
-                console.log('Kernel_eval result', result_repr);
                 done({ type: 'response', data: result_repr });
                 Result_delete(result);
             }
@@ -101,11 +92,9 @@ function newWorker() {
 
 function setupCallbacks(worker, outputarea) {
     worker.on('message', function(msg) {
-        console.log('Main thread got a message', msg);
         if (msg.type === 'ready') {
-            console.log('Kernel ready for responses');
+            console.log('CPython-Emscripten Ready');
         } else if (msg.type === 'response') {
-            console.log('Got response');
             outputarea.setValue(msg.data);
         } else {
             console.log('Unknown response in main thread onmessage', msg);
@@ -115,7 +104,6 @@ function setupCallbacks(worker, outputarea) {
 }
 
 onready(function() {
-    console.log('Ready for DOM manip');
 
     var worker = newWorker();
 
@@ -125,17 +113,17 @@ onready(function() {
 
     inputarea.setOption('extraKeys', {
         'Ctrl-Enter': function(cm) {
-            console.log('CTRL-ENTER');
+            // Clear flag to indicate keyboard interrupt
+            worker.sharedArray[0] = 0;
             worker.send({ type:'execute', data:inputarea.doc.getValue() });
         },
         'Ctrl-Q': function(cm) {
-            console.log('CTRL-Q');
             worker.terminate();
             worker = newWorker();
             setupCallbacks(worker, outputarea);
         },
         'Ctrl-C': function(cm) {
-            console.log('CTRL-C');
+            // Set flag to indicate keyboard interrupt
             worker.sharedArray[0] = 1;
         }
     });

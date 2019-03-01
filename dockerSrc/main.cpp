@@ -8,6 +8,18 @@
 #include <Python.h>
 #include <frameobject.h>
 
+#define FAIL(msg) assert(0 && msg)
+
+constexpr int SHARED_INTERRUPT = 0;
+constexpr int SHARED_BUSY = 1;
+
+EM_JS(int, get_shared_interrupt, (int n, int newval), {
+    var result = sharedArray[n];
+    sharedArray[n] = newval;
+    return result;
+});
+
+
 int main(int argc, char** argv) {
     setenv("PYTHONHOME", "/", 0);
 
@@ -32,21 +44,19 @@ public:
         int res = PyRun_SimpleString("from exec import run_cell");
         if (res)
         {
-            std::cout << "import of run_cell: " << res << std::endl;
             PyErr_Print();
-            throw std::runtime_error("import of run_cell failed");
+            FAIL("import of run_cell failed");
         }
         run_cell = PyRun_String("run_cell", Py_eval_input, globals, globals);
         if (!run_cell)
         {
             PyErr_Print();
-            throw std::runtime_error("eval of run_cell failed");
+            FAIL("eval of run_cell failed");
         }
         int r = Py_AddPendingCall(&pycallback, this);
         if (r)
         {
-            std::cout << "Py_AddPendingCall failed" << std::endl;
-            throw std::runtime_error("Py_AddPendingCall failed");
+            FAIL("Py_AddPendingCall failed");
         }
     }
     ~Kernel()
@@ -55,32 +65,37 @@ public:
     }
     std::string eval(std::string input)
     {
+        get_shared_interrupt(SHARED_BUSY, 1);
         PyObject *result = PyObject_CallFunction(run_cell, "sO", input.c_str(), locals);
         if (!result)
         {
+            get_shared_interrupt(SHARED_BUSY, 0);
             PyErr_Print();
-            return std::string("ERROR in eval");
+            return std::string("");
         }
         PyObject* repr = PyObject_Repr(result);
         if (!repr)
         {
+            get_shared_interrupt(SHARED_BUSY, 0);
             PyErr_Print();
             Py_XDECREF(result);
-            return std::string("ERROR in repr");
+            return std::string("");
         }
         PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
         if (!str)
         {
+            get_shared_interrupt(SHARED_BUSY, 0);
             PyErr_Print();
             Py_XDECREF(repr);
             Py_XDECREF(result);
-            return std::string("ERROR in utf-8 conversion");
+            return std::string("");
         }
         const char *bytes = PyBytes_AS_STRING(str);
         std::string out = std::string(bytes);
         Py_XDECREF(str);
         Py_XDECREF(repr);
         Py_XDECREF(result);
+        get_shared_interrupt(SHARED_BUSY, 0);
         return out;
     }
 private:
@@ -89,42 +104,23 @@ private:
     PyObject *run_cell = nullptr;
 };
 
-EM_JS(int, get_shared_interrupt, (int n), {
-//    console.log("get_shared_interrupt n=", n);
-    var result = sharedArray[n];
-    sharedArray[n] = 0;
-    return result;
-});
-
 
 
 int count = 0;
 
 int pycallback(void* arg)
 {
-    int res = get_shared_interrupt(0);
-    //std::cout << "(C) get_shared_interrupt returned " << res << std::endl;
+    int res = get_shared_interrupt(SHARED_INTERRUPT, 0);
     int r = Py_AddPendingCall(&pycallback, arg);
     if (r)
     {
-        std::cout << "Py_AddPendingCall(2) failed" << std::endl;
-        throw std::runtime_error("Py_AddPendingCall(2) failed");
+        FAIL("Py_AddPendingCall (2) failed");
     }
     if (res)
     {
-        std::cout << "(C) get_shared_interrupt returned " << res << std::endl;
-        std::cout << "KEYBOARD INTERRUPT" << std::endl;
         PyErr_SetString(PyExc_KeyboardInterrupt, "Keyboard Interrupt");
-//        PyErr_SetInterrupt();
         return -1;
-//        throw std::runtime_error("KEYBOARD INTERRUPT");
     }
-    return 0;
-}
-
-int tracefunc(PyObject *obj, PyFrameObject *frame, int what, PyObject *arg)
-{
-    std::cout << "tracefunc obj=" << (void*)obj << " frame=" << (void*)frame << " what=" << what << " arg=" << (void*)arg << std::endl;
     return 0;
 }
 
