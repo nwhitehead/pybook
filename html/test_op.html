@@ -13,13 +13,29 @@
 #busy {
     position: absolute;
 }
+.input.CodeMirror {
+    border: 2px solid #888;
+    height: auto;
+}
+.output.CodeMirror {
+    background-color: #fffcfa;
+    border: 2px solid #888;
+    height: auto;
+}
+.evaloutput.CodeMirror {
+    background-color: #fafcff;
+    border: 2px solid #888;
+    height: auto;
+}
 </style>
 
 </head>
 <body>
 
-<textarea id='inputarea'></textarea>
-<textarea id='outputarea'></textarea>
+<textarea id='inputarea' class='input'></textarea>
+<textarea id='outputarea' class='output'></textarea>
+<textarea id='evaloutputarea' class='evaloutput'></textarea>
+
 <div id='busy'><p>BUSY</p></div>
 
 <script>
@@ -101,12 +117,14 @@ function newWorker() {
     return worker;
 }
 
-function setupCallbacks(worker, outputarea) {
+function setupCallbacks(worker, outputarea, evaloutputarea) {
     worker.on('message', function(msg) {
         if (msg.type === 'ready') {
             console.log('CPython-Emscripten Ready');
+        } else if (msg.type === 'stdout') {
+            outputarea.setValue(outputarea.getValue() + msg.data);
         } else if (msg.type === 'response') {
-            outputarea.setValue(msg.data);
+            evaloutputarea.setValue(msg.data);
         } else {
             console.log('Unknown response in main thread onmessage', msg);
             throw 'Unknown response in main thread onmessage';
@@ -119,19 +137,25 @@ onready(function() {
     var worker = newWorker();
 
     var inputarea = CodeMirror.fromTextArea(document.getElementById('inputarea'));
-
     var outputarea = CodeMirror.fromTextArea(document.getElementById('outputarea'));
+    var evaloutputarea = CodeMirror.fromTextArea(document.getElementById('evaloutputarea'));
+    
+    inputarea.getWrapperElement().classList.add('input');
+    outputarea.getWrapperElement().classList.add('output');
+    evaloutputarea.getWrapperElement().classList.add('evaloutput');
 
     inputarea.setOption('extraKeys', {
         'Ctrl-Enter': function(cm) {
             // Clear flag to indicate keyboard interrupt
             worker.sharedArray[0] = 0;
             worker.send({ type:'execute', data:inputarea.doc.getValue() });
+            outputarea.setValue("");
+            evaloutputarea.setValue("");
         },
         'Ctrl-Q': function(cm) {
             worker.terminate();
             worker = newWorker();
-            setupCallbacks(worker, outputarea);
+            setupCallbacks(worker, outputarea, evaloutputarea);
         },
         'Ctrl-C': function(cm) {
             // Set flag to indicate keyboard interrupt
@@ -139,7 +163,12 @@ onready(function() {
         }
     });
 
-    setupCallbacks(worker, outputarea);
+    outputarea.setOption('readOnly', 'nocursor');
+    outputarea.setOption('lineWrapping', true);
+    evaloutputarea.setOption('readOnly', 'nocursor');
+    evaloutputarea.setOption('lineWrapping', true);
+
+    setupCallbacks(worker, outputarea, evaloutputarea);
     
     setInterval(function() {
         var elem = document.getElementById('busy');
@@ -149,7 +178,9 @@ onready(function() {
             elem.style.visibility = 'visible';
         }
     }, 500);
+
     window.sharedArray = worker.sharedArray;
+    window.inputarea = inputarea;
 });
 
 </script>
