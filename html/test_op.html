@@ -9,11 +9,18 @@
 <link rel="stylesheet" href="codemirror/codemirror.css">
 <script src="codemirror/python.js"></script>
 
+<style>
+#busy {
+    position: absolute;
+}
+</style>
+
 </head>
 <body>
 
 <textarea id='inputarea'></textarea>
 <textarea id='outputarea'></textarea>
+<div id='busy'><p>BUSY</p></div>
 
 <script>
 function onready(f) {
@@ -59,6 +66,8 @@ function newWorker() {
                 clearInterval(interval);
                 send({ type:'ready' });
                 kernel = Kernel_new();
+                // Clear busy
+                sharedArray[1] = 0;
             }
         }, 100);
       },
@@ -87,6 +96,8 @@ function newWorker() {
     var worker = spawn(spawn_data);
     worker.sharedBuffer = sharedBuffer;
     worker.sharedArray = new Int32Array(sharedBuffer);
+    // Set busy, will clear once worker is ready
+    worker.sharedArray[1] = 1;
     return worker;
 }
 
@@ -129,6 +140,16 @@ onready(function() {
     });
 
     setupCallbacks(worker, outputarea);
+    
+    setInterval(function() {
+        var elem = document.getElementById('busy');
+        if (worker.sharedArray[1] === 0) {
+            elem.style.visibility = 'hidden';
+        } else {
+            elem.style.visibility = 'visible';
+        }
+    }, 500);
+    window.sharedArray = worker.sharedArray;
 });
 
 </script>
