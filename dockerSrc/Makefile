@@ -3,8 +3,8 @@ PYMINOR=$(basename $(PYVERSION))
 
 CXX=em++
 OPTFLAGS=-O2
-CXXFLAGS=-std=c++14 -Wall -Werror $(OPTFLAGS) -g -I ../../installs/python-$(PYVERSION)/include/python$(PYMINOR)/ -Wno-warn-absolute-paths
-LDFLAGS=$(OPTFLAGS) ../../installs/python-$(PYVERSION)/lib/libpython$(PYMINOR).a \
+CXXFLAGS=-std=c++14 -Wall -Werror $(OPTFLAGS) -g -I ../installs/python-$(PYVERSION)/include/python$(PYMINOR)/ -Wno-warn-absolute-paths
+LDFLAGS=$(OPTFLAGS) ../installs/python-$(PYVERSION)/lib/libpython$(PYMINOR).a \
   -s TOTAL_MEMORY=268435456 \
   -s ASSERTIONS=2 \
   -s EMULATE_FUNCTION_POINTER_CASTS=1 \
@@ -27,18 +27,18 @@ python.asm.js: main.bc root
 		$(foreach d,$(wildcard root/*),--preload-file $d@/$(notdir $d))
 
 
-%.bc: %.cpp ../../installs/python-$(PYVERSION)/lib/python$(PYMINOR)
+%.bc: %.cpp ../installs/python-$(PYVERSION)/lib/python$(PYMINOR)
 	$(CXX) -o $@ $< $(CXXFLAGS)
 
 
-root: ../../installs/python-$(PYVERSION)/lib/python$(PYMINOR) lib_files
+root: ../installs/python-$(PYVERSION)/lib/python$(PYMINOR) lib_files
 	mkdir -p root/lib
-	tar -C ../../installs/python-$(PYVERSION) -cf - --files-from lib_files | tar -C root -xvf -
+	tar -C ../installs/python-$(PYVERSION) -cf - --files-from lib_files | tar -C root -xvf -
 
 
-../../installs/python-$(PYVERSION)/lib/python$(PYMINOR):
-	make -C ../../$(PYVERSION)
+../installs/python-$(PYVERSION)/lib/python$(PYMINOR):
+	make -C ../$(PYVERSION)
 
 
-python$(PYMINOR).zip: ../../installs/python-$(PYVERSION)/lib/python$(PYMINOR)
-	cd ../../installs/python-$(PYVERSION)/lib/python$(PYMINOR) ; zip -r ~/python$(PYMINOR).zip . -i \*.py
+python$(PYMINOR).zip: ../installs/python-$(PYVERSION)/lib/python$(PYMINOR)
+	cd ../installs/python-$(PYVERSION)/lib/python$(PYMINOR) ; zip -r ~/python$(PYMINOR).zip . -i \*.py

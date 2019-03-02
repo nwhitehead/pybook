@@ -22,20 +22,18 @@ RUN apt-get update \
 RUN apt-get install -y --no-install-recommends \
     python3.5
 
-RUN git clone https://github.com/nwhitehead/cpython-emscripten.git
+COPY cpython /cpython
 
-WORKDIR /cpython-emscripten/3.5.2
+WORKDIR /cpython
 
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
 
 RUN apt-get install -y --no-install-recommends \
     zip
 
-WORKDIR /cpython-emscripten/examples
-
 COPY dockerSrc src
 
-WORKDIR /cpython-emscripten/examples/src
+WORKDIR /cpython/src
 
 RUN mkdir -p /out
 
