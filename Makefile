@@ -13,8 +13,7 @@ build/out/python.asm.js: dockerSrc/ Dockerfile
 	docker rm -fv artifacts
 
 serve: all
-	@echo "Serving on port 8063"
-	cd html; python3 -m http.server 8063
+	python3 server.py --port=8063 --directory=html
 .PHONY:serve
 
 localroot: build/localroot.zip
