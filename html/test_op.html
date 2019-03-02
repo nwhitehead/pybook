@@ -94,16 +94,18 @@ function newWorker() {
             var header;
             var hasByteServing = (header = xhr.getResponseHeader("Accept-Ranges")) && header === "bytes";
             var usesGzip = (header = xhr.getResponseHeader("Content-Encoding")) && header === "gzip";
-            var chunkSize = 1024; // Chunk size in bytes
+            var chunkSize = 1024*1024; // Chunk size in bytes
 
-            //if (!hasByteServing) chunkSize = datalength;
+            if (!hasByteServing) chunkSize = datalength;
 
             // Function to get a range from the remote URL.
             var doXHR = (function(from, to) {
               if (from > to) throw new Error("invalid range (" + from + ", " + to + ") or no bytes requested!");
               if (to > datalength-1) throw new Error("only " + datalength + " bytes available! programmer error!");
 
-              console.log('LAZY Loading ' + url, from, to);
+//********************** NEW
+              send({ type: 'filesystem', data: {parent:parent, name:name, url:url, from:from, to:to}});
+//********************** END NEW
 
               // TODO: Use mozResponseArrayBuffer, responseStream, etc. if available.
               var xhr = new XMLHttpRequest();
@@ -313,13 +315,12 @@ function setupCallbacks(worker, outputarea, evaloutputarea) {
         } else if (msg.type === 'stdout') {
             outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
         } else if (msg.type === 'stderr') {
-            var from = CodeMirror.Pos(outputarea.lastLine());
             outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
-            var to = CodeMirror.Pos(outputarea.lastLine());
-            console.log(from, to);
-            outputarea.markText(from, to, { className: 'stderr' });
+            // Color it yellow?
         } else if (msg.type === 'response') {
             evaloutputarea.setValue(msg.data);
+        } else if (msg.type === 'filesystem') {
+            console.log('File access: ' + msg.data.url + ':' + msg.data.from + '-' + msg.data.to);
         } else {
             console.log('Unknown response in main thread onmessage', msg);
             throw 'Unknown response in main thread onmessage';
