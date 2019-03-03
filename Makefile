@@ -1,5 +1,5 @@
 
-all: generate build/localroot.zip
+all: generate localroot
 .PHONY:all
 
 generate: build/out/python.asm.js
