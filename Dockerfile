@@ -4,24 +4,22 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         xz-utils \
+        build-essential \
+        python2.7 \
         git \
-        python2.7 python2.7-dev \
-    && ln -sf -T python2.7 /usr/bin/python \
+        wget \
+        zip \
+        zlib1g-dev \
+        libffi-dev \
+        nano \
+        less \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/emscripten-core/emsdk.git
+RUN ln -sf -T python2.7 /usr/bin/python
 RUN emsdk/emsdk install latest
 RUN emsdk/emsdk activate latest
 RUN echo "source /emsdk/emsdk_env.sh --build=Release" >> ~/.bashrc
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    build-essential \
-    wget
-
-RUN apt-get install -y --no-install-recommends \
-    zlib1g-dev \
-    libffi-dev
 
 COPY cpython /cpython
 
@@ -33,15 +31,11 @@ COPY Makefile.zlib /cpython
 
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make -f Makefile.zlib || echo FAILED"
 
-
-RUN apt-get install -y --no-install-recommends \
-    zip
+COPY test.cpp /cpython/src/test.cpp
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; em++ -o test.asm.js -std=c++14 -Wall /cpython/src/test.cpp"
 
 COPY dockerSrc src
-
 WORKDIR /cpython/src
-
 RUN mkdir -p /out
-
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make python.asm.js -j10"
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make -j10"

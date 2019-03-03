@@ -1,10 +1,20 @@
+
+ROOT=$(abspath ..)
+
 PYVERSION=3.7.0
 PYMINOR=$(basename $(PYVERSION))
+
+INSTALL=$(ROOT)/installs/python-$(PYVERSION)
+LIB=libpython$(PYMINOR).a
+
+ZLIBVERSION = 1.2.11
+ZLIBBUILD=$(ROOT)/build/zlib-$(ZLIBVERSION)
+ZLIBLIB=libz.a
 
 CXX=em++
 OPTFLAGS=-O2
 CXXFLAGS=-std=c++14 -Wall -Werror $(OPTFLAGS) -g -I ../installs/python-$(PYVERSION)/include/python$(PYMINOR)/ -Wno-warn-absolute-paths
-LDFLAGS=$(OPTFLAGS) ../installs/python-$(PYVERSION)/lib/libpython$(PYMINOR).a \
+LDFLAGS=$(OPTFLAGS) $(INSTALL)/lib/$(LIB) $(ZLIBBUILD)/$(ZLIBLIB) \
   -s TOTAL_MEMORY=268435456 \
   -s ASSERTIONS=2 \
   -s EMULATE_FUNCTION_POINTER_CASTS=1 \
