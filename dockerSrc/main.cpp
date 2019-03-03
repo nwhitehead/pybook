@@ -107,6 +107,7 @@ extern "C" {
 KernelP Kernel_new();
 void Kernel_delete(KernelP kernel);
 ResultP Kernel_eval(KernelP kernel, char *input);
+const char* Kernel_version();
 const char* Result_str(ResultP result);
 void Result_delete(ResultP result);
 
@@ -129,6 +130,11 @@ ResultP Kernel_eval(KernelP kernel, char *input)
     assert(k);
     std::string result = k->eval(input);
     return reinterpret_cast<ResultP>(new std::string(result));
+}
+
+const char* Kernel_version() 
+{
+    return "Customized";
 }
 
 const char* Result_str(ResultP result)

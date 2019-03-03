@@ -274,6 +274,7 @@ function newWorker() {
         Kernel_new = Module.cwrap('Kernel_new', 'number', []);
         Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
         Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
+        Kernel_version = Module.cwrap('Kernel_version', 'string', []);
         Result_str = Module.cwrap('Result_str', 'number', ['number']);
         Result_delete = Module.cwrap('Result_delete', null, ['number']);
         sharedArray = new Int32Array(config.shared);
@@ -290,11 +291,13 @@ function newWorker() {
         var interval = setInterval(function () {
             if (Module.calledRun) {
                 clearInterval(interval);
-                send({ type:'ready' });
                 kernel = Kernel_new();
                 Notebook.ready = true;
                 // Clear busy
                 sharedArray[1] = 0;
+                var result_str = Kernel_version();
+//                var result_repr = UTF8ToString(result_str);
+                send({ type:'ready', data:result_str });
             }
         }, 100);
       },
@@ -330,7 +333,7 @@ function newWorker() {
 function setupCallbacks(worker, outputarea, evaloutputarea) {
     worker.on('message', function(msg) {
         if (msg.type === 'ready') {
-            console.log('CPython-Emscripten Ready');
+            console.log('CPython-Emscripten Ready - ' + msg.data);
         } else if (msg.type === 'stdout') {
             outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
         } else if (msg.type === 'stderr') {
