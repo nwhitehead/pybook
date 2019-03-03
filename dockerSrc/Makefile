@@ -29,7 +29,7 @@ dist: all
 	cp ~/python$(PYMINOR).zip /out
 
 
-all: python.asm.js python$(PYMINOR).zip
+all: python.asm.js ~/python$(PYMINOR).zip
 
 
 python.asm.js: main.bc root
@@ -50,5 +50,5 @@ root: ../installs/python-$(PYVERSION)/lib/python$(PYMINOR) lib_files
 	make -C ../$(PYVERSION)
 
 
-python$(PYMINOR).zip: ../installs/python-$(PYVERSION)/lib/python$(PYMINOR)
+~/python$(PYMINOR).zip: ../installs/python-$(PYVERSION)/lib/python$(PYMINOR)
 	cd ../installs/python-$(PYVERSION)/lib/python$(PYMINOR) ; zip -r ~/python$(PYMINOR).zip . -i \*.py
