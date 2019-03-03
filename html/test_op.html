@@ -35,11 +35,13 @@
 </head>
 <body>
 
+<div id='busy'><p>BUSY</p></div>
+<div id='loading'><p>LOADING</p></div>
+
 <textarea id='inputarea' class='input'></textarea>
 <textarea id='outputarea' class='output'></textarea>
 <textarea id='evaloutputarea' class='evaloutput'></textarea>
 
-<div id='busy'><p>BUSY</p></div>
 
 <script>
 function onready(f) {
@@ -94,7 +96,7 @@ function newWorker() {
             var header;
             var hasByteServing = (header = xhr.getResponseHeader("Accept-Ranges")) && header === "bytes";
             var usesGzip = (header = xhr.getResponseHeader("Content-Encoding")) && header === "gzip";
-            var chunkSize = 1024*1024; // Chunk size in bytes
+            var chunkSize = 1024*64; // Chunk size in bytes
 
             if (!hasByteServing) chunkSize = datalength;
 
@@ -109,9 +111,6 @@ function newWorker() {
 
               // TODO: Use mozResponseArrayBuffer, responseStream, etc. if available.
               var xhr = new XMLHttpRequest();
-              xhr.onprogress = function(evt) {
-                  console.log('LAZY progress ' + url + ' ' + evt.loaded + ' / ' + evt.total);
-              };
               xhr.open('GET', url, false);
               if (datalength !== chunkSize) xhr.setRequestHeader("Range", "bytes=" + from + "-" + to);
 
@@ -320,7 +319,12 @@ function setupCallbacks(worker, outputarea, evaloutputarea) {
         } else if (msg.type === 'response') {
             evaloutputarea.setValue(msg.data);
         } else if (msg.type === 'filesystem') {
-            console.log('File access: ' + msg.data.url + ':' + msg.data.from + '-' + msg.data.to);
+            var elem = document.getElementById('loading');
+            elem.style.visibility = 'visible';
+            setTimeout(function() {
+                elem.style.visibility = 'hidden';
+            }, 200);
+            //console.log('File access: ' + msg.data.url + ':' + msg.data.from + '-' + msg.data.to);
         } else {
             console.log('Unknown response in main thread onmessage', msg);
             throw 'Unknown response in main thread onmessage';

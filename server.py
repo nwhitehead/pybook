@@ -14,6 +14,8 @@ class RangeHTTPRequestHandler(SimpleHTTPRequestHandler):
 
         path = self.translate_path(self.path)
         ctype = self.guess_type(path)
+        if path.endswith('.wasm'):
+            ctype = 'application/wasm'
 
         # Handling file location
         ## If directory, let SimpleHTTPRequestHandler handle the request
