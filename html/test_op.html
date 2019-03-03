@@ -44,6 +44,7 @@
 
 
 <script>
+
 function onready(f) {
     if (window.onload) {
         var curronload = window.onload;
@@ -65,6 +66,11 @@ function newWorker() {
         // Inside Web Worker the url needs to be absolute
         if (typeof(Module) === "undefined") Module = {};
 
+        if (typeof(Notebook) === "undefined") Notebook = {};
+
+//**********************************************************************
+// Monkey patch by replacing code for FS.createLazyFile
+//**********************************************************************
         // Creates a file record for lazy-loading from a URL. XXX This requires a synchronous
         // XHR, which is not possible in browsers except in a web worker! Use preloading,
         // either --preload-file in emcc or FS.createPreloadedFile
@@ -231,6 +237,9 @@ function newWorker() {
           node.stream_ops = stream_ops;
           return node;
         };
+//**********************************************************************
+// End monkey patch section
+//**********************************************************************
 
         Module.locateFile = function(path, prefix) {
             return config.absurl + '/' + path;
@@ -242,18 +251,22 @@ function newWorker() {
             myCreateLazyFile('/lib/python3.7', 'python3.7.zip', config.absurl + '/python3.7.zip', true, false);
         };
         Module['print'] = function(text) {
-            if (Module.calledRun) {
+            if (Notebook.ready) {
                 send({ type:'stdout', data: text });
             } else {
-                // Pre-load messages go to console
+                // Pre-ready messages go to console
                 console.log(text);
             }
         };
         Module['printErr'] = function(text) {
-            if (Module.calledRun) {
+            if (Notebook.ready) {
                 send({ type:'stderr', data: text });
             } else {
-                // Pre-load messages go to console
+                // Pre-ready messages go to console
+                if (text.indexOf('Calling stub instead of') === 0) {
+                    // Filter out these warnings related to signals
+                    return;
+                }
                 console.warn(text);
             }
         };
@@ -265,13 +278,13 @@ function newWorker() {
         Result_delete = Module.cwrap('Result_delete', null, ['number']);
         sharedArray = new Int32Array(config.shared);
 
-
         // Wait for the module to be ready before calling any functions.
         var interval = setInterval(function () {
             if (Module.calledRun) {
                 clearInterval(interval);
                 send({ type:'ready' });
                 kernel = Kernel_new();
+                Notebook.ready = true;
                 // Clear busy
                 sharedArray[1] = 0;
             }
@@ -279,8 +292,7 @@ function newWorker() {
       },
       fn: function(input, done) {
         if (input.type === 'execute') {
-            if (!Module.calledRun)
-            {
+            if (!Module.calledRun) {
                 done({ type:'notready' });
             } else {
                 var result = Kernel_eval(kernel, input.data);
