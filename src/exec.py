@@ -58,6 +58,9 @@ def run_cell(script, globals_=None, locals_=None):
     except Exception as err:
         exc_type, exc_value, exc_tb = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
+    except KeyboardInterrupt as err:
+        exc_type, exc_value, exc_tb = sys.exc_info()
+        traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
     return None
 
 def dotest():
