@@ -20,13 +20,19 @@ RUN apt-get update \
     wget
 
 RUN apt-get install -y --no-install-recommends \
-    python3.5
+    zlib1g-dev \
+    libffi-dev
 
 COPY cpython /cpython
 
 WORKDIR /cpython
 
-RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make || echo FAILED"
+
+COPY Makefile.zlib /cpython
+
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make -f Makefile.zlib || echo FAILED"
+
 
 RUN apt-get install -y --no-install-recommends \
     zip
@@ -37,5 +43,5 @@ WORKDIR /cpython/src
 
 RUN mkdir -p /out
 
-RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make python.asm.js"
-RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make python.asm.js -j10"
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make -j10"

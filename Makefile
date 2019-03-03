@@ -5,7 +5,7 @@ all: generate build/localroot.zip
 generate: build/out/python.asm.js
 .PHONY:generate
 
-build/out/python.asm.js: dockerSrc/ Dockerfile
+build/out/python.asm.js: dockerSrc/ Dockerfile cpython
 	docker build . -t cpython-emscripten
 	mkdir -p build
 	docker create -it --name artifacts cpython-emscripten /bin/bash

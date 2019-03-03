@@ -1,0 +1,40 @@
+
+ROOT=$(abspath .)
+
+PYVERSION=3.7.0
+PYMINOR=$(basename $(PYVERSION))
+
+ZLIBVERSION = 1.2.11
+ZLIBTARBALL=$(ROOT)/downloads/zlib-$(ZLIBVERSION).tar.gz
+ZLIBBUILD=$(ROOT)/build/zlib-$(ZLIBVERSION)
+ZLIBURL=https://zlib.net/zlib-1.2.11.tar.gz
+ZLIBINSTALL=$(ROOT)/installs/zlib-$(ZLIBVERSION)
+ZLIBLIB=libz.a
+
+all: $(INSTALL)/lib/$(LIB)
+
+
+$(ZLIBTARBALL):
+	[ -d $(ROOT)/downloads ] || mkdir -p $(ROOT)/downloads
+	wget -q -O $@ $(ZLIBURL)
+
+
+$(ZLIBBUILD)/.patched: $(ZLIBTARBALL)
+	[ -d $(ROOT)/build ] || (mkdir $(ROOT)/build)
+	tar -C $(ROOT)/build/ -xf $(ROOT)/downloads/zlib-1.2.11.tar.gz
+	cat patches/zlib/*.patch | (cd $(ZLIBBUILD) ; patch -p1)
+	touch $@
+
+
+$(ZLIBBUILD)/Makefile: $(ZLIBBUILD)/.patched
+	( \
+		cd $(BUILD); \
+		emconfigure ./configure --prefix=$(INSTALL) ; \
+	)
+
+
+$(ZLIBBUILD)/$(ZLIBLIB): $(ZLIBBUILD)/Makefile
+	( \
+		cd $(ZLIBBUILD); \
+		emmake make $(ZLIBLIB) \
+	)

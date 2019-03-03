@@ -1,4 +1,4 @@
-PYVERSION=3.5.2
+PYVERSION=3.7.0
 PYMINOR=$(basename $(PYVERSION))
 
 CXX=em++
