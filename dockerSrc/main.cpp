@@ -10,7 +10,6 @@
 
 #define FAIL(msg) assert(0 && msg)
 
-constexpr int SHARED_INTERRUPT = 0;
 constexpr int SHARED_BUSY = 1;
 
 EM_JS(int, get_shared_interrupt, (int n, int newval), {
@@ -31,8 +30,6 @@ int main(int argc, char** argv) {
     return 0;
 }
 
-extern "C" int pycallback(void* arg);
-
 class Kernel
 {
 public:
@@ -52,11 +49,6 @@ public:
         {
             PyErr_Print();
             FAIL("eval of run_cell failed");
-        }
-        int r = Py_AddPendingCall(&pycallback, this);
-        if (r)
-        {
-            FAIL("Py_AddPendingCall failed");
         }
     }
     ~Kernel()
@@ -105,24 +97,6 @@ private:
 };
 
 
-
-int count = 0;
-
-int pycallback(void* arg)
-{
-    int res = get_shared_interrupt(SHARED_INTERRUPT, 0);
-    int r = Py_AddPendingCall(&pycallback, arg);
-    if (r)
-    {
-        FAIL("Py_AddPendingCall (2) failed");
-    }
-    if (res)
-    {
-        PyErr_SetString(PyExc_KeyboardInterrupt, "Keyboard Interrupt");
-        return -1;
-    }
-    return 0;
-}
 
 
 typedef void* KernelP;

@@ -278,6 +278,14 @@ function newWorker() {
         Result_delete = Module.cwrap('Result_delete', null, ['number']);
         sharedArray = new Int32Array(config.shared);
 
+        keyboardInterrupt = function() {
+            if (sharedArray[0] === 1) {
+                sharedArray[0] = 0;
+                return true;
+            }
+            return false;
+        };
+
         // Wait for the module to be ready before calling any functions.
         var interval = setInterval(function () {
             if (Module.calledRun) {
