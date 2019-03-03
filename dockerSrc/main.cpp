@@ -23,7 +23,7 @@ EM_JS(int, get_shared_interrupt, (int n, int newval), {
 int main(int argc, char** argv) {
     setenv("PYTHONHOME", "/", 0);
 
-    Py_SetPath(L"/lib/python3.5:/lib/python3.5/localroot.zip:/lib/python3.5/python3.5.zip");
+    Py_SetPath(L"/lib/python3.7:/lib/python3.7/localroot.zip:/lib/python3.7/python3.7.zip");
 
     Py_InitializeEx(0);
 

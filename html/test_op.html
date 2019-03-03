@@ -238,9 +238,9 @@ function newWorker() {
         };
         Module["preInit"] = function() {
             FS.mkdir('/lib');
-            FS.mkdir('/lib/python3.5');
-            myCreateLazyFile('/lib/python3.5', 'localroot.zip', config.absurl + '/localroot.zip', true, false);
-            myCreateLazyFile('/lib/python3.5', 'python3.5.zip', config.absurl + '/python3.5.zip', true, false);
+            FS.mkdir('/lib/python3.7');
+            myCreateLazyFile('/lib/python3.7', 'localroot.zip', config.absurl + '/localroot.zip', true, false);
+            myCreateLazyFile('/lib/python3.7', 'python3.7.zip', config.absurl + '/python3.7.zip', true, false);
         };
         Module['print'] = function(text) {
             if (Module.calledRun) {
