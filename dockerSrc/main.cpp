@@ -8,6 +8,7 @@
 #include <Python.h>
 #include <frameobject.h>
 
+#define VERSION "Customized Python 3.7.0"
 #define FAIL(msg) assert(0 && msg)
 
 constexpr int SHARED_BUSY = 1;
@@ -134,7 +135,7 @@ ResultP Kernel_eval(KernelP kernel, char *input)
 
 const char* Kernel_version() 
 {
-    return "Customized";
+    return VERSION;
 }
 
 const char* Result_str(ResultP result)
