@@ -8,7 +8,6 @@
 #include <Python.h>
 #include <frameobject.h>
 
-#define VERSION "Customized Python 3.7.0"
 #define FAIL(msg) assert(0 && msg)
 
 constexpr int SHARED_BUSY = 1;
@@ -21,12 +20,6 @@ EM_JS(int, get_shared_interrupt, (int n, int newval), {
 
 
 int main(int argc, char** argv) {
-    setenv("PYTHONHOME", "/", 0);
-
-    Py_SetPath(L"/lib/python3.7:/lib/python3.7/localroot.zip:/lib/python3.7/python3.7.zip");
-
-    Py_InitializeEx(0);
-
     emscripten_exit_with_live_runtime();
     return 0;
 }
@@ -36,6 +29,12 @@ class Kernel
 public:
     Kernel()
     {
+        setenv("PYTHONHOME", "/", 0);
+
+        Py_SetPath(L"/lib/python3.7:/lib/python3.7/localroot.zip:/lib/python3.7/python3.7.zip");
+
+        Py_InitializeEx(0);
+
         PyObject *main_module = PyImport_AddModule("__main__");
         globals = PyModule_GetDict(main_module);
         locals = PyDict_New();
@@ -135,7 +134,7 @@ ResultP Kernel_eval(KernelP kernel, char *input)
 
 const char* Kernel_version() 
 {
-    return VERSION;
+    return Py_GetVersion();
 }
 
 const char* Result_str(ResultP result)
