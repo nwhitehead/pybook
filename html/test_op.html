@@ -275,6 +275,7 @@ function newWorker() {
         Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
         Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
         Kernel_version = Module.cwrap('Kernel_version', 'string', []);
+        Kernel_reset = Module.cwrap('Kernel_reset', null, ['number']);
         Result_str = Module.cwrap('Result_str', 'number', ['number']);
         Result_delete = Module.cwrap('Result_delete', null, ['number']);
         sharedArray = new Int32Array(config.shared);
@@ -296,7 +297,6 @@ function newWorker() {
                 // Clear busy
                 sharedArray[1] = 0;
                 var result_str = Kernel_version();
-//                var result_repr = UTF8ToString(result_str);
                 send({ type:'ready', data:result_str });
             }
         }, 100);
@@ -311,6 +311,13 @@ function newWorker() {
                 var result_repr = UTF8ToString(result_str);
                 done({ type: 'response', data: result_repr });
                 Result_delete(result);
+            }
+        } else if (input.type === 'reset') {
+            if (!Module.calledRun) {
+                done({ type:'notready' });
+            } else {
+                console.log('Kernel reset');
+                Kernel_reset(kernel);
             }
         } else {
             throw 'Unknown message type in webworker onmessage';
@@ -376,9 +383,13 @@ onready(function() {
             evaloutputarea.setValue("");
         },
         'Ctrl-Q': function(cm) {
+            console.log('Kernel quit and restart');
             worker.terminate();
             worker = newWorker();
             setupCallbacks(worker, outputarea, evaloutputarea);
+        },
+        'Ctrl-R': function(cm) {
+            worker.send({ type:'reset' });
         },
         'Ctrl-C': function(cm) {
             // Set flag to indicate keyboard interrupt

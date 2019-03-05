@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
 class Kernel
 {
 public:
-    Kernel()
+    void init()
     {
         setenv("PYTHONHOME", "/", 0);
 
@@ -51,9 +51,27 @@ public:
             FAIL("eval of run_cell failed");
         }
     }
-    ~Kernel()
+    void destroy()
     {
         Py_DECREF(locals);
+        int res = Py_FinalizeEx();
+        if (res)
+        {
+            FAIL("Py_FinalizeEx failed");
+        }
+    }
+    Kernel()
+    {
+        init();
+    }
+    ~Kernel()
+    {
+        destroy();
+    }
+    void reset()
+    {
+        destroy();
+        init();
     }
     std::string eval(std::string input)
     {
@@ -106,6 +124,7 @@ extern "C" {
 
 KernelP Kernel_new();
 void Kernel_delete(KernelP kernel);
+void Kernel_reset(KernelP kernel);
 ResultP Kernel_eval(KernelP kernel, char *input);
 const char* Kernel_version();
 const char* Result_str(ResultP result);
@@ -122,6 +141,12 @@ void Kernel_delete(KernelP kernel)
 {
     assert(kernel);
     delete reinterpret_cast<Kernel*>(kernel);
+}
+
+void Kernel_reset(KernelP kernel)
+{
+    assert(kernel);
+    reinterpret_cast<Kernel*>(kernel)->reset();
 }
 
 ResultP Kernel_eval(KernelP kernel, char *input)
