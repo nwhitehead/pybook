@@ -280,12 +280,21 @@ function newWorker() {
         Result_delete = Module.cwrap('Result_delete', null, ['number']);
         sharedArray = new Int32Array(config.shared);
 
+        // Special function called by hacked cpython ceval.c
         keyboardInterrupt = function() {
             if (sharedArray[0] === 1) {
                 sharedArray[0] = 0;
                 return true;
             }
             return false;
+        };
+
+        // Custom sleep implementation called by Modules/timemodule.c
+        JS_sleep = function(x) {
+            // Synchronous wait using atomics with timeout
+            var sa = new SharedArrayBuffer(4);
+            var a = new Int32Array(sa);
+            Atomics.wait(a, 0, 0, x * 1000.0);
         };
 
         // Wait for the module to be ready before calling any functions.

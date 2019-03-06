@@ -24,7 +24,7 @@ RUN echo "source /emsdk/emsdk_env.sh --build=Release" >> ~/.bashrc
 # Build python lib
 COPY cpython /cpython
 WORKDIR /cpython
-RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make || echo FAILED"
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make || echo FAIL"
 
 # Build zlib, needed for zip archives in pythonpath
 COPY Makefile.zlib /cpython

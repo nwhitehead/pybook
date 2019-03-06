@@ -1,0 +1,33 @@
+--- a/Modules/timemodule.c
++++ b/Modules/timemodule.c
+@@ -36,6 +36,14 @@
+ 
+ #define SEC_TO_NS (1000 * 1000 * 1000)
+ 
++#include "emscripten.h"
++EM_JS(int, PY_sleep, (double t), {
++    if (typeof JS_sleep === 'function') {
++        return JS_sleep(t);
++    }
++    return 0;
++});
++
+ /* Forward declarations */
+ static int pysleep(_PyTime_t);
+ 
+@@ -1740,6 +1747,9 @@
+ static int
+ pysleep(_PyTime_t secs)
+ {
++#ifdef __EMSCRIPTEN__
++    return PY_sleep(_PyTime_AsSecondsDouble(secs));
++#else
+     _PyTime_t deadline, monotonic;
+ #ifndef MS_WINDOWS
+     struct timeval timeout;
+@@ -1811,4 +1821,5 @@
+     } while (1);
+ 
+     return 0;
++#endif
+ }
