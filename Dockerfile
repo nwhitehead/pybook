@@ -11,6 +11,7 @@ RUN apt-get update \
         zip \
         zlib1g-dev \
         libffi-dev \
+        libssl-dev \
         nano \
         less \
     && rm -rf /var/lib/apt/lists/*
