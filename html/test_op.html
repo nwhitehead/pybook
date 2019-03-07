@@ -377,6 +377,14 @@ function setupCallbacks(worker, outputarea, evaloutputarea) {
             } else if (msg.content_type === 'text/plain') {
                 var elem = document.getElementById('htmlarea');
                 elem.innerHTML = '<pre>' + msg.data + '</pre>';
+            } else if (msg.content_type === 'image/png') {
+                var elem = document.getElementById('htmlarea');
+                var img = document.createElement('img');
+                elem.appendChild(img);
+                var blob = new Blob([msg.data], { type:'image/png' });
+                var urlCreator = window.URL || window.webkitURL;
+                var imageUrl = urlCreator.createObjectURL(blob);
+                img.src = imageUrl;
             } else {
                 console.log('Unknown content_type ' + msg.content_type);
             }
