@@ -69,7 +69,6 @@ pybook_output_content(PyObject *self, PyObject *args)
         PyBuffer_Release(&buffer);
         return nullptr;
     }
-//    std::cout << "pybook_output_content type=" << content_type << " ptr=" << buffer.buf << " len=" << buffer.len << std::endl;
     const char* start = static_cast<const char*>(buffer.buf);
     const char* end = start + buffer.len;
     sts = output_content(content_type, start, end);

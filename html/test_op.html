@@ -282,8 +282,8 @@ function newWorker() {
 
         // Special function called by hacked cpython ceval.c
         keyboardInterrupt = function() {
-            if (sharedArray[0] === 1) {
-                sharedArray[0] = 0;
+            if (Atomics.load(sharedArray, 0) === 1) {
+                Atomics.store(sharedArray, 0, 0);
                 return true;
             }
             return false;
@@ -292,9 +292,8 @@ function newWorker() {
         // Custom sleep implementation called by Modules/timemodule.c
         JS_sleep = function(x) {
             // Synchronous wait using atomics with timeout
-            var sa = new SharedArrayBuffer(4);
-            var a = new Int32Array(sa);
-            Atomics.wait(a, 0, 0, x * 1000.0);
+            // This lets KeyboardInterrupt cut off sleep
+            Atomics.wait(sharedArray, 0, 0, x * 1000.0);
         };
 
         // Wait for the module to be ready before calling any functions.
@@ -304,7 +303,7 @@ function newWorker() {
                 kernel = Kernel_new();
                 Notebook.ready = true;
                 // Clear busy
-                sharedArray[1] = 0;
+                Atomics.store(sharedArray, 1, 0);
                 var result_str = Kernel_version();
                 send({ type:'ready', data:result_str });
             }
@@ -342,7 +341,7 @@ function newWorker() {
     worker.sharedBuffer = sharedBuffer;
     worker.sharedArray = new Int32Array(sharedBuffer);
     // Set busy, will clear once worker is ready
-    worker.sharedArray[1] = 1;
+    Atomics.store(worker.sharedArray, 1, 1);
     return worker;
 }
 
@@ -386,7 +385,7 @@ onready(function() {
     inputarea.setOption('extraKeys', {
         'Ctrl-Enter': function(cm) {
             // Clear flag to indicate keyboard interrupt
-            worker.sharedArray[0] = 0;
+            Atomics.store(worker.sharedArray, 0, 0);
             worker.send({ type:'execute', data:inputarea.doc.getValue() });
             outputarea.setValue("");
             evaloutputarea.setValue("");
@@ -402,7 +401,8 @@ onready(function() {
         },
         'Ctrl-C': function(cm) {
             // Set flag to indicate keyboard interrupt
-            worker.sharedArray[0] = 1;
+            Atomics.store(worker.sharedArray, 0, 1);
+            Atomics.notify(worker.sharedArray, 0);
         }
     });
 
@@ -415,7 +415,7 @@ onready(function() {
     
     setInterval(function() {
         var elem = document.getElementById('busy');
-        if (worker.sharedArray[1] === 0) {
+        if (Atomics.load(worker.sharedArray, 1) === 0) {
             elem.style.visibility = 'hidden';
         } else {
             elem.style.visibility = 'visible';
