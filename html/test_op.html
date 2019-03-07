@@ -30,6 +30,9 @@
 .stderr {
     background-color: #f00;
 }
+.htmloutput {
+    background-color: #0f0;
+}
 </style>
 
 </head>
@@ -40,6 +43,9 @@
 
 <textarea id='inputarea' class='input'></textarea>
 <textarea id='outputarea' class='output'></textarea>
+<div id='htmlarea' class='htmloutput'>
+    <p>This is some html</p>
+</div>
 <textarea id='evaloutputarea' class='evaloutput'></textarea>
 
 
@@ -296,6 +302,14 @@ function newWorker() {
             Atomics.wait(sharedArray, 0, 0, x * 1000.0);
         };
 
+        // Method called by pybook.output_content
+        handle_output_text_content = function(content_type, content_data) {
+            send({ type:'output', subtype:'text', content_type:content_type, data:content_data });
+        };
+        handle_output_binary_content = function(content_type, content_data) {
+            send({ type:'output', subtype:'binary', content_type:content_type, data:content_data });
+        };
+
         // Wait for the module to be ready before calling any functions.
         var interval = setInterval(function () {
             if (Module.calledRun) {
@@ -356,6 +370,16 @@ function setupCallbacks(worker, outputarea, evaloutputarea) {
             // Color it yellow?
         } else if (msg.type === 'response') {
             evaloutputarea.setValue(msg.data);
+        } else if (msg.type === 'output') {
+            if (msg.content_type === 'text/html') {
+                var elem = document.getElementById('htmlarea');
+                elem.innerHTML = msg.data;
+            } else if (msg.content_type === 'text/plain') {
+                var elem = document.getElementById('htmlarea');
+                elem.innerHTML = '<pre>' + msg.data + '</pre>';
+            } else {
+                console.log('Unknown content_type ' + msg.content_type);
+            }
         } else if (msg.type === 'filesystem') {
             var elem = document.getElementById('loading');
             elem.style.visibility = 'visible';
@@ -376,6 +400,7 @@ onready(function() {
 
     var inputarea = CodeMirror.fromTextArea(document.getElementById('inputarea'));
     var outputarea = CodeMirror.fromTextArea(document.getElementById('outputarea'));
+    var htmlarea = document.getElementById('htmlarea');
     var evaloutputarea = CodeMirror.fromTextArea(document.getElementById('evaloutputarea'));
     
     inputarea.getWrapperElement().classList.add('input');
@@ -389,6 +414,8 @@ onready(function() {
             worker.send({ type:'execute', data:inputarea.doc.getValue() });
             outputarea.setValue("");
             evaloutputarea.setValue("");
+            var elem = document.getElementById('htmlarea');
+            elem.innerHTML = '';
         },
         'Ctrl-Q': function(cm) {
             console.log('Kernel quit and restart');

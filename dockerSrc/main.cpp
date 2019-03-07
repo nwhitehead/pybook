@@ -43,18 +43,28 @@ EM_JS(int, get_shared_interrupt, (int n, int newval), {
 //! Logs to console if no js function defined.
 //! Return -1 on error, 0 on success
 //!
-EM_JS(int, output_content, (const char* content_type_c, const char* content_data_start, const char* content_data_end), {
+EM_JS(int, output_text_content, (const char* content_type_c, const char* content_data_c), {
     var content_type = UTF8ToString(content_type_c);
-    var content_data = Module.HEAP8.subarray(content_data_start, content_data_end);
-    if (typeof handle_output_content == "function") {
-        return handle_output_content(content_type, content_data);
+    var content_data = UTF8ToString(content_data_c);
+    if (typeof handle_output_text_content == "function") {
+        return handle_output_text_content(content_type, content_data);
     }
-    console.log('output_content', content_type, content_data);
+    console.log('output_text_content', content_type, content_data);
     return 0;
 });
 
-static PyObject *
-pybook_output_content(PyObject *self, PyObject *args)
+EM_JS(int, output_binary_content, (const char* content_type_c, const char* content_data_start, const char* content_data_end), {
+    var content_type = UTF8ToString(content_type_c);
+    var content_data = Module.HEAP8.subarray(content_data_start, content_data_end);
+    if (typeof handle_output_binary_content == "function") {
+        return handle_output_binary_content(content_type, content_data);
+    }
+    console.log('output_binary_content', content_type, content_data);
+    return 0;
+});
+
+static PyObject*
+pybook_output_binary_content(PyObject *self, PyObject *args)
 {
     const char* content_type;
     Py_buffer buffer;
@@ -71,13 +81,30 @@ pybook_output_content(PyObject *self, PyObject *args)
     }
     const char* start = static_cast<const char*>(buffer.buf);
     const char* end = start + buffer.len;
-    sts = output_content(content_type, start, end);
+    sts = output_binary_content(content_type, start, end);
     PyBuffer_Release(&buffer);
     return PyLong_FromLong(sts);
 }
 
+static PyObject*
+pybook_output_text_content(PyObject *self, PyObject *args)
+{
+    const char* content_type;
+    const char* content_data;
+    int sts;
+
+    if (!PyArg_ParseTuple(args, "ss", &content_type, &content_data))
+    {
+        return nullptr;
+    }
+    sts = output_text_content(content_type, content_data);
+    return PyLong_FromLong(sts);
+}
+
 static PyMethodDef PybookMethods[] = {
-    {"output_content",  pybook_output_content, METH_VARARGS,
+    {"output_text_content",  pybook_output_text_content, METH_VARARGS,
+     "Output rich content from pybook cells."},
+    {"output_binary_content",  pybook_output_binary_content, METH_VARARGS,
      "Output rich content from pybook cells."},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
