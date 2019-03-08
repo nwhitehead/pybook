@@ -5,9 +5,9 @@
  #define SEC_TO_NS (1000 * 1000 * 1000)
  
 +#include "emscripten.h"
-+EM_JS(int, PY_sleep, (double t), {
-+    if (typeof JS_sleep === 'function') {
-+        return JS_sleep(t);
++EM_JS(int, PYJS_Sleep, (double t), {
++    if (typeof JS_Sleep === 'function') {
++        return JS_Sleep(t);
 +    }
 +    return 0;
 +});
@@ -20,7 +20,7 @@
  pysleep(_PyTime_t secs)
  {
 +#ifdef __EMSCRIPTEN__
-+    return PY_sleep(_PyTime_AsSecondsDouble(secs));
++    return PYJS_Sleep(_PyTime_AsSecondsDouble(secs));
 +#else
      _PyTime_t deadline, monotonic;
  #ifndef MS_WINDOWS

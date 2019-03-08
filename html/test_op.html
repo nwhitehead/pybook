@@ -42,8 +42,12 @@ div#status p {
     border: 2px solid #888;
     height: auto;
 }
+.stdout {
+}
 .stderr {
-    background-color: #f00;
+    background-color: #ff0;
+}
+.eval {
 }
 pre {
     white-space: pre-wrap;
@@ -175,7 +179,7 @@ function newWorker() {
             Result_delete = Module.cwrap('Result_delete', null, ['number']);
 
             // Special function called by hacked cpython ceval.c
-            keyboardInterrupt = function() {
+            JS_KeyboardInterrupt = function() {
                 if (Atomics.load(sharedArray, signalMap['interrupt']) === 1) {
                     Atomics.store(sharedArray, signalMap['interrupt'], 0);
                     return true;
@@ -184,7 +188,7 @@ function newWorker() {
             };
 
             // Custom sleep implementation called by Modules/timemodule.c
-            JS_sleep = function(x) {
+            JS_Sleep = function(x) {
                 // Synchronous wait using atomics with timeout
                 // This lets KeyboardInterrupt cut off sleep
                 Atomics.wait(sharedArray, signalMap['interrupt'], 0, x * 1000.0);
@@ -228,6 +232,7 @@ function newWorker() {
                 } else {
                     console.log('Kernel reset');
                     Kernel_reset(kernel);
+                    Atomics.store(sharedArray, config.signalMap['starting'], 0);
                 }
             } else {
                 throw 'Unknown message type in webworker onmessage';
@@ -255,13 +260,16 @@ function setupCallbacks(worker, outputarea, evaloutputarea) {
         } else if (msg.type === 'stdout') {
             var elem = document.createElement('pre');
             elem.innerHTML = escapeHTML(msg.data);
+            elem.classList.add('stdout');
             outputarea.appendChild(elem);
         } else if (msg.type === 'stderr') {
             var elem = document.createElement('pre');
+            elem.classList.add('stderr');
             elem.innerHTML = escapeHTML(msg.data);
             outputarea.appendChild(elem);
         } else if (msg.type === 'response') {
             var elem = document.createElement('pre');
+            elem.classList.add('eval');
             elem.innerHTML = escapeHTML(msg.data);
             evaloutputarea.appendChild(elem);
         } else if (msg.type === 'output') {
@@ -324,6 +332,7 @@ onready(function() {
             setupCallbacks(worker, outputarea, evaloutputarea);
         },
         'Ctrl-R': function(cm) {
+            Atomics.store(worker.sharedArray, signalMap['starting'], 1);
             worker.send({ type:'reset' });
         },
         'Ctrl-C': function(cm) {

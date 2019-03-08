@@ -5,9 +5,9 @@ index df5c093..8c95c0c 100644
 @@ -1,3 +1,13 @@
 +#include "emscripten.h"
 +
-+EM_JS(int, JS_KeyboardInterrupt, (void), {
-+    if (typeof keyboardInterrupt === 'function') {
-+        if (keyboardInterrupt()) {
++EM_JS(int, PYJS_KeyboardInterrupt, (void), {
++    if (typeof JS_KeyboardInterrupt === 'function') {
++        if (JS_KeyboardInterrupt()) {
 +            return 1;
 +        }
 +    }
@@ -20,9 +20,9 @@ index df5c093..8c95c0c 100644
             async I/O handler); see Py_AddPendingCall() and
             Py_MakePendingCalls() above. */
  
-+        if (JS_KeyboardInterrupt())
++        if (PYJS_KeyboardInterrupt())
 +        {
-+            PyErr_SetString(PyExc_KeyboardInterrupt, "Keyboard Interrupt");
++            PyErr_SetString(PyExc_KeyboardInterrupt, "");
 +            goto error;
 +        }
          if (_Py_atomic_load_relaxed(&_PyRuntime.ceval.eval_breaker)) {
