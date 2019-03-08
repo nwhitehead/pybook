@@ -48,6 +48,7 @@ div#status p {
 pre {
     white-space: pre-wrap;
     word-break: break-all;
+    margin: 0;
 }
 .led {
     width: 16px;
@@ -252,10 +253,13 @@ function setupCallbacks(worker, outputarea, evaloutputarea) {
         if (msg.type === 'ready') {
             console.log('CPython-Emscripten Ready - ' + msg.data);
         } else if (msg.type === 'stdout') {
-            //outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
+            var elem = document.createElement('pre');
+            elem.innerHTML = escapeHTML(msg.data);
+            outputarea.appendChild(elem);
         } else if (msg.type === 'stderr') {
-            //outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
-            // Color it yellow?
+            var elem = document.createElement('pre');
+            elem.innerHTML = escapeHTML(msg.data);
+            outputarea.appendChild(elem);
         } else if (msg.type === 'response') {
             var elem = document.createElement('pre');
             elem.innerHTML = escapeHTML(msg.data);
@@ -303,11 +307,15 @@ onready(function() {
 
     inputarea.setOption('extraKeys', {
         'Ctrl-Enter': function(cm) {
-            // Clear flag to indicate keyboard interrupt
-            Atomics.store(worker.sharedArray, signalMap['interrupt'], 0);
-            worker.send({ type:'execute', data:inputarea.doc.getValue() });
-            empty(outputarea);
-            empty(evaloutputarea);
+            if (Atomics.load(worker.sharedArray, signalMap['busy']) === 0) {
+                // Clear flag to indicate keyboard interrupt
+                Atomics.store(worker.sharedArray, signalMap['interrupt'], 0);
+                worker.send({ type:'execute', data:inputarea.doc.getValue() });
+                empty(outputarea);
+                empty(evaloutputarea);
+            } else {
+                console.log('Kernel is busy');
+            }
         },
         'Ctrl-Q': function(cm) {
             console.log('Kernel quit and restart');
