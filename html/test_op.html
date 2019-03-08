@@ -10,19 +10,34 @@
 <script src="codemirror/python.js"></script>
 
 <style>
-#busy {
-    position: absolute;
+#status {
+    display: flex;
+    width: 100%;
+    height: 32px;
+    margin: 10px;
+}
+div#status p {
+    padding: 0;
+    margin: 0;
+    font-size: 10pt;
+    font-family: monospace;
+}
+.app {
+    font-size: 14px;
+}
+.cell {
+    border: 1px solid #000;
 }
 .input.CodeMirror {
     border: 2px solid #888;
     height: auto;
 }
-.output.CodeMirror {
+.output {
     background-color: #fffcfa;
     border: 2px solid #888;
     height: auto;
 }
-.evaloutput.CodeMirror {
+.evaloutput {
     background-color: #fafcff;
     border: 2px solid #888;
     height: auto;
@@ -30,24 +45,37 @@
 .stderr {
     background-color: #f00;
 }
-.htmloutput {
-    background-color: #0f0;
-    height: auto;
+pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+.led {
+    width: 16px;
+    height: 16px;
+    background-image: url('gfx/led-sprite-small.png');
+    background-position: 0px -128px;
+}
+.led.on {
+    background-position: 0px -144px;
 }
 </style>
 
 </head>
 <body>
 
-<div id='busy'><p>BUSY</p></div>
-<div id='loading'><p>LOADING</p></div>
-
-<textarea id='inputarea' class='input'></textarea>
-<textarea id='outputarea' class='output'></textarea>
-<div id='htmlarea' class='htmloutput'>
+<div id='status'>
+<div id='busy' class='led'></div>
+<div id='loading' class='led'></div>
+<div id='starting' class='led'></div>
 </div>
-<textarea id='evaloutputarea' class='evaloutput'></textarea>
 
+<div id='app' class='app'>
+<div class='cell'>
+<textarea id='inputarea' class='input'></textarea>
+<div id='outputarea' class='output'></div>
+<div id='evaloutputarea' class='evaloutput'></div>
+</div>
+</div>
 
 <script>
 
@@ -64,128 +92,158 @@ function onready(f) {
     }
 }
 
+// Empty a DOM element of all contents
+function empty(element) {
+    while (element.firstChild) {
+        element.removeChild(element.firstChild);
+    }
+    return element;
+};
+
+// Given string with possible HTML, sanitize it to be raw text
+function escapeHTML(unsafe) {
+    return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+var signalMap = {
+    'interrupt':0,
+    'busy':1,
+    'loading':2,
+    'starting':3,
+};
+
 function newWorker() {
     var sharedBuffer = new SharedArrayBuffer(32*4);
     var spawn_data = {
-      setup: function() {
-        // Emscripten asm.js file needs to load data file
-        // Inside Web Worker the url needs to be absolute
-        if (typeof(Module) === "undefined") Module = {};
-        if (typeof(Notebook) === "undefined") Notebook = {};
+        setup: function() {
+            const absurl = config.absurl;
+            const signalMap = config.signalMap;
+            const sharedBuffer = config.sharedBuffer;
+            sharedArray = new Int32Array(sharedBuffer);
 
-        // Load customized version of FS.createLazyFile
-        // Loads into CustomFS.createLazyFile, can't directly go into FS
-        // because it gets overwritten by main import. 
-        importScripts(config.absurl + '/myCreateLazyFile.js');
-        Module.locateFile = function(path, prefix) {
-            return config.absurl + '/' + path;
-        };
-        Module["preInit"] = function() {
-            FS.mkdir('/lib');
-            FS.mkdir('/lib/python3.7');
-            CustomFS.createLazyFile('/lib/python3.7', 'localroot.zip', config.absurl + '/localroot.zip', true, false);
-            CustomFS.createLazyFile('/lib/python3.7', 'python3.7.zip', config.absurl + '/python3.7.zip', true, false);
-        };
-        Module['print'] = function(text) {
-            if (Notebook.ready) {
-                send({ type:'stdout', data: text });
-            } else {
-                // Pre-ready messages go to console
-                console.log(text);
-            }
-        };
-        Module['printErr'] = function(text) {
-            if (Notebook.ready) {
-                send({ type:'stderr', data: text });
-            } else {
-                // Pre-ready messages go to console
-                if (text.indexOf('Calling stub instead of') === 0) {
-                    // Filter out these warnings related to signals
-                    return;
+            // Emscripten asm.js file needs to load data file
+            // Inside Web Worker the url needs to be absolute
+            if (typeof(Module) === "undefined") Module = {};
+            if (typeof(Notebook) === "undefined") Notebook = {};
+
+            // Load customized version of FS.createLazyFile
+            // Loads into CustomFS.createLazyFile, can't directly go into FS
+            // because it gets overwritten by main import. 
+            importScripts(absurl + '/myCreateLazyFile.js');
+            Module.locateFile = function(path, prefix) {
+                return absurl + '/' + path;
+            };
+            Module["preInit"] = function() {
+                FS.mkdir('/lib');
+                FS.mkdir('/lib/python3.7');
+                CustomFS.createLazyFile('/lib/python3.7', 'localroot.zip', absurl + '/localroot.zip', true, false);
+                CustomFS.createLazyFile('/lib/python3.7', 'python3.7.zip', absurl + '/python3.7.zip', true, false);
+            };
+            Module['print'] = function(text) {
+                if (Notebook.ready) {
+                    send({ type:'stdout', data: text });
+                } else {
+                    // Pre-ready messages go to console
+                    console.log(text);
                 }
-                console.warn(text);
-            }
-        };
-        importScripts(config.absurl + '/python.asm.js');
-        Kernel_new = Module.cwrap('Kernel_new', 'number', []);
-        Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
-        Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
-        Kernel_version = Module.cwrap('Kernel_version', 'string', []);
-        Kernel_reset = Module.cwrap('Kernel_reset', null, ['number']);
-        Result_str = Module.cwrap('Result_str', 'number', ['number']);
-        Result_delete = Module.cwrap('Result_delete', null, ['number']);
-        sharedArray = new Int32Array(config.shared);
+            };
+            Module['printErr'] = function(text) {
+                if (Notebook.ready) {
+                    send({ type:'stderr', data: text });
+                } else {
+                    // Pre-ready messages go to console
+                    if (text.indexOf('Calling stub instead of') === 0) {
+                        // Filter out these warnings related to signals
+                        return;
+                    }
+                    console.warn(text);
+                }
+            };
+            importScripts(absurl + '/python.asm.js');
+            Kernel_new = Module.cwrap('Kernel_new', 'number', []);
+            Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
+            Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
+            Kernel_version = Module.cwrap('Kernel_version', 'string', []);
+            Kernel_reset = Module.cwrap('Kernel_reset', null, ['number']);
+            Result_str = Module.cwrap('Result_str', 'number', ['number']);
+            Result_delete = Module.cwrap('Result_delete', null, ['number']);
 
-        // Special function called by hacked cpython ceval.c
-        keyboardInterrupt = function() {
-            if (Atomics.load(sharedArray, 0) === 1) {
-                Atomics.store(sharedArray, 0, 0);
-                return true;
-            }
-            return false;
-        };
+            // Special function called by hacked cpython ceval.c
+            keyboardInterrupt = function() {
+                if (Atomics.load(sharedArray, signalMap['interrupt']) === 1) {
+                    Atomics.store(sharedArray, signalMap['interrupt'], 0);
+                    return true;
+                }
+                return false;
+            };
 
-        // Custom sleep implementation called by Modules/timemodule.c
-        JS_sleep = function(x) {
-            // Synchronous wait using atomics with timeout
-            // This lets KeyboardInterrupt cut off sleep
-            Atomics.wait(sharedArray, 0, 0, x * 1000.0);
-        };
+            // Custom sleep implementation called by Modules/timemodule.c
+            JS_sleep = function(x) {
+                // Synchronous wait using atomics with timeout
+                // This lets KeyboardInterrupt cut off sleep
+                Atomics.wait(sharedArray, signalMap['interrupt'], 0, x * 1000.0);
+            };
 
-        // Method called by pybook.output_content
-        handle_output_text_content = function(content_type, content_data) {
-            send({ type:'output', subtype:'text', content_type:content_type, data:content_data });
-        };
-        handle_output_binary_content = function(content_type, content_data) {
-            send({ type:'output', subtype:'binary', content_type:content_type, data:content_data });
-        };
+            // Method called by pybook.output_content
+            handle_output_text_content = function(content_type, content_data) {
+                send({ type:'output', subtype:'text', content_type:content_type, data:content_data });
+            };
+            handle_output_binary_content = function(content_type, content_data) {
+                send({ type:'output', subtype:'binary', content_type:content_type, data:content_data });
+            };
 
-        // Wait for the module to be ready before calling any functions.
-        var interval = setInterval(function () {
-            if (Module.calledRun) {
-                clearInterval(interval);
-                kernel = Kernel_new();
-                Notebook.ready = true;
-                // Clear busy
-                Atomics.store(sharedArray, 1, 0);
-                var result_str = Kernel_version();
-                send({ type:'ready', data:result_str });
-            }
-        }, 100);
-      },
-      fn: function(input, done) {
-        if (input.type === 'execute') {
-            if (!Module.calledRun) {
-                done({ type:'notready' });
+            // Wait for the module to be ready before calling any functions.
+            var interval = setInterval(function () {
+                if (Module.calledRun) {
+                    clearInterval(interval);
+                    kernel = Kernel_new();
+                    Notebook.ready = true;
+                    // Clear starting flag
+                    Atomics.store(sharedArray, signalMap['starting'], 0);
+                    var result_str = Kernel_version();
+                    send({ type:'ready', data:result_str });
+                }
+            }, 100);
+        },
+        fn: function(input, done) {
+            if (input.type === 'execute') {
+                if (!Module.calledRun) {
+                    done({ type:'notready' });
+                } else {
+                    var result = Kernel_eval(kernel, input.data);
+                    var result_str = Result_str(result);
+                    var result_repr = UTF8ToString(result_str);
+                    done({ type: 'response', data: result_repr });
+                    Result_delete(result);
+                }
+            } else if (input.type === 'reset') {
+                if (!Module.calledRun) {
+                    done({ type:'notready' });
+                } else {
+                    console.log('Kernel reset');
+                    Kernel_reset(kernel);
+                }
             } else {
-                var result = Kernel_eval(kernel, input.data);
-                var result_str = Result_str(result);
-                var result_repr = UTF8ToString(result_str);
-                done({ type: 'response', data: result_repr });
-                Result_delete(result);
+                throw 'Unknown message type in webworker onmessage';
             }
-        } else if (input.type === 'reset') {
-            if (!Module.calledRun) {
-                done({ type:'notready' });
-            } else {
-                console.log('Kernel reset');
-                Kernel_reset(kernel);
-            }
-        } else {
-            throw 'Unknown message type in webworker onmessage';
+        },
+        config: {
+            absurl: document.location.protocol + '//' + document.location.host,
+            sharedBuffer: sharedBuffer,
+            signalMap: signalMap,
         }
-      },
-      config: {
-          absurl: document.location.protocol + '//' + document.location.host,
-          shared: sharedBuffer
-      }
     };
 
     var worker = spawn(spawn_data);
     worker.sharedBuffer = sharedBuffer;
     worker.sharedArray = new Int32Array(sharedBuffer);
-    // Set busy, will clear once worker is ready
-    Atomics.store(worker.sharedArray, 1, 1);
+    // Set starting, will clear once worker is ready
+    Atomics.store(worker.sharedArray, signalMap['starting'], 1);
     return worker;
 }
 
@@ -194,21 +252,23 @@ function setupCallbacks(worker, outputarea, evaloutputarea) {
         if (msg.type === 'ready') {
             console.log('CPython-Emscripten Ready - ' + msg.data);
         } else if (msg.type === 'stdout') {
-            outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
+            //outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
         } else if (msg.type === 'stderr') {
-            outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
+            //outputarea.replaceRange(msg.data + '\n', CodeMirror.Pos(outputarea.lastLine()));
             // Color it yellow?
         } else if (msg.type === 'response') {
-            evaloutputarea.setValue(msg.data);
+            var elem = document.createElement('pre');
+            elem.innerHTML = escapeHTML(msg.data);
+            evaloutputarea.appendChild(elem);
         } else if (msg.type === 'output') {
             if (msg.content_type === 'text/html') {
-                var elem = document.getElementById('htmlarea');
+                var elem = document.getElementById('outputarea');
                 elem.innerHTML = msg.data;
             } else if (msg.content_type === 'text/plain') {
-                var elem = document.getElementById('htmlarea');
+                var elem = document.getElementById('outputarea');
                 elem.innerHTML = '<pre>' + msg.data + '</pre>';
             } else if (msg.content_type === 'image/png') {
-                var elem = document.getElementById('htmlarea');
+                var elem = document.getElementById('outputarea');
                 var img = document.createElement('img');
                 elem.appendChild(img);
                 var blob = new Blob([msg.data], { type:'image/png' });
@@ -220,11 +280,10 @@ function setupCallbacks(worker, outputarea, evaloutputarea) {
             }
         } else if (msg.type === 'filesystem') {
             var elem = document.getElementById('loading');
-            elem.style.visibility = 'visible';
+            elem.classList.add('on');
             setTimeout(function() {
-                elem.style.visibility = 'hidden';
+                elem.classList.remove('on');
             }, 200);
-            //console.log('File access: ' + msg.data.url + ':' + msg.data.from + '-' + msg.data.to);
         } else {
             console.log('Unknown response in main thread onmessage', msg);
             throw 'Unknown response in main thread onmessage';
@@ -237,23 +296,18 @@ onready(function() {
     var worker = newWorker();
 
     var inputarea = CodeMirror.fromTextArea(document.getElementById('inputarea'));
-    var outputarea = CodeMirror.fromTextArea(document.getElementById('outputarea'));
-    var htmlarea = document.getElementById('htmlarea');
-    var evaloutputarea = CodeMirror.fromTextArea(document.getElementById('evaloutputarea'));
+    var outputarea = document.getElementById('outputarea');
+    var evaloutputarea = document.getElementById('evaloutputarea');
     
     inputarea.getWrapperElement().classList.add('input');
-    outputarea.getWrapperElement().classList.add('output');
-    evaloutputarea.getWrapperElement().classList.add('evaloutput');
 
     inputarea.setOption('extraKeys', {
         'Ctrl-Enter': function(cm) {
             // Clear flag to indicate keyboard interrupt
-            Atomics.store(worker.sharedArray, 0, 0);
+            Atomics.store(worker.sharedArray, signalMap['interrupt'], 0);
             worker.send({ type:'execute', data:inputarea.doc.getValue() });
-            outputarea.setValue("");
-            evaloutputarea.setValue("");
-            var elem = document.getElementById('htmlarea');
-            elem.innerHTML = '';
+            empty(outputarea);
+            empty(evaloutputarea);
         },
         'Ctrl-Q': function(cm) {
             console.log('Kernel quit and restart');
@@ -266,26 +320,27 @@ onready(function() {
         },
         'Ctrl-C': function(cm) {
             // Set flag to indicate keyboard interrupt
-            Atomics.store(worker.sharedArray, 0, 1);
-            Atomics.notify(worker.sharedArray, 0);
+            Atomics.store(worker.sharedArray, signalMap['interrupt'], 1);
+            Atomics.notify(worker.sharedArray, signalMap['interrupt']);
         }
     });
-
-    outputarea.setOption('readOnly', 'nocursor');
-    outputarea.setOption('lineWrapping', true);
-    evaloutputarea.setOption('readOnly', 'nocursor');
-    evaloutputarea.setOption('lineWrapping', true);
 
     setupCallbacks(worker, outputarea, evaloutputarea);
     
     setInterval(function() {
         var elem = document.getElementById('busy');
-        if (Atomics.load(worker.sharedArray, 1) === 0) {
-            elem.style.visibility = 'hidden';
+        if (Atomics.load(worker.sharedArray, signalMap['busy']) === 0) {
+            elem.classList.remove('on');
         } else {
-            elem.style.visibility = 'visible';
+            elem.classList.add('on');
         }
-    }, 500);
+        var elem = document.getElementById('starting');
+        if (Atomics.load(worker.sharedArray, signalMap['starting']) === 0) {
+            elem.classList.remove('on');
+        } else {
+            elem.classList.add('on');
+        }
+    }, 100);
 
     window.sharedArray = worker.sharedArray;
     window.inputarea = inputarea;
