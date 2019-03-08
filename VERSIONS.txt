@@ -1,0 +1,11 @@
+Versions
+========
+
+These are the versions of things currently:
+
+cpython===3.7.0
+emscripten===1.38.28
+codemirror===5.44.0
+zlib===1.2.11
+dill===0.2.9
+pypng===0.0.17
