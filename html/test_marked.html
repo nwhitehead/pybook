@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Test of Marked in PyBook</title>
+</head>
+<body>
+
+<p>Some text.</p>
+<p>Some more text.</p>
+
+<textarea id="input">
+# Headline
+## Subhead
+
+Let's try a list
+
+* One
+* Two
+* Three
+
+That worked! That's *awesome*!!!
+
+What about math? Does \\(x^2+y^2\\) work? No? Maybe:
+\\[ x^2+y^2=z^2 \\]
+Coolness.
+</textarea>
+
+<div id="output"></div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.css" integrity="sha384-dbVIfZGuN1Yq7/1Ocstc1lUEm+AT+/rCkibIcC/OmWo5f0EA48Vf8CytHzGrSwbQ" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/katex.min.js" integrity="sha384-2BKqo+exmr9su6dir+qCw08N2ZKRucY4PrGQPPWU1A7FtlCGjmEGFqXCv5nyM5Ij" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+<script>
+
+function onready(f) {
+    if (window.onload) {
+        var curronload = window.onload;
+        var newonload = function(evt) {
+            curronload(evt);
+            f(evt);
+        };
+        window.onload = newonload;
+    } else {
+        window.onload = f;
+    }
+}
+
+onready(function() {
+    console.log('Do marked');
+    var txt = document.getElementById('input').value;
+    var elem = document.getElementById('output');
+    elem.innerHTML = marked(txt);
+    renderMathInElement(document.body);
+});
+
+</script>
+
+</body>
+</html>
