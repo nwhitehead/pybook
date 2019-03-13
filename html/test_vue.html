@@ -2,20 +2,53 @@
 <html>
 <head>
 <title>Test of VueJS Notebook</title>
+<script defer src="codemirror/codemirror.js"></script>
+<link rel="stylesheet" href="codemirror/codemirror.css">
+<script defer src="codemirror/python.js"></script>
+<style>
+.cell {
+    border: 1px solid #000;
+}
+.output {
+    background-color: #fffcfa;
+    border: 2px solid #888;
+    height: auto;
+}
+.evaloutput {
+    background-color: #fafcff;
+    border: 2px solid #888;
+    height: auto;
+}
+.stdout {
+}
+.stderr {
+    background-color: #ff0;
+}
+.eval {
+}
+pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+}
+
+</style>
 </head>
 <body>
 
-<p>Some text.</p>
-<sample></sample>
-<p>Some more text.</p>
 
 <div id="app">
     {{ message }}
+    <cell></cell>
     <clickable v-bind:msg="clicker1"></clickable>
 </div>
 
 <!-- development version, includes helpful console warnings -->
+<!-- 
 <script defer src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+-->
+
+<script defer src="vue.js"></script>
 
 <script>
 
@@ -34,6 +67,19 @@ function onready(f) {
 
 onready(function() {
     console.log('Do Vue stuff');
+    Vue.component('cell', {
+        props: ['input', 'outputs'],
+        template: String.raw`
+            <div class="cell">
+                <textarea class="input">{{ input }}</textarea>
+                <div class="output"></div>
+                <div class="evaloutput"></div>
+            </div>
+`,
+        created: function() {
+            console.log('cell created', this);
+        },
+    });
     Vue.component('clickable', {
         props: ['msg'],
         template: '<h1>{{ msg.text }}</h1>'
