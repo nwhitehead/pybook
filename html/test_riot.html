@@ -1,4 +1,4 @@
-<!DOCTYLE html>
+<!DOCTYPE html>
 <html>
 <head>
 <title>Test of RiotJS Notebook</title>
@@ -8,9 +8,23 @@
 <p>Some text.</p>
 <sample></sample>
 <p>Some more text.</p>
-<toggleable>
-    
-</toggleable>
+<toggleable name='Clickable'></toggleable>
+<toggleable name='Blickable'></toggleable>
+
+<!-- inlined tag definition -->
+<script type="riot/tag">
+    <toggleable>
+        <h2>{ opts.name }</h2>
+
+        this.name = opts.name;
+        onclick = function(evt) {
+            console.log('click', this);
+            console.log('opts', opts);
+        };
+
+    </toggleable>
+
+</script>
 
 
 <!-- include the tag -->
@@ -18,7 +32,7 @@
 <!-- include riot.js -->
 <script src="https://cdn.jsdelivr.net/npm/riot@3.13/riot+compiler.min.js"></script>
 <!-- mount the tag -->
-<script>riot.mount('sample')</script>
+<script>riot.mount('*')</script>
 
 </body>
 </html>
