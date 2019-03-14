@@ -9,6 +9,9 @@
 .cell {
     border: 1px solid #000;
 }
+.codemirror {
+    border: 1px solid #000;
+}
 .output {
     background-color: #fffcfa;
     border: 2px solid #888;
@@ -39,8 +42,11 @@ pre {
 
 <div id="app">
     {{ message }}
-    <cell></cell>
-    <clickable v-bind:msg="clicker1"></clickable>
+    <codemirror
+        v-model:value="txt"
+        v-bind:options="opts"
+        v-bind:startvalue="txt"
+    ></codemirror>
 </div>
 
 <!-- development version, includes helpful console warnings -->
@@ -66,29 +72,44 @@ function onready(f) {
 }
 
 onready(function() {
-    console.log('Do Vue stuff');
-    Vue.component('cell', {
-        props: ['input', 'outputs'],
+    Vue.component('codemirror', {
+        data: function() {
+            return {
+                value: this.startvalue,
+            };
+        },
+        props: ['options', 'startvalue'],
         template: String.raw`
-            <div class="cell">
-                <textarea class="input">{{ input }}</textarea>
-                <div class="output"></div>
-                <div class="evaloutput"></div>
+            <div class="codemirror">
+                <textarea></textarea>
             </div>
 `,
-        created: function() {
-            console.log('cell created', this);
+        mounted: function() {
+            var self = this;
+            var elem = self.$el.querySelector('textarea');
+            self.editor = CodeMirror.fromTextArea(elem, self.options);
+            self.editor.setValue(self.value || '');
+            self.editor.on('change', function(cm) {
+                self.value = cm.getValue();
+                self.$emit('change', self.value);
+                self.$emit('input', self.value);
+            });
         },
-    });
-    Vue.component('clickable', {
-        props: ['msg'],
-        template: '<h1>{{ msg.text }}</h1>'
+        watch: {
+            value: function(v) {
+                var currentValue = this.editor.getValue();
+                if (currentValue !== v) {
+                    this.editor.setValue(v);
+                }
+            },
+        },
     });
     var app = new Vue({
         el: '#app',
         data: {
             message: 'Hello world',
-            clicker1: { text: 'cheese'},
+            txt: 'input text',
+            opts: { lineNumbers: true },
         }
     });
     window.app = app;
