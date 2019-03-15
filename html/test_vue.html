@@ -41,20 +41,17 @@ pre {
 
 
 <div id="app">
-    {{ message }}
-    <codemirror
+    {{notebook}}    
+    <cell
         v-model:value="txt"
-        v-bind:options="opts"
         v-bind:startvalue="txt"
-    ></codemirror>
+        v-bind:output="out"
+    >
+    </cell>
 </div>
 
-<!-- development version, includes helpful console warnings -->
-<!-- 
-<script defer src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
--->
-
 <script defer src="vue.js"></script>
+<script defer src="vuex.js"></script>
 
 <script>
 
@@ -82,8 +79,7 @@ onready(function() {
         template: String.raw`
             <div class="codemirror">
                 <textarea></textarea>
-            </div>
-`,
+            </div>`,
         mounted: function() {
             var self = this;
             var elem = self.$el.querySelector('textarea');
@@ -93,6 +89,12 @@ onready(function() {
                 self.value = cm.getValue();
                 self.$emit('change', self.value);
                 self.$emit('input', self.value);
+            });
+            self.editor.setOption('extraKeys', {
+                'Ctrl-Enter': function(cm) {
+                    console.log('Kernel is busy');
+                    self.$emit('eval', self.value);
+                },
             });
         },
         watch: {
@@ -104,15 +106,75 @@ onready(function() {
             },
         },
     });
+    Vue.component('celloutput', {
+        props: ['values'],
+        template: String.raw`
+<div class="output">
+    <pre v-for="value in values" :class="value.type">{{ value.contents }}</pre>
+</div>
+`
+    });
+    Vue.component('cell', {
+        data: function() {
+            return {
+                value: this.startvalue,
+            };
+        },
+        props: ['startvalue', 'output'],
+        template: String.raw`
+            <div class="cell">
+                <codemirror
+                    v-model:value="value"
+                    v-bind:startvalue="startvalue"
+                >
+                </codemirror>
+                <celloutput
+                    v-bind:values="output"
+                >
+                </celloutput>
+            </div>`,
+    });
+    const store = new Vuex.Store({
+        state: {
+            cells: [
+                {
+                    cell_type: 'code',
+                    execution_count: 1,
+                    source: '# some python code here\n2 + 2\n',
+                    outputs: [],
+                }
+            ],
+        },
+        mutations: {
+            setSource (state, payload) {
+                state.cells[payload.n].source = payload.source;
+            }
+        }
+    });
     var app = new Vue({
         el: '#app',
+        store,
         data: {
-            message: 'Hello world',
-            txt: 'input text',
+            txt: '# put some Python code here\n',
             opts: { lineNumbers: true },
+            out: [
+                { type:'stdout', contents:'some normal stdout output'},
+                { type:'stderr', contents:'ERROR that did not work'}
+            ],
+        },
+        computed: {
+            notebook() {
+                return this.$store.state;
+            }
+        },
+        methods: {
+            setSource (state, n, source) {
+                this.$store.commit('setSource', {n, source});
+            }
         }
     });
     window.app = app;
+    window.store = store;
 });
 
 </script>
