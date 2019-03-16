@@ -42,14 +42,15 @@ pre {
 
 
 <div id="app">
-    <pre>{{ JSON.stringify(notebook, null, 2) }}</pre>
     <cell
         v-bind:value="txt"
         v-bind:output="out"
         :id="0"
         v-on:update:value="handleInput"
+        v-on:action="handleAction"
     >
     </cell>
+    <pre>{{ JSON.stringify(notebook, null, 2) }}</pre>
 </div>
 
 <script defer src="vue.js"></script>
@@ -72,7 +73,7 @@ function onready(f) {
 
 onready(function() {
     Vue.component('codemirror', {
-        props: ['options', 'value'],
+        props: ['options', 'value', 'id'],
         template: String.raw`
             <div class="input">
                 <textarea></textarea>
@@ -88,7 +89,10 @@ onready(function() {
             });
             self.editor.setOption('extraKeys', {
                 'Ctrl-Enter': function(cm) {
-                    self.$emit('eval', cm.getValue());
+                    self.$emit('action', { id:self.id, action:'eval' });
+                },
+                'Ctrl-C': function(cm) {
+                    self.$emit('action', { id:self.id, action:'break' });
                 },
             });
         },
@@ -116,8 +120,8 @@ onready(function() {
                 <codemirror
                     v-bind:value="value"
                     v-on:update:value="handleInput"
-                    v-on:eval="handleEval"
-                >
+                    v-on:action="handleAction"
+                    >
                 </codemirror>
                 <celloutput
                     v-bind:values="output"
@@ -125,12 +129,11 @@ onready(function() {
                 </celloutput>
             </div>`,
         methods: {
-            handleInput (value) {
-                this.$emit('update:value', { id:this.id, value });
+            handleInput (event) {
+                this.$emit('update:value', { id:this.id, value:event });
             },
-            handleEval (value) {
-                this.$emit('eval', { id:this.id, value });
-                console.log('eval', { id:this.id, value });
+            handleAction (event) {
+                this.$emit('action', { id:this.id, action:event.action });
             },
         }
     });
@@ -183,6 +186,14 @@ onready(function() {
         methods: {
             handleInput (event) {
                 this.setSource(event.id, event.value);
+            },
+            handleAction (event) {
+                var action = event.action;
+                if (action === 'eval') {
+                    this.addOutput(event.id, { type:'stdout', contents:'42' });
+                } else {
+                    console.log("Unknown action", action, event.id);
+                }
             },
             setSource (n, source) {
                 this.$store.commit('setSource', {n, source});
