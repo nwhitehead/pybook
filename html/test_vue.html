@@ -9,8 +9,9 @@
 .cell {
     border: 1px solid #000;
 }
-.codemirror {
+.input.CodeMirror {
     border: 1px solid #000;
+    height: auto;
 }
 .output {
     background-color: #fffcfa;
@@ -41,7 +42,7 @@ pre {
 
 
 <div id="app">
-    {{notebook}}
+    <pre>{{ JSON.stringify(notebook, null, 2) }}</pre>
     <cell
         v-bind:value="txt"
         v-bind:output="out"
@@ -73,13 +74,14 @@ onready(function() {
     Vue.component('codemirror', {
         props: ['options', 'value'],
         template: String.raw`
-            <div class="codemirror">
+            <div class="input">
                 <textarea></textarea>
             </div>`,
         mounted: function() {
             var self = this;
             var elem = self.$el.querySelector('textarea');
             self.editor = CodeMirror.fromTextArea(elem, self.options);
+            self.editor.getWrapperElement().classList.add('input');
             self.editor.setValue(self.value || '');
             self.editor.on('change', function(cm) {
                 self.$emit('update:value', cm.getValue());
