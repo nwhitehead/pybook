@@ -41,13 +41,21 @@ pre {
 
 
 <div id="app">
-    {{notebook}}    
+    {{notebook}}
+    <codemirror
+        v-bind:value="txt"
+        v-on:update:value="txt = $event"
+    >
+    </codemirror>
+    <p>
+<!--
     <cell
-        v-model:value="txt"
-        v-bind:startvalue="txt"
+        v-bind:startvalue="getcell().value"
         v-bind:output="out"
+        v-bind:n="0"
     >
     </cell>
+-->
 </div>
 
 <script defer src="vue.js"></script>
@@ -70,12 +78,7 @@ function onready(f) {
 
 onready(function() {
     Vue.component('codemirror', {
-        data: function() {
-            return {
-                value: this.startvalue,
-            };
-        },
-        props: ['options', 'startvalue'],
+        props: ['options', 'value'],
         template: String.raw`
             <div class="codemirror">
                 <textarea></textarea>
@@ -86,14 +89,11 @@ onready(function() {
             self.editor = CodeMirror.fromTextArea(elem, self.options);
             self.editor.setValue(self.value || '');
             self.editor.on('change', function(cm) {
-                self.value = cm.getValue();
-                self.$emit('change', self.value);
-                self.$emit('input', self.value);
+                self.$emit('update:value', cm.getValue());
             });
             self.editor.setOption('extraKeys', {
                 'Ctrl-Enter': function(cm) {
-                    console.log('Kernel is busy');
-                    self.$emit('eval', self.value);
+                    self.$emit('eval', cm.getValue());
                 },
             });
         },
@@ -115,17 +115,13 @@ onready(function() {
 `
     });
     Vue.component('cell', {
-        data: function() {
-            return {
-                value: this.startvalue,
-            };
-        },
-        props: ['startvalue', 'output'],
+        props: ['value', 'output', 'n'],
         template: String.raw`
             <div class="cell">
                 <codemirror
-                    v-model:value="value"
-                    v-bind:startvalue="startvalue"
+                    v-bind:startvalue="value"
+                    v-on:input="handleInput"
+                    v-on:eval="handleEval"
                 >
                 </codemirror>
                 <celloutput
@@ -133,6 +129,15 @@ onready(function() {
                 >
                 </celloutput>
             </div>`,
+        methods: {
+            handleInput (value) {
+                console.log(value);
+                this.$store.commit('setSource', { n:this.n, source:value });
+            },
+            handleEval (value) {
+                console.log('eval', value);
+            },
+        }
     });
     const store = new Vuex.Store({
         state: {
@@ -155,7 +160,7 @@ onready(function() {
         el: '#app',
         store,
         data: {
-            txt: '# put some Python code here\n',
+            txt: "this is a test",
             opts: { lineNumbers: true },
             out: [
                 { type:'stdout', contents:'some normal stdout output'},
@@ -165,6 +170,9 @@ onready(function() {
         computed: {
             notebook() {
                 return this.$store.state;
+            },
+            getcell() {
+                return this.$store.state.cells[0];
             }
         },
         methods: {
