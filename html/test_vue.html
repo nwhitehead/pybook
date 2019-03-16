@@ -140,6 +140,12 @@ onready(function() {
                     execution_count: 1,
                     source: '# some python code here\n2 + 2\n',
                     outputs: [],
+                },
+                {
+                    cell_type: 'code',
+                    execution_count: 1,
+                    source: '2 ** 10\n',
+                    outputs: [],
                 }
             ],
         },
@@ -161,7 +167,7 @@ onready(function() {
         },
         computed: {
             txt() {
-                return this.$store.state.cells[0].source;
+                return this.getcell().source;
             },
             notebook() {
                 return this.$store.state;
@@ -173,9 +179,6 @@ onready(function() {
             },
             setSource (n, source) {
                 this.$store.commit('setSource', {n, source});
-            },
-            action () {
-                alert('eval');
             },
             getcell() {
                 return this.$store.state.cells[0];
