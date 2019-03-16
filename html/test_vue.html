@@ -42,20 +42,13 @@ pre {
 
 <div id="app">
     {{notebook}}
-    <codemirror
-        v-bind:value="txt"
-        v-on:update:value="txt = $event"
-    >
-    </codemirror>
-    <p>
-<!--
     <cell
-        v-bind:startvalue="getcell().value"
+        v-bind:value="txt"
         v-bind:output="out"
-        v-bind:n="0"
+        :id="0"
+        v-on:update:value="handleInput"
     >
     </cell>
--->
 </div>
 
 <script defer src="vue.js"></script>
@@ -115,12 +108,12 @@ onready(function() {
 `
     });
     Vue.component('cell', {
-        props: ['value', 'output', 'n'],
+        props: ['value', 'output', 'id'],
         template: String.raw`
             <div class="cell">
                 <codemirror
-                    v-bind:startvalue="value"
-                    v-on:input="handleInput"
+                    v-bind:value="value"
+                    v-on:update:value="handleInput"
                     v-on:eval="handleEval"
                 >
                 </codemirror>
@@ -131,11 +124,11 @@ onready(function() {
             </div>`,
         methods: {
             handleInput (value) {
-                console.log(value);
-                this.$store.commit('setSource', { n:this.n, source:value });
+                this.$emit('update:value', { id:this.id, value });
             },
             handleEval (value) {
-                console.log('eval', value);
+                this.$emit('eval', { id:this.id, value });
+                console.log('eval', { id:this.id, value });
             },
         }
     });
@@ -160,7 +153,6 @@ onready(function() {
         el: '#app',
         store,
         data: {
-            txt: "this is a test",
             opts: { lineNumbers: true },
             out: [
                 { type:'stdout', contents:'some normal stdout output'},
@@ -168,17 +160,26 @@ onready(function() {
             ],
         },
         computed: {
+            txt() {
+                return this.$store.state.cells[0].source;
+            },
             notebook() {
                 return this.$store.state;
-            },
-            getcell() {
-                return this.$store.state.cells[0];
             }
         },
         methods: {
-            setSource (state, n, source) {
+            handleInput (event) {
+                this.setSource(event.id, event.value);
+            },
+            setSource (n, source) {
                 this.$store.commit('setSource', {n, source});
-            }
+            },
+            action () {
+                alert('eval');
+            },
+            getcell() {
+                return this.$store.state.cells[0];
+            },
         }
     });
     window.app = app;
