@@ -153,23 +153,28 @@ onready(function() {
         },
         mutations: {
             setSource (state, payload) {
-                state.cells[payload.n].source = payload.source;
-            }
+                Vue.set(state.cells[payload.n], 'source', payload.source);
+            },
+            clearOutput (state, payload) {
+                Vue.set(state.cells[payload.n], 'outputs', []);
+            },
+            addOutput (state, payload) {
+                state.cells[payload.n].outputs.push(payload.out);
+            },
         }
     });
     var app = new Vue({
         el: '#app',
         store,
         data: {
-            opts: { lineNumbers: true },
-            out: [
-                { type:'stdout', contents:'some normal stdout output'},
-                { type:'stderr', contents:'ERROR that did not work'}
-            ],
+            opts: { lineNumbers: true }
         },
         computed: {
             txt() {
                 return this.getcell().source;
+            },
+            out() {
+                return this.getcell().outputs;
             },
             notebook() {
                 return this.$store.state;
@@ -182,6 +187,9 @@ onready(function() {
             setSource (n, source) {
                 this.$store.commit('setSource', {n, source});
             },
+            addOutput (n, out) {
+                this.$store.commit('addOutput', {n, out});
+            },
             getcell() {
                 return this.$store.state.cells[0];
             },
@@ -190,6 +198,11 @@ onready(function() {
     window.app = app;
     window.store = store;
 });
+
+//            out: [
+//                { type:'stdout', contents:'some normal stdout output'},
+//                { type:'stderr', contents:'ERROR that did not work'}
+//            ],
 
 </script>
 </body>
