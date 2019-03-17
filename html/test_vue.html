@@ -25,6 +25,7 @@ div#status p {
     font-family: monospace;
 }
 .cell {
+    position: relative;
     border: 1px solid #000;
     margin: 5px;
 }
@@ -32,6 +33,7 @@ div#status p {
     border: 1px solid #000;
     height: auto;
     margin-left: 40px;
+    z-index: 10;
 }
 .output {
     background-color: #fffcfa;
@@ -61,7 +63,8 @@ div#status p {
 .handle {
     position: absolute;
     top: 5px;
-    right: 5px;
+    left: 0px;
+    z-index: 20;
 }
 pre {
     white-space: pre-wrap;
@@ -119,6 +122,10 @@ function onready(f) {
 
 onready(function() {
 
+    // Global variable keeping list of all codemirror editors
+    // Needed to quickly update dragdrop state
+    Vue.prototype.$globalCMList = [];
+
     Vue.component('codemirror', {
         props: ['options', 'value', 'id'],
         template: String.raw`
@@ -129,6 +136,7 @@ onready(function() {
             var self = this;
             var elem = self.$el.querySelector('textarea');
             self.editor = CodeMirror.fromTextArea(elem, self.options);
+            self.$globalCMList.push(self.editor);
             self.editor.getWrapperElement().classList.add('input');
             self.editor.setValue(self.value || '');
             self.editor.on('change', function(cm) {
@@ -174,6 +182,7 @@ onready(function() {
                     v-on:action="handleAction"
                     >
                 </codemirror>
+                <div class="handle"><img src="gfx/grip-vertical-solid.svg" width=10></img></div>
                 <celloutput
                     v-bind:values="output"
                 >
@@ -195,7 +204,12 @@ onready(function() {
         props: [ 'values' ],
         template: String.raw`
             <div class="cells">
-                <draggable v-model='contents'>
+                <draggable
+                    v-model='contents'
+                    handle=".handle"
+                    v-on:start="dragStart"
+                    v-on:end="dragEnd"
+                >
                     <cell
                         v-for="(content, index) in values"
                         v-bind:value="content.source"
@@ -219,6 +233,21 @@ onready(function() {
             }
         },
         methods: {
+            dragStart (event) {
+                console.log('dragStart');
+                const cm = this.$globalCMList;
+                for (var i = 0; i < cm.length; i++) {
+                    cm[i].__oldDragDrop = cm[i].getOption('dragDrop');
+                    cm[i].setOption('dragDrop', false);
+                }
+            },
+            dragEnd (event) {
+                console.log('dragEnd');
+                const cm = this.$globalCMList;
+                for (var i = 0; i < cm.length; i++) {
+                    cm[i].setOption('dragDrop', cm[i].__oldDragDrop);
+                }
+            },
             handleInput (event) {
                 this.$emit('update:value', event);
             },
