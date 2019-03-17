@@ -62,8 +62,8 @@ div#status p {
 }
 .handle {
     position: absolute;
-    top: 2px;
-    right: 2px;
+    top: 1px;
+    right: 1px;
     z-index: 20;
 }
 pre {
@@ -182,7 +182,7 @@ onready(function() {
                     v-on:action="handleAction"
                     >
                 </codemirror>
-                <div class="handle"><img src="gfx/grip.svg" width=14></img></div>
+                <div class="handle"><img src="gfx/grip.svg" width=12></img></div>
                 <celloutput
                     v-bind:values="output"
                 >
@@ -234,7 +234,6 @@ onready(function() {
         },
         methods: {
             dragStart (event) {
-                console.log('dragStart');
                 const cm = this.$globalCMList;
                 for (var i = 0; i < cm.length; i++) {
                     cm[i].__oldDragDrop = cm[i].getOption('dragDrop');
@@ -242,7 +241,6 @@ onready(function() {
                 }
             },
             dragEnd (event) {
-                console.log('dragEnd');
                 const cm = this.$globalCMList;
                 for (var i = 0; i < cm.length; i++) {
                     cm[i].setOption('dragDrop', cm[i].__oldDragDrop);
