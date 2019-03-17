@@ -87,19 +87,12 @@ pre {
 
 <div id="app">
     
-<draggable v-model="myArray" group="people" handle=".handle" >
-    <div class="cssdrag" v-for="element in myArray" :key="element.id">
-        {{element.name}} <img class="handle" src="gfx/grip-vertical-solid.svg" width="10"></img>
-    </div>
-</draggable>
-    
     <div id='status'>
         <div id='busy' class='led'></div>
         <div id='loading' class='led'></div>
         <div id='starting' class='led'></div>
     </div>
     <cells
-        v-bind:contents="contents"
         v-on:update:value="handleInput"
         v-on:action="handleAction"
     >
@@ -291,11 +284,6 @@ onready(function() {
         store,
         data: {
             opts: { lineNumbers: true },
-            myArray: [ 
-                { id:1, name:'Nathan' },
-                { id:2, name:'Matthew' },
-                { id:3, name:'Zoe' }
-            ]
         },
         computed: {
             contents() {
