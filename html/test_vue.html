@@ -2,10 +2,26 @@
 <html>
 <head>
 <title>Test of VueJS Notebook</title>
+<script defer src="spawn.js"></script>
 <script defer src="codemirror/codemirror.js"></script>
 <link rel="stylesheet" href="codemirror/codemirror.css">
 <script defer src="codemirror/python.js"></script>
+<script defer src="vue.js"></script>
+<script defer src="vuex.js"></script>
+
 <style>
+#status {
+    display: flex;
+    width: 100%;
+    height: 32px;
+    margin: 10px;
+}
+div#status p {
+    padding: 0;
+    margin: 0;
+    font-size: 10pt;
+    font-family: monospace;
+}
 .cell {
     border: 1px solid #000;
     margin: 5px;
@@ -13,11 +29,13 @@
 .input.CodeMirror {
     border: 1px solid #000;
     height: auto;
+    margin-left: 40px;
 }
 .output {
     background-color: #fffcfa;
     border: 2px solid #888;
     height: auto;
+    margin-left: 40px;
 }
 .evaloutput {
     background-color: #fafcff;
@@ -36,6 +54,15 @@ pre {
     word-break: break-all;
     margin: 0;
 }
+.led {
+    width: 16px;
+    height: 16px;
+    background-image: url('gfx/led-sprite-small.png');
+    background-position: 0px -128px;
+}
+.led.on {
+    background-position: 0px -144px;
+}
 
 </style>
 </head>
@@ -43,6 +70,11 @@ pre {
 
 
 <div id="app">
+    <div id='status'>
+        <div id='busy' class='led'></div>
+        <div id='loading' class='led'></div>
+        <div id='starting' class='led'></div>
+    </div>
     <cells
         v-bind:contents="contents"
         v-on:update:value="handleInput"
@@ -51,9 +83,6 @@ pre {
     </cells>
     <pre>{{ JSON.stringify(notebook, null, 2) }}</pre>
 </div>
-
-<script defer src="vue.js"></script>
-<script defer src="vuex.js"></script>
 
 <script>
 
@@ -71,6 +100,7 @@ function onready(f) {
 }
 
 onready(function() {
+
     Vue.component('codemirror', {
         props: ['options', 'value', 'id'],
         template: String.raw`
@@ -93,6 +123,9 @@ onready(function() {
                 'Ctrl-C': function(cm) {
                     self.$emit('action', { id:self.id, action:'break' });
                 },
+                'Ctrl-I': function(cm) {
+                    self.$emit('action', { id:self.id, action:'insert-after' });
+                },
             });
         },
         watch: {
@@ -104,14 +137,15 @@ onready(function() {
             },
         },
     });
+
     Vue.component('celloutput', {
         props: ['values'],
         template: String.raw`
-<div class="output">
-    <pre v-for="value in values" :class="value.type">{{ value.contents }}</pre>
-</div>
-`
+            <div class="output">
+                <pre v-for="value in values" :class="value.type">{{ value.contents }}</pre>
+            </div>`
     });
+
     Vue.component('cell', {
         props: ['value', 'output', 'id'],
         template: String.raw`
@@ -136,6 +170,7 @@ onready(function() {
             },
         }
     });
+
     Vue.component('cells', {
         props: ['contents'],
         template: String.raw`
@@ -160,6 +195,7 @@ onready(function() {
             },
         }
     });
+
     const store = new Vuex.Store({
         state: {
             cells: [
@@ -187,8 +223,25 @@ onready(function() {
             addOutput (state, payload) {
                 state.cells[payload.n].outputs.push(payload.out);
             },
+            insertAfter (state, payload) {
+                const newcell = {
+                    cell_type: 'code',
+                    execution_count: 1,
+                    source: '',
+                    outputs: [],
+                };
+                state.cells.splice(payload.n + 1, 0, newcell);
+            },
         }
     });
+
+    var signalMap = {
+        'interrupt':0,
+        'busy':1,
+        'loading':2,
+        'starting':3,
+    };
+
     var app = new Vue({
         el: '#app',
         store,
@@ -213,7 +266,7 @@ onready(function() {
         },
         methods: {
             handleInput (event) {
-                this.setSource(event.id, event.value);
+                this.$store.commit('setSource', {n:event.id, source:event.value});
             },
             handleAction (event) {
                 var action = event.action;
@@ -221,12 +274,11 @@ onready(function() {
                     this.addOutput(event.id, { type:'stdout', contents:'42' });
                 } else if (action === 'break') {
                     this.addOutput(event.id, { type:'stderr', contents:'Error in eval:\nTraceback\n  23\n  3524\n' });
+                    } else if (action === 'insert-after') {
+                    this.$store.commit('insertAfter', { n:event.id });
                 } else {
                     console.log("Unknown action", action, event.id);
                 }
-            },
-            setSource (n, source) {
-                this.$store.commit('setSource', {n, source});
             },
             addOutput (n, out) {
                 this.$store.commit('addOutput', {n, out});
