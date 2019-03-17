@@ -86,7 +86,7 @@ pre {
 
 
 <div id="app">
-    
+
     <div id='status'>
         <div id='busy' class='led'></div>
         <div id='loading' class='led'></div>
@@ -94,7 +94,9 @@ pre {
     </div>
     <cells
         v-on:update:value="handleInput"
+        v-on:update:values="handleDrag"
         v-on:action="handleAction"
+        v-bind:values="getCells()"
     >
     </cells>
     <pre>{{ JSON.stringify(notebook, null, 2) }}</pre>
@@ -190,11 +192,12 @@ onready(function() {
     Vue.component('draggable', vuedraggable);
 
     Vue.component('cells', {
+        props: [ 'values' ],
         template: String.raw`
             <div class="cells">
                 <draggable v-model='contents'>
                     <cell
-                        v-for="(content, index) in getContents()"
+                        v-for="(content, index) in values"
                         v-bind:value="content.source"
                         v-bind:output="content.outputs"
                         v-bind:id="index"
@@ -208,17 +211,14 @@ onready(function() {
         computed: {
             contents: {
                 get() {
-                    return this.getContents();
+                    return this.values;
                 },
-                set(value) {
-                    this.$store.commit('updateCells', value);
+                set(values) {
+                    this.$emit('update:values', values);
                 }
             }
         },
         methods: {
-            getContents() {
-                return this.$store.state.cells;
-            },
             handleInput (event) {
                 this.$emit('update:value', event);
             },
@@ -317,11 +317,14 @@ onready(function() {
                     console.log("Unknown action", action, event.id);
                 }
             },
+            handleDrag (event) {
+                this.$store.commit('updateCells', event);
+            },
             addOutput (n, out) {
                 this.$store.commit('addOutput', {n, out});
             },
-            getcell() {
-                return this.$store.state.cells[0];
+            getCells() {
+                return this.$store.state.cells;
             },
         }
     });
