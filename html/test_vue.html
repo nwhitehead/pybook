@@ -197,21 +197,35 @@ onready(function() {
     Vue.component('draggable', vuedraggable);
 
     Vue.component('cells', {
-        props: ['contents'],
         template: String.raw`
             <div class="cells">
-                <cell
-                    v-for="content in contents"
-                    v-bind:value="content.value"
-                    v-bind:output="content.output"
-                    v-bind:id="content.id"
-                    v-bind:key="content.id"
-                    v-on:update:value="handleInput"
-                    v-on:action="handleAction"
-                >
-                </cell>
+                <draggable v-model='contents'>
+                    <cell
+                        v-for="(content, index) in getContents()"
+                        v-bind:value="content.source"
+                        v-bind:output="content.outputs"
+                        v-bind:id="index"
+                        v-bind:key="content.id"
+                        v-on:update:value="handleInput"
+                        v-on:action="handleAction"
+                    >
+                    </cell>
+                </draggable>
             </div>`,
+        computed: {
+            contents: {
+                get() {
+                    return this.getContents();
+                },
+                set(value) {
+                    this.$store.commit('updateCells', value);
+                }
+            }
+        },
         methods: {
+            getContents() {
+                return this.$store.state.cells;
+            },
             handleInput (event) {
                 this.$emit('update:value', event);
             },
@@ -229,12 +243,14 @@ onready(function() {
                     execution_count: 1,
                     source: '# some python code here\n2 + 2\n',
                     outputs: [],
+                    id: 1234,
                 },
                 {
                     cell_type: 'code',
                     execution_count: 1,
                     source: '2 ** 10\n',
                     outputs: [],
+                    id: 54330,
                 }
             ],
         },
@@ -256,6 +272,9 @@ onready(function() {
                     outputs: [],
                 };
                 state.cells.splice(payload.n + 1, 0, newcell);
+            },
+            updateCells (state, payload) {
+                state.cells = payload;
             },
         }
     });
