@@ -8,6 +8,8 @@
 <script defer src="codemirror/python.js"></script>
 <script defer src="vue.js"></script>
 <script defer src="vuex.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.19.2/vuedraggable.umd.min.js"></script>
 
 <style>
 #status {
@@ -49,6 +51,18 @@ div#status p {
 }
 .eval {
 }
+.cssdrag {
+    position: relative;
+    border: 2px solid;
+    margin: 5px;
+    padding: 5px;
+    background-color: #fff;
+}
+.handle {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
 pre {
     white-space: pre-wrap;
     word-break: break-all;
@@ -69,7 +83,16 @@ pre {
 <body>
 
 
+
+
 <div id="app">
+    
+<draggable v-model="myArray" group="people" handle=".handle" >
+    <div class="cssdrag" v-for="element in myArray" :key="element.id">
+        {{element.name}} <img class="handle" src="gfx/grip-vertical-solid.svg" width="10"></img>
+    </div>
+</draggable>
+    
     <div id='status'>
         <div id='busy' class='led'></div>
         <div id='loading' class='led'></div>
@@ -171,6 +194,8 @@ onready(function() {
         }
     });
 
+    Vue.component('draggable', vuedraggable);
+
     Vue.component('cells', {
         props: ['contents'],
         template: String.raw`
@@ -246,7 +271,12 @@ onready(function() {
         el: '#app',
         store,
         data: {
-            opts: { lineNumbers: true }
+            opts: { lineNumbers: true },
+            myArray: [ 
+                { id:1, name:'Nathan' },
+                { id:2, name:'Matthew' },
+                { id:3, name:'Zoe' }
+            ]
         },
         computed: {
             contents() {
