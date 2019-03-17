@@ -62,8 +62,8 @@ div#status p {
 }
 .handle {
     position: absolute;
-    top: 5px;
-    left: 0px;
+    top: 2px;
+    right: 2px;
     z-index: 20;
 }
 pre {
@@ -182,7 +182,7 @@ onready(function() {
                     v-on:action="handleAction"
                     >
                 </codemirror>
-                <div class="handle"><img src="gfx/grip-vertical-solid.svg" width=10></img></div>
+                <div class="handle"><img src="gfx/grip.svg" width=14></img></div>
                 <celloutput
                     v-bind:values="output"
                 >
