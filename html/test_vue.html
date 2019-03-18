@@ -296,7 +296,19 @@ onready(function() {
             updateCells (state, payload) {
                 state.cells = payload;
             },
+            initialiseStore(state) {
+                if (localStorage.getItem('store')) {
+                    this.replaceState(
+                        Object.assign(state, JSON.parse(localStorage.getItem('store')))
+                    );
+                }
+            }
         }
+    });
+
+    // Subscribe to store updates
+    store.subscribe(function (mutation, state) {
+        localStorage.setItem('store', JSON.stringify(state));
     });
 
     var signalMap = {
@@ -311,6 +323,9 @@ onready(function() {
         store,
         data: {
             opts: { lineNumbers: true },
+        },
+        beforeCreate() {
+            this.$store.commit('initialiseStore');
         },
         computed: {
             contents() {
