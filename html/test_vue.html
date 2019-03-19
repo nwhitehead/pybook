@@ -10,6 +10,8 @@
 <script defer src="vuex.js"></script>
 <script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.19.2/vuedraggable.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+<script defer src="https://use.fontawesome.com/releases/v5.7.2/js/all.js" integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP" crossorigin="anonymous"></script>
 
 <style>
 #status {
@@ -29,12 +31,26 @@ div#status p {
     border: 1px solid #000;
     margin: 5px;
 }
-.input.CodeMirror {
-    border: 1px solid #000;
+div .side {
+    width: 40px;
+    background-color: #f00;
+    min-height: 40px;
+}
+
+.input {
     height: auto;
-    margin-left: 40px;
+}
+.input.CodeMirror {
+    background-color: #fafcff;
+    border: 1px solid #f0f4ff;
+    border-radius: 4px;
+    height: auto;
     z-index: 10;
 }
+.CodeMirror-scroll {
+    width: 100%;
+}
+
 .output {
     background-color: #fffcfa;
     border: 2px solid #888;
@@ -66,10 +82,11 @@ div#status p {
     right: 1px;
     z-index: 20;
 }
-pre {
+.output pre {
     white-space: pre-wrap;
     word-break: break-all;
     margin: 0;
+    padding: 1px 24px 1px 24px;
 }
 .led {
     width: 16px;
@@ -80,7 +97,6 @@ pre {
 .led.on {
     background-position: 0px -144px;
 }
-
 </style>
 </head>
 <body>
@@ -176,13 +192,17 @@ onready(function() {
         props: ['value', 'output', 'id'],
         template: String.raw`
             <div class="cell">
+                <div class="side">
+                </div>
                 <codemirror
                     v-bind:value="value"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     >
                 </codemirror>
-                <div class="handle"><img src="gfx/grip.svg" width=12></img></div>
+                <div class="handle">
+                    <i class="fas fa-grip-vertical"></i>
+                </div>
                 <celloutput
                     v-bind:values="output"
                 >
