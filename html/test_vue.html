@@ -16,7 +16,7 @@
 <style>
 #status {
     display: flex;
-    width: 100%;
+    width: auto;
     height: 32px;
     margin: 10px;
 }
@@ -30,15 +30,20 @@ div#status p {
     position: relative;
     border: 1px solid #000;
     margin: 5px;
+    display: flex;
 }
-div .side {
-    width: 40px;
+div .side-left {
     background-color: #f00;
     min-height: 40px;
+    flex: 0 0 40px;
 }
-
+div .side-right {
+    flex: 1 1 auto;
+    overflow: hidden;
+}
 .input {
     height: auto;
+    width: 100%;
 }
 .input.CodeMirror {
     background-color: #fafcff;
@@ -46,9 +51,10 @@ div .side {
     border-radius: 4px;
     height: auto;
     z-index: 10;
+    width: 100%;
 }
 .CodeMirror-scroll {
-    width: 100%;
+    width: auto;
 }
 
 .output {
@@ -192,21 +198,23 @@ onready(function() {
         props: ['value', 'output', 'id'],
         template: String.raw`
             <div class="cell">
-                <div class="side">
+                <div class="side-left">
                 </div>
-                <codemirror
-                    v-bind:value="value"
-                    v-on:update:value="handleInput"
-                    v-on:action="handleAction"
+                <div class="side-right">
+                    <codemirror
+                        v-bind:value="value"
+                        v-on:update:value="handleInput"
+                        v-on:action="handleAction"
+                        >
+                    </codemirror>
+                    <div class="handle">
+                        <i class="fas fa-grip-vertical"></i>
+                    </div>
+                    <celloutput
+                        v-bind:values="output"
                     >
-                </codemirror>
-                <div class="handle">
-                    <i class="fas fa-grip-vertical"></i>
+                    </celloutput>
                 </div>
-                <celloutput
-                    v-bind:values="output"
-                >
-                </celloutput>
             </div>`,
         methods: {
             handleInput (event) {
@@ -223,25 +231,24 @@ onready(function() {
     Vue.component('cells', {
         props: [ 'values' ],
         template: String.raw`
-            <div class="cells">
-                <draggable
-                    v-model='contents'
-                    handle=".handle"
-                    v-on:start="dragStart"
-                    v-on:end="dragEnd"
+            <draggable
+                class="cells"
+                v-model='contents'
+                handle=".handle"
+                v-on:start="dragStart"
+                v-on:end="dragEnd"
+            >
+                <cell
+                    v-for="(content, index) in values"
+                    v-bind:value="content.source"
+                    v-bind:output="content.outputs"
+                    v-bind:id="index"
+                    v-bind:key="content.id"
+                    v-on:update:value="handleInput"
+                    v-on:action="handleAction"
                 >
-                    <cell
-                        v-for="(content, index) in values"
-                        v-bind:value="content.source"
-                        v-bind:output="content.outputs"
-                        v-bind:id="index"
-                        v-bind:key="content.id"
-                        v-on:update:value="handleInput"
-                        v-on:action="handleAction"
-                    >
-                    </cell>
-                </draggable>
-            </div>`,
+                </cell>
+            </draggable>`,
         computed: {
             contents: {
                 get() {
