@@ -29,9 +29,10 @@ div#status p {
 .cell {
     position: relative;
     border: 1px solid #000;
-    margin: 5px;
+    margin: 15px;
     display: flex;
 }
+
 div .side-left {
     background-color: #f00;
     min-height: 40px;
@@ -41,11 +42,12 @@ div .side-right {
     flex: 1 1 auto;
     overflow: hidden;
 }
-.input {
+.cellinput {
     height: auto;
     width: 100%;
+    padding: 10px 20px 10px 10px;
 }
-.input.CodeMirror {
+.cellinput.CodeMirror {
     background-color: #fafcff;
     border: 1px solid #f0f4ff;
     border-radius: 4px;
@@ -53,39 +55,33 @@ div .side-right {
     z-index: 10;
     width: 100%;
 }
+.cellinput.CodeMirror-focused {
+    border: 1px solid #8094cf;
+}
 .CodeMirror-scroll {
     width: auto;
 }
 
 .output {
-    background-color: #fffcfa;
-    border: 2px solid #888;
     height: auto;
-    margin-left: 40px;
+}
+div.output pre {
+    background-color: transparent;
 }
 .evaloutput {
-    background-color: #fafcff;
-    border: 2px solid #888;
     height: auto;
 }
-.stdout {
+div.output pre.stdout {
 }
-.stderr {
+div.output pre.stderr {
     background-color: #ff0;
 }
 .eval {
 }
-.cssdrag {
-    position: relative;
-    border: 2px solid;
-    margin: 5px;
-    padding: 5px;
-    background-color: #fff;
-}
 .handle {
     position: absolute;
     top: 1px;
-    right: 1px;
+    right: 4px;
     z-index: 20;
 }
 .output pre {
@@ -151,7 +147,7 @@ onready(function() {
     Vue.component('codemirror', {
         props: ['options', 'value', 'id'],
         template: String.raw`
-            <div class="input">
+            <div class="cellinput">
                 <textarea></textarea>
             </div>`,
         mounted: function() {
@@ -159,7 +155,7 @@ onready(function() {
             var elem = self.$el.querySelector('textarea');
             self.editor = CodeMirror.fromTextArea(elem, self.options);
             self.$globalCMList.push(self.editor);
-            self.editor.getWrapperElement().classList.add('input');
+            self.editor.getWrapperElement().classList.add('cellinput');
             self.editor.setValue(self.value || '');
             self.editor.on('change', function(cm) {
                 self.$emit('update:value', cm.getValue());
