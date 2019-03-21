@@ -28,9 +28,14 @@ div#status p {
 }
 .cell {
     position: relative;
-    border: 1px solid #000;
+    border: 1px solid transparent;
+    border-left-width: 5px;
     margin: 15px;
     display: flex;
+}
+.cell.selected {
+    border: 1px solid #00f;
+    border-left-width: 5px;
 }
 
 div .side-left {
@@ -55,7 +60,9 @@ div .side-right {
     width: 100%;
 }
 .cellinput.CodeMirror-focused {
+<!--
     border: 1px solid #8094cf;
+-->
 }
 .CodeMirror-scroll {
     width: auto;
@@ -119,6 +126,7 @@ div.output pre.stderr {
         v-on:action="handleAction"
         v-on:click="handleClick"
         v-bind:values="getCells()"
+        v-bind:select="getSelect()"
     >
     </cells>
     <pre>{{ JSON.stringify(notebook, null, 2) }}</pre>
@@ -192,9 +200,9 @@ onready(function() {
     });
 
     Vue.component('cell', {
-        props: ['value', 'output', 'id'],
+        props: ['value', 'output', 'id', 'selected'],
         template: String.raw`
-            <div class="cell" v-on:click="handleClick">
+            <div class="cell" v-bind:class="classObject" v-on:click="handleClick">
                 <div class="side-left">
                 </div>
                 <div class="side-right">
@@ -213,6 +221,13 @@ onready(function() {
                     </celloutput>
                 </div>
             </div>`,
+        computed: {
+            classObject: function () {
+                return {
+                    selected: this.selected
+                }
+            },
+        },
         methods: {
             handleInput (event) {
                 this.$emit('update:value', { id:this.id, value:event });
@@ -229,7 +244,7 @@ onready(function() {
     Vue.component('draggable', vuedraggable);
 
     Vue.component('cells', {
-        props: [ 'values' ],
+        props: [ 'values', 'select' ],
         template: String.raw`
             <draggable
                 class="cells"
@@ -244,6 +259,7 @@ onready(function() {
                     v-bind:output="content.outputs"
                     v-bind:id="index"
                     v-bind:key="content.id"
+                    v-bind:selected="isSelected(index)"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     v-on:click="handleClick"
@@ -261,6 +277,9 @@ onready(function() {
             }
         },
         methods: {
+            isSelected (index) {
+                return index === this.select;
+            },
             dragStart (event) {
                 const cm = this.$globalCMList;
                 for (var i = 0; i < cm.length; i++) {
@@ -359,17 +378,6 @@ onready(function() {
             this.$store.commit('initialiseStore');
         },
         computed: {
-            contents() {
-                var notebook = this.$store.state;
-                var cells = notebook.cells;
-                var numCells = cells.length;
-                var result = [];
-                for (var i = 0; i < numCells; i++) {
-                    var cell = cells[i];
-                    result.push({ value:cell.source, output:cell.outputs, id:i });
-                }
-                return result;
-            },
             notebook() {
                 return this.$store.state;
             }
@@ -393,12 +401,16 @@ onready(function() {
             },
             handleDrag (event) {
                 this.$store.commit('updateCells', event);
+                this.$store.commit('setSelectCell', null);
             },
             addOutput (n, out) {
                 this.$store.commit('addOutput', {n, out});
             },
             getCells () {
                 return this.$store.state.cells;
+            },
+            getSelect () {
+                return this.$store.state.selectCell;
             },
             handleClick (event) {
                 this.$store.commit('setSelectCell', event.id);
