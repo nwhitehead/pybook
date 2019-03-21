@@ -112,10 +112,12 @@ div.output pre.stderr {
         <div id='loading' class='led'></div>
         <div id='starting' class='led'></div>
     </div>
+    <button v-on:click="buttonNew">New</button>
     <cells
         v-on:update:value="handleInput"
         v-on:update:values="handleDrag"
         v-on:action="handleAction"
+        v-on:click="handleClick"
         v-bind:values="getCells()"
     >
     </cells>
@@ -192,7 +194,7 @@ onready(function() {
     Vue.component('cell', {
         props: ['value', 'output', 'id'],
         template: String.raw`
-            <div class="cell">
+            <div class="cell" v-on:click="handleClick">
                 <div class="side-left">
                 </div>
                 <div class="side-right">
@@ -218,6 +220,9 @@ onready(function() {
             handleAction (event) {
                 this.$emit('action', { id:this.id, action:event.action });
             },
+            handleClick (event) {
+                this.$emit('click', { id:this.id });
+            },
         }
     });
 
@@ -241,6 +246,7 @@ onready(function() {
                     v-bind:key="content.id"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
+                    v-on:click="handleClick"
                 >
                 </cell>
             </draggable>`,
@@ -274,29 +280,29 @@ onready(function() {
             handleAction (event) {
                 this.$emit('action', event);
             },
+            handleClick (event) {
+                this.$emit('click', event);
+            },
         }
     });
 
     const store = new Vuex.Store({
         state: {
-            cells: [
-                {
-                    cell_type: 'code',
-                    execution_count: 1,
-                    source: '# some python code here\n2 + 2\n',
-                    outputs: [],
-                    id: 1234,
-                },
-                {
-                    cell_type: 'code',
-                    execution_count: 1,
-                    source: '2 ** 10\n',
-                    outputs: [],
-                    id: 54330,
-                }
-            ],
+            cells: [],
+            selectCell: 0,
         },
         mutations: {
+            new (state) {
+                Vue.set(state, 'cells', []);
+                Vue.set(state, 'selectCell', 0);
+                const newcell = {
+                    cell_type: 'code',
+                    execution_count: 1,
+                    source: '',
+                    outputs: [],
+                };
+                state.cells.splice(0, 0, newcell);
+            },
             setSource (state, payload) {
                 Vue.set(state.cells[payload.n], 'source', payload.source);
             },
@@ -324,7 +330,10 @@ onready(function() {
                         Object.assign(state, JSON.parse(localStorage.getItem('store')))
                     );
                 }
-            }
+            },
+            setSelectCell(state, payload) {
+                Vue.set(state, 'selectCell', payload);
+            },
         }
     });
 
@@ -372,6 +381,7 @@ onready(function() {
             handleAction (event) {
                 var action = event.action;
                 if (action === 'eval') {
+                    this.$store.commit('clearOutput', {n:event.id});
                     this.addOutput(event.id, { type:'stdout', contents:'42' });
                 } else if (action === 'break') {
                     this.addOutput(event.id, { type:'stderr', contents:'Error in eval:\nTraceback\n  23\n  3524\n' });
@@ -387,8 +397,14 @@ onready(function() {
             addOutput (n, out) {
                 this.$store.commit('addOutput', {n, out});
             },
-            getCells() {
+            getCells () {
                 return this.$store.state.cells;
+            },
+            handleClick (event) {
+                this.$store.commit('setSelectCell', event.id);
+            },
+            buttonNew (event) {
+                this.$store.commit('new');
             },
         }
     });
