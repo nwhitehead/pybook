@@ -1,5 +1,5 @@
 import { spawn } from './spawn.js'
-import { signalMap, sharedArray } from './signal.js';
+import { signalMap, sharedArray, setStarting, clearStarting } from './signal.js';
 
 export function newPythonWorker() {
     var spawn_data = {
@@ -8,8 +8,6 @@ export function newPythonWorker() {
             const signalMap = config.signalMap;
             sharedArray = config.sharedArray;
 
-            // Emscripten asm.js file needs to load data file
-            // Inside Web Worker the url needs to be absolute
             if (typeof(Module) === "undefined") Module = {};
             if (typeof(Notebook) === "undefined") Notebook = {};
 
@@ -17,6 +15,9 @@ export function newPythonWorker() {
             // Loads into CustomFS.createLazyFile, can't directly go into FS
             // because it gets overwritten by main import. 
             importScripts(absurl + '/myCreateLazyFile.js');
+
+            // Emscripten asm.js file needs to load data file
+            // Inside Web Worker the url needs to be absolute
             Module.locateFile = function(path, prefix) {
                 return absurl + '/' + path;
             };
@@ -104,7 +105,7 @@ export function newPythonWorker() {
                 } else {
                     console.log('Kernel reset');
                     Kernel_reset(kernel);
-                    Atomics.store(sharedArray, config.signalMap['starting'], 0);
+                    clearStarting();
                 }
             } else {
                 throw 'Unknown message type in webworker onmessage';
@@ -120,6 +121,6 @@ export function newPythonWorker() {
     var worker = spawn(spawn_data);
     worker.sharedArray = sharedArray;
     // Set starting, will clear once worker is ready
-    Atomics.store(worker.sharedArray, signalMap['starting'], 1);
+    setStarting();
     return worker;
 }
