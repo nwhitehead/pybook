@@ -145,11 +145,6 @@ function newWorker() {
                 if (Notebook.ready) {
                     send({ type:'stderr', data: text });
                 } else {
-                    // Pre-ready messages go to console
-                    if (text.indexOf('Calling stub instead of') === 0) {
-                        // Filter out these warnings related to signals
-                        return;
-                    }
                     console.warn(text);
                 }
             };
@@ -178,7 +173,7 @@ function newWorker() {
                 Atomics.wait(sharedArray, signalMap['interrupt'], 0, x * 1000.0);
             };
 
-            // Method called by pybook.output_content
+            // Methods called by pybook module
             handle_output_text_content = function(content_type, content_data) {
                 send({ type:'output', subtype:'text', content_type:content_type, data:content_data });
             };
