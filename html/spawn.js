@@ -1,5 +1,3 @@
-spawn = (function() {
-
 //!
 //! \brief Spawn a new thread
 //!
@@ -13,7 +11,7 @@ spawn = (function() {
 //! config Data that is available to thread from startup (optional)
 //! setup Function to run in thread at creation to setup (optional)
 //!
-function spawn(opts) {
+export function spawn(opts) {
     if (opts === undefined)
     {
         opts = {};
@@ -69,7 +67,3 @@ function spawn(opts) {
     };
     return worker;
 }
-
-return spawn;
-
-})();

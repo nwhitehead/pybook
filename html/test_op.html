@@ -4,7 +4,6 @@
 <meta charset="utf-8" />
 <title>CPyton Emscripten Test</title>
 
-<script src="spawn.js"></script>
 <script src="codemirror/codemirror.js"></script>
 <link rel="stylesheet" href="codemirror/codemirror.css">
 <script src="codemirror/python.js"></script>
@@ -82,20 +81,10 @@ pre {
 </div>
 </div>
 
-<script>
+<script type="module">
 
-function onready(f) {
-    if (window.onload) {
-        var curronload = window.onload;
-        var newonload = function(evt) {
-            curronload(evt);
-            f(evt);
-        };
-        window.onload = newonload;
-    } else {
-        window.onload = f;
-    }
-}
+import { spawn } from './spawn.js'
+import { onready } from './onready.js'
 
 // Empty a DOM element of all contents
 function empty(element) {
@@ -115,15 +104,10 @@ function escapeHTML(unsafe) {
         .replace(/'/g, '&#039;');
 }
 
-var signalMap = {
-    'interrupt':0,
-    'busy':1,
-    'loading':2,
-    'starting':3,
-};
+import { signalMap } from './signalMap.js';
 
 function newWorker() {
-    var sharedBuffer = new SharedArrayBuffer(32*4);
+    var sharedBuffer = new SharedArrayBuffer(signalMap.NUMBER * 4);
     var spawn_data = {
         setup: function() {
             const absurl = config.absurl;
