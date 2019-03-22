@@ -103,7 +103,11 @@ function escapeHTML(unsafe) {
         .replace(/'/g, '&#039;');
 }
 
-import { signalMap } from './signal.js';
+import { signalMap,
+         isBusy,
+         isStarting, setStarting,
+         setInterrupt, clearInterrupt
+       } from './signal.js';
 import { newPythonWorker } from './newPythonWorker.js';
 
 function setupCallbacks(worker, outputarea, evaloutputarea) {
@@ -168,9 +172,9 @@ onready(function() {
 
     inputarea.setOption('extraKeys', {
         'Ctrl-Enter': function(cm) {
-            if (Atomics.load(worker.sharedArray, signalMap['busy']) === 0) {
+            if (!isBusy()) {
                 // Clear flag to indicate keyboard interrupt
-                Atomics.store(worker.sharedArray, signalMap['interrupt'], 0);
+                clearInterrupt();
                 worker.send({ type:'execute', data:inputarea.doc.getValue() });
                 empty(outputarea);
                 empty(evaloutputarea);
@@ -185,13 +189,12 @@ onready(function() {
             setupCallbacks(worker, outputarea, evaloutputarea);
         },
         'Ctrl-R': function(cm) {
-            Atomics.store(worker.sharedArray, signalMap['starting'], 1);
+            setStarting();
             worker.send({ type:'reset' });
         },
         'Ctrl-C': function(cm) {
             // Set flag to indicate keyboard interrupt
-            Atomics.store(worker.sharedArray, signalMap['interrupt'], 1);
-            Atomics.notify(worker.sharedArray, signalMap['interrupt']);
+            setInterrupt();
         }
     });
 
@@ -199,16 +202,16 @@ onready(function() {
     
     setInterval(function() {
         var elem = document.getElementById('busy');
-        if (Atomics.load(worker.sharedArray, signalMap['busy']) === 0) {
-            elem.classList.remove('on');
-        } else {
+        if (isBusy()) {
             elem.classList.add('on');
+        } else {
+            elem.classList.remove('on');
         }
         var elem = document.getElementById('starting');
-        if (Atomics.load(worker.sharedArray, signalMap['starting']) === 0) {
-            elem.classList.remove('on');
-        } else {
+        if (isStarting()) {
             elem.classList.add('on');
+        } else {
+            elem.classList.remove('on');
         }
     }, 100);
 
