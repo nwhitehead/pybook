@@ -1,14 +1,12 @@
 import { spawn } from './spawn.js'
-import { signalMap } from './signalMap.js';
+import { signalMap, sharedArray } from './signal.js';
 
 export function newPythonWorker() {
-    var sharedBuffer = new SharedArrayBuffer(signalMap.NUMBER * 4);
     var spawn_data = {
         setup: function() {
             const absurl = config.absurl;
             const signalMap = config.signalMap;
-            const sharedBuffer = config.sharedBuffer;
-            sharedArray = new Int32Array(sharedBuffer);
+            sharedArray = config.sharedArray;
 
             // Emscripten asm.js file needs to load data file
             // Inside Web Worker the url needs to be absolute
@@ -114,14 +112,13 @@ export function newPythonWorker() {
         },
         config: {
             absurl: document.location.protocol + '//' + document.location.host,
-            sharedBuffer: sharedBuffer,
+            sharedArray: sharedArray,
             signalMap: signalMap,
         }
     };
 
     var worker = spawn(spawn_data);
-    worker.sharedBuffer = sharedBuffer;
-    worker.sharedArray = new Int32Array(sharedBuffer);
+    worker.sharedArray = sharedArray;
     // Set starting, will clear once worker is ready
     Atomics.store(worker.sharedArray, signalMap['starting'], 1);
     return worker;
