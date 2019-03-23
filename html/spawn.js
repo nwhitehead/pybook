@@ -12,8 +12,7 @@
 //! setup Function to run in thread at creation to setup (optional)
 //!
 export function spawn(opts) {
-    if (opts === undefined)
-    {
+    if (opts === undefined) {
         opts = {};
     }
     if (opts.setup === undefined) {
@@ -59,8 +58,7 @@ export function spawn(opts) {
         throw 'Unknown message type ' + type;
     };
     worker.kill = function() {
-        if (worker._onterminate)
-        {
+        if (worker._onterminate) {
             worker._onterminate();
         }
         worker.terminate();
