@@ -4,8 +4,8 @@ import { signalMap, sharedArray, setStarting, clearStarting } from './signal.js'
 export function newPythonWorker() {
     var spawn_data = {
         setup: function() {
-            const absurl = config.absurl;
-            const signalMap = config.signalMap;
+            absurl = config.absurl;
+            signalMap = config.signalMap;
             sharedArray = config.sharedArray;
 
             if (typeof(Module) === "undefined") Module = {};
@@ -103,9 +103,8 @@ export function newPythonWorker() {
                 if (!Module.calledRun) {
                     done({ type:'notready' });
                 } else {
-                    console.log('Kernel reset');
                     Kernel_reset(kernel);
-                    clearStarting();
+                    Atomics.store(sharedArray, signalMap['starting'], 0);
                 }
             } else {
                 throw 'Unknown message type in webworker onmessage';
@@ -119,7 +118,6 @@ export function newPythonWorker() {
     };
 
     var worker = spawn(spawn_data);
-    worker.sharedArray = sharedArray;
     // Set starting, will clear once worker is ready
     setStarting();
     return worker;
