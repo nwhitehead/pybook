@@ -1,6 +1,8 @@
 #include <cassert>
+#include <codecvt>
 #include <cstdlib>
 #include <iostream>
+#include <locale>
 #include <stdexcept>
 #include <string>
 
@@ -135,12 +137,14 @@ class Kernel
 public:
     void init()
     {
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        std::wstring wpath = converter.from_bytes(mPath.c_str());
+
         // When PYTHONHOME is set before init, turns off automatic searching by python
         setenv("PYTHONHOME", "/", 0);
 
         // Explicit path to zip archives
-        Py_SetPath(L"/lib/python3.7:/lib/python3.7/localroot.zip:/lib/python3.7/python3.7.zip");
-
+        Py_SetPath(wpath.c_str());
 
         PyImport_AppendInittab("pybook", PyInit_pybook);
         Py_InitializeEx(0);
@@ -160,7 +164,6 @@ public:
             PyErr_Print();
             FAIL("eval of run_cell failed");
         }
-        PyImport_ImportModule("spam");
     }
     void destroy()
     {
@@ -171,7 +174,8 @@ public:
             FAIL("Py_FinalizeEx failed");
         }
     }
-    Kernel()
+    Kernel(std::string path)
+    : mPath(path)
     {
         init();
     }
@@ -220,6 +224,7 @@ public:
         return out;
     }
 private:
+    std::string mPath;
     PyObject *globals = nullptr;
     PyObject *locals = nullptr;
     PyObject *run_cell = nullptr;
@@ -237,19 +242,19 @@ typedef void* ResultP; // opaque pointer
 
 extern "C" {
 
-KernelP Kernel_new();
+KernelP Kernel_new(const char *path);
 void Kernel_delete(KernelP kernel);
 void Kernel_reset(KernelP kernel);
-ResultP Kernel_eval(KernelP kernel, char *input);
+ResultP Kernel_eval(KernelP kernel, const char *input);
 const char* Kernel_version();
 const char* Result_str(ResultP result);
 void Result_delete(ResultP result);
 
 }
 
-KernelP Kernel_new()
+KernelP Kernel_new(const char *path)
 {
-    return reinterpret_cast<KernelP>(new Kernel());
+    return reinterpret_cast<KernelP>(new Kernel(path));
 }
 
 void Kernel_delete(KernelP kernel)
@@ -264,7 +269,7 @@ void Kernel_reset(KernelP kernel)
     reinterpret_cast<Kernel*>(kernel)->reset();
 }
 
-ResultP Kernel_eval(KernelP kernel, char *input)
+ResultP Kernel_eval(KernelP kernel, const char *input)
 {
     Kernel *k = reinterpret_cast<Kernel*>(kernel);
     assert(k);

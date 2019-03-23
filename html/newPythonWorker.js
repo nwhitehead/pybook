@@ -22,10 +22,10 @@ export function newPythonWorker() {
                 return absurl + '/' + path;
             };
             Module["preInit"] = function() {
-                FS.mkdir('/lib');
-                FS.mkdir('/lib/python3.7');
-                CustomFS.createLazyFile('/lib/python3.7', 'localroot.zip', absurl + '/localroot.zip', true, false);
-                CustomFS.createLazyFile('/lib/python3.7', 'python3.7.zip', absurl + '/python3.7.zip', true, false);
+                //~ FS.mkdir('/lib');
+                //~ FS.mkdir('/lib/python3.7');
+                CustomFS.createLazyFile('/', 'localroot.zip', absurl + '/localroot.zip', true, false);
+                CustomFS.createLazyFile('/', 'python3.7.zip', absurl + '/python3.7.zip', true, false);
             };
             Module['print'] = function(text) {
                 if (Notebook.ready) {
@@ -42,8 +42,9 @@ export function newPythonWorker() {
                     console.warn(text);
                 }
             };
+            var path = '/python3.7.zip:/localroot.zip';
             importScripts(absurl + '/python.asm.js');
-            Kernel_new = Module.cwrap('Kernel_new', 'number', []);
+            Kernel_new = Module.cwrap('Kernel_new', 'number', ['string']);
             Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
             Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
             Kernel_version = Module.cwrap('Kernel_version', 'string', []);
@@ -79,7 +80,7 @@ export function newPythonWorker() {
             var interval = setInterval(function () {
                 if (Module.calledRun) {
                     clearInterval(interval);
-                    kernel = Kernel_new();
+                    kernel = Kernel_new(path);
                     Notebook.ready = true;
                     // Clear starting flag
                     Atomics.store(sharedArray, signalMap['starting'], 0);

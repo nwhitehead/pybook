@@ -45,7 +45,7 @@ def run_cell(script, globals_=None, locals_=None):
     ast.fix_missing_locations(node)
     # Compile wrapped script, run wrapper definition
     try:
-        exec(compile(node, filename='<ast>', mode='exec'), globals_, locals_)
+        exec(compile(node, filename='<eval>', mode='exec'), globals_, locals_)
         if expr:
             result = locals_[resultid]
             del locals_[resultid]
