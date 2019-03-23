@@ -1,7 +1,10 @@
 import { spawn } from './spawn.js'
 import { signalMap, sharedArray, setStarting, clearStarting } from './signal.js';
 
-export function newPythonWorker() {
+export function newPythonWorker(opts) {
+    if (opts === undefined) {
+        opts = {}
+    }
     var spawn_data = {
         setup: function() {
             absurl = config.absurl;
@@ -21,11 +24,23 @@ export function newPythonWorker() {
             Module.locateFile = function(path, prefix) {
                 return absurl + '/' + path;
             };
+            const files = config.opts.files;
+            var filenames = [];
+            if (files !== undefined) {
+                for (var i = 0; i < files.length; i++) {
+                    const filename = '/' + files[i];
+                    filenames.push(filename);
+                }
+            }
+            const path = filenames.join(':');
             Module["preInit"] = function() {
-                //~ FS.mkdir('/lib');
-                //~ FS.mkdir('/lib/python3.7');
-                CustomFS.createLazyFile('/', 'localroot.zip', absurl + '/localroot.zip', true, false);
-                CustomFS.createLazyFile('/', 'python3.7.zip', absurl + '/python3.7.zip', true, false);
+                const files = config.opts.files;
+                if (files !== undefined) {
+                    for (var i = 0; i < files.length; i++) {
+                        const filename = files[i];
+                        CustomFS.createLazyFile('/', filename, absurl + '/' + filename, true, false);
+                    }
+                }
             };
             Module['print'] = function(text) {
                 if (Notebook.ready) {
@@ -42,7 +57,6 @@ export function newPythonWorker() {
                     console.warn(text);
                 }
             };
-            var path = '/python3.7.zip:/localroot.zip';
             importScripts(absurl + '/python.asm.js');
             Kernel_new = Module.cwrap('Kernel_new', 'number', ['string']);
             Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
@@ -115,6 +129,7 @@ export function newPythonWorker() {
             absurl: document.location.protocol + '//' + document.location.host,
             sharedArray: sharedArray,
             signalMap: signalMap,
+            opts: opts
         }
     };
 

@@ -42,7 +42,13 @@ export function newPythonKernel(opts) {
     // No defaults:
     // opts.onFilesystem
 
-    const worker = newPythonWorker();
+    const workerOpts = {
+        files: [
+            'python3.7.zip',
+            'localroot.zip'
+        ],
+    };
+    const worker = newPythonWorker(workerOpts);
     worker.on('message', function(msg) {
         if (msg.type === 'ready') {
             if (opts.onReady) {
