@@ -39,6 +39,9 @@ export function newPythonKernel(opts) {
             console.log(msg);
         };
     }
+    if (opts.files === undefined) {
+        opts.files = [];
+    }
     // No defaults:
     // opts.onFilesystem
 
@@ -46,7 +49,7 @@ export function newPythonKernel(opts) {
         files: [
             'python3.7.zip',
             'localroot.zip'
-        ],
+        ].concat(opts.files)
     };
     const worker = newPythonWorker(workerOpts);
     worker.on('message', function(msg) {
