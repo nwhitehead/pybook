@@ -2,16 +2,14 @@
 <html>
 <head>
 <title>Test of VueJS Notebook</title>
-<script defer src="spawn.js"></script>
 <script defer src="codemirror/codemirror.js"></script>
 <link rel="stylesheet" href="codemirror/codemirror.css">
 <script defer src="codemirror/python.js"></script>
 <script defer src="vue.js"></script>
 <script defer src="vuex.js"></script>
-<script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.19.2/vuedraggable.umd.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
-<script defer src="https://use.fontawesome.com/releases/v5.7.2/js/all.js" integrity="sha384-0pzryjIRos8mFBWMzSSZApWtPl/5++eIfzYmTgBBmXYdhvxPc+XcFEk+zJwDgWbP" crossorigin="anonymous"></script>
+<script src="Sortable.min.js"></script>
+<script src="vuedraggable.umd.min.js"></script>
+<link rel="stylesheet" href="bulma.min.css">
 
 <style>
 #status {
@@ -132,20 +130,9 @@ div.output pre.stderr {
     <pre>{{ JSON.stringify(notebook, null, 2) }}</pre>
 </div>
 
-<script>
+<script type='module'>
 
-function onready(f) {
-    if (window.onload) {
-        var curronload = window.onload;
-        var newonload = function(evt) {
-            curronload(evt);
-            f(evt);
-        };
-        window.onload = newonload;
-    } else {
-        window.onload = f;
-    }
-}
+import { onready } from './onready.js'
 
 onready(function() {
 
