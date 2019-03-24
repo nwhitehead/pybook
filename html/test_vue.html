@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8" />
 <title>Test of VueJS Notebook</title>
 <script defer src="codemirror/codemirror.js"></script>
 <link rel="stylesheet" href="codemirror/codemirror.css">
@@ -127,11 +128,17 @@ div.output pre.stderr {
 <script type='module'>
 
 import { onready } from './onready.js'
+import { signalMap,
+         isBusy,
+         isStarting, setStarting,
+         setInterrupt, clearInterrupt
+       } from './signal.js';
+import { newPythonKernel } from './python.js';
 
 onready(function() {
 
     // Global variable keeping list of all codemirror editors
-    // Needed to quickly update dragdrop state
+    // Needed to quickly update dragdrop state (prevent dropping in editors)
     Vue.prototype.$globalCMList = [];
 
     Vue.component('codemirror', {
@@ -283,6 +290,9 @@ onready(function() {
         }
     });
 
+    const opts = {};
+    var python = newPythonKernel(opts);
+
     const store = new Vuex.Store({
         state: {
             cells: [],
@@ -339,13 +349,6 @@ onready(function() {
         localStorage.setItem('store', JSON.stringify(state));
     });
 
-    var signalMap = {
-        'interrupt':0,
-        'busy':1,
-        'loading':2,
-        'starting':3,
-    };
-
     var app = new Vue({
         el: '#app',
         store,
@@ -366,9 +369,18 @@ onready(function() {
             },
             handleAction (event) {
                 var action = event.action;
+                const self = this;
                 if (action === 'eval') {
                     this.$store.commit('clearOutput', {n:event.id});
-                    this.addOutput(event.id, { type:'stdout', contents:'42' });
+                    clearInterrupt();
+                    python.evaluate(this.$store.state.cells[event.id].source, {
+                        onStdout: function(msg) {
+                            self.addOutput(event.id, { type:'stdout', contents:msg });
+                        },
+                        onResponse: function(result) {
+                            self.addOutput(event.id, { type:'stdout', contents:result });
+                        },
+                    });
                 } else if (action === 'break') {
                     this.addOutput(event.id, { type:'stderr', contents:'Error in eval:\nTraceback\n  23\n  3524\n' });
                     } else if (action === 'insert-after') {
@@ -401,8 +413,22 @@ onready(function() {
             },
         }
     });
-    window.app = app;
-    window.store = store;
+
+    setInterval(function() {
+        var elem = document.getElementById('busy');
+        if (isBusy()) {
+            elem.classList.add('on');
+        } else {
+            elem.classList.remove('on');
+        }
+        var elem = document.getElementById('starting');
+        if (isStarting()) {
+            elem.classList.add('on');
+        } else {
+            elem.classList.remove('on');
+        }
+    }, 100);
+
 });
 
 

@@ -6,7 +6,22 @@ import { signalMap,
 
 import { newPythonWorker } from './newPythonWorker.js';
 
-var callbacks = [];
+//!
+//! \brief Find one handler in dict with fallback opts
+//!
+//! Given one main dictionary of handlers, and a fallback options
+//! dictionary, find the handler for name. If neither one has it,
+//! return the defaultHandler.
+//!
+function findHandler(name, callback, opts, defaultHandler) {
+    if (callback !== undefined && callback[name] !== undefined) {
+        return callback[name];
+    }
+    if (opts[name] !== undefined) {
+        return opts[name];
+    }
+    return defaultHandler;
+}
 
 export function newPythonKernel(opts) {
 
@@ -52,39 +67,24 @@ export function newPythonKernel(opts) {
         ].concat(opts.files)
     };
     const worker = newPythonWorker(workerOpts);
+    var callbacks = [];
     worker.on('message', function(msg) {
+        const defaultHandler = function() { console.log('default handler'); };
+        const callback = callbacks[0];
         if (msg.type === 'ready') {
-            if (opts.onReady) {
-                opts.onReady(msg.data);
-            }
+            findHandler('onReady', callback, opts, defaultHandler)(msg.data);
         } else if (msg.type === 'stdout') {
-            if (opts.onStdout) {
-                opts.onStdout(msg.data);
-            }
+            findHandler('onStdout', callback, opts, defaultHandler)(msg.data);
         } else if (msg.type === 'stderr') {
-            if (opts.onStderr) {
-                opts.onStderr(msg.data);
-            }
+            findHandler('onStderr', callback, opts, defaultHandler)(msg.data);
         } else if (msg.type === 'output') {
-            if (opts.onOutput) {
-                opts.onOutput(msg.content_type, msg.data);
-            }
+            findHandler('onOutput', callback, opts, defaultHandler)(msg.content_type, msg.data);
         } else if (msg.type === 'filesystem') {
-            if (opts.onFilesystem) {
-                opts.onFilesystem();
-            }
+            findHandler('onFilesystem', callback, opts, defaultHandler)();
         } else if (msg.type === 'response') {
             if (callbacks.length > 0) {
-                const callback = callbacks.pop();
-                if (callback) {
-                    callback(msg.data);
-                } else {
-                    if (opts.onResponse) {
-                        opts.onResponse(msg.data);
-                    } else {
-                        throw 'Unhandled response'
-                    }
-                }
+                callbacks.shift();
+                findHandler('onResponse', callback, opts, defaultHandler)(msg.data);
             } else {
                 throw 'Unexpected response from kernel'
             }
@@ -96,6 +96,7 @@ export function newPythonKernel(opts) {
     });
     
     return {
+        callbacks: [],
         evaluate: function(expr, callback) {
             callbacks.push(callback);
             worker.send({ type:'execute', data:expr });
