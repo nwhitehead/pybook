@@ -82,12 +82,6 @@ div.output pre.stderr {
 }
 .eval {
 }
-.handle {
-    position: absolute;
-    top: 1px;
-    right: 4px;
-    z-index: 20;
-}
 .output pre {
     white-space: pre-wrap;
     word-break: break-all;
@@ -190,7 +184,7 @@ onready(function() {
         props: ['value', 'output', 'id', 'selected'],
         template: String.raw`
             <div class="cell" v-bind:class="classObject" v-on:click="handleClick">
-                <div class="side-left">
+                <div class="side-left handle">
                 </div>
                 <div class="side-right">
                     <codemirror
@@ -199,9 +193,6 @@ onready(function() {
                         v-on:action="handleAction"
                         >
                     </codemirror>
-                    <div class="handle">
-                        <i class="fas fa-grip-vertical"></i>
-                    </div>
                     <celloutput
                         v-bind:values="output"
                     >
