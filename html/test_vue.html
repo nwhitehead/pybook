@@ -104,7 +104,7 @@ div.output pre.stderr {
 
 
 
-<div id="app">
+<div id="app" v-on:click="handleOuterClick">
 
     <div id='status'>
         <div id='busy' class='led'></div>
@@ -116,7 +116,7 @@ div.output pre.stderr {
         v-on:update:value="handleInput"
         v-on:update:values="handleDrag"
         v-on:action="handleAction"
-        v-on:click="handleClick"
+        v-on:appclick="handleClick"
         v-bind:values="getCells()"
         v-bind:select="getSelect()"
     >
@@ -183,7 +183,7 @@ onready(function() {
     Vue.component('cell', {
         props: ['value', 'output', 'id', 'selected'],
         template: String.raw`
-            <div class="cell" v-bind:class="classObject" v-on:click="handleClick">
+            <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick">
                 <div class="side-left handle">
                 </div>
                 <div class="side-right">
@@ -214,7 +214,7 @@ onready(function() {
                 this.$emit('action', { id:this.id, action:event.action });
             },
             handleClick (event) {
-                this.$emit('click', { id:this.id });
+                this.$emit('appclick', { id:this.id });
             },
         }
     });
@@ -240,7 +240,7 @@ onready(function() {
                     v-bind:selected="isSelected(index)"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
-                    v-on:click="handleClick"
+                    v-on:appclick="handleClick"
                 >
                 </cell>
             </draggable>`,
@@ -278,7 +278,7 @@ onready(function() {
                 this.$emit('action', event);
             },
             handleClick (event) {
-                this.$emit('click', event);
+                this.$emit('appclick', event);
             },
         }
     });
@@ -392,6 +392,9 @@ onready(function() {
             },
             handleClick (event) {
                 this.$store.commit('setSelectCell', event.id);
+            },
+            handleOuterClick (event) {
+                this.$store.commit('setSelectCell', undefined);
             },
             buttonNew (event) {
                 this.$store.commit('new');
