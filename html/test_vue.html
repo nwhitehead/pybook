@@ -349,6 +349,10 @@ onready(function() {
         localStorage.setItem('store', JSON.stringify(state));
     });
 
+    function beep() {
+        console.log('Beep (placeholder for visual effect)');
+    }
+
     var app = new Vue({
         el: '#app',
         store,
@@ -372,15 +376,22 @@ onready(function() {
                 const self = this;
                 if (action === 'eval') {
                     this.$store.commit('clearOutput', {n:event.id});
-                    clearInterrupt();
-                    python.evaluate(this.$store.state.cells[event.id].source, {
-                        onStdout: function(msg) {
-                            self.addOutput(event.id, { type:'stdout', contents:msg });
-                        },
-                        onResponse: function(result) {
-                            self.addOutput(event.id, { type:'stdout', contents:result });
-                        },
-                    });
+                    if (!isBusy()) {
+                        clearInterrupt();
+                        python.evaluate(this.$store.state.cells[event.id].source, {
+                            onStdout: function(msg) {
+                                self.addOutput(event.id, { type:'stdout', contents:msg });
+                            },
+                            onStderr: function(msg) {
+                                self.addOutput(event.id, { type:'stderr', contents:msg });
+                            },
+                            onResponse: function(result) {
+                                self.addOutput(event.id, { type:'stdout', contents:result });
+                            },
+                        });
+                    } else {
+                        beep();
+                    }
                 } else if (action === 'break') {
                     this.addOutput(event.id, { type:'stderr', contents:'Error in eval:\nTraceback\n  23\n  3524\n' });
                     } else if (action === 'insert-after') {
