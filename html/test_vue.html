@@ -375,8 +375,8 @@ onready(function() {
                 var action = event.action;
                 const self = this;
                 if (action === 'eval') {
-                    this.$store.commit('clearOutput', {n:event.id});
-                    if (!isBusy()) {
+                    if (!isBusy() && !isStarting()) {
+                        this.$store.commit('clearOutput', {n:event.id});
                         clearInterrupt();
                         python.evaluate(this.$store.state.cells[event.id].source, {
                             onStdout: function(msg) {
@@ -393,8 +393,8 @@ onready(function() {
                         beep();
                     }
                 } else if (action === 'break') {
-                    this.addOutput(event.id, { type:'stderr', contents:'Error in eval:\nTraceback\n  23\n  3524\n' });
-                    } else if (action === 'insert-after') {
+                    setInterrupt();
+                } else if (action === 'insert-after') {
                     this.$store.commit('insertAfter', { n:event.id });
                 } else {
                     console.log("Unknown action", action, event.id);
