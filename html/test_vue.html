@@ -290,7 +290,15 @@ onready(function() {
         }
     });
 
-    const opts = {};
+    const opts = {
+        onFilesystem: function() {
+            var elem = document.getElementById('loading');
+            elem.classList.add('on');
+            setTimeout(function() {
+                elem.classList.remove('on');
+            }, 200);                                
+        }
+    };
     var python = newPythonKernel(opts);
 
     const store = new Vuex.Store({
