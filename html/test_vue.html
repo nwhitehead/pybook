@@ -179,12 +179,52 @@ onready(function() {
         },
     });
 
+    Vue.component('dataoutput', {
+        props: ['value', 'isResult'],
+        template: String.raw`
+            <div>
+                <pre v-if="isPre(value)" :class="getClass(value)"><img v-if="isResult" src="gfx/right2.svg" width=10 height=10></img> {{ value['text/plain'] }}</pre>
+                <pre v-if="isHtml(value)" :class="getClass(value)"><img v-if="isResult" src="gfx/right2.svg" width=10 height=10></img><span v-html="value['text/html']"></span></pre>
+            </div>
+        `,
+        methods: {
+            getClass (value) {
+                return "stdout";
+            },
+            isPre (value) {
+                return value['text/plain'] !== undefined;
+            },
+            isHtml (value) {
+                return value['text/html'] !== undefined;
+            },
+        }
+    });
+
     Vue.component('celloutput', {
         props: ['values'],
         template: String.raw`
             <div class="output">
-                <pre v-for="value in values" :class="value.type">{{ value.contents }}</pre>
-            </div>`
+                <template v-for="value in values">
+                    <pre v-if="isStream(value)" :class="value.name">{{ value.text }}</pre>
+                    <dataoutput
+                        v-if="isExecuteResult(value) || isDisplayData(value)"
+                        v-bind:value="value.data"
+                        v-bind:isResult="isExecuteResult(value)"
+                    >
+                    </dataoutput>
+                </template>
+            </div>`,
+        methods: {
+            isStream (value) {
+                return value.output_type === 'stream';
+            },
+            isExecuteResult (value) {
+                return value.output_type === 'execute_result';
+            },
+            isDisplayData (value) {
+                return value.output_type === 'display_data';
+            },
+        }
     });
 
     Vue.component('cell', {
@@ -388,13 +428,49 @@ onready(function() {
                         clearInterrupt();
                         python.evaluate(this.$store.state.cells[event.id].source, {
                             onStdout: function(msg) {
-                                self.addOutput(event.id, { type:'stdout', contents:msg });
+                                self.addOutput(event.id, { 
+                                    output_type: 'stream',
+                                    name: 'stdout',
+                                    text: msg
+                                });
                             },
                             onStderr: function(msg) {
-                                self.addOutput(event.id, { type:'stderr', contents:msg });
+                                self.addOutput(event.id, { 
+                                    output_type: 'stream',
+                                    name: 'stderr',
+                                    text: msg
+                                });
                             },
                             onResponse: function(result) {
-                                self.addOutput(event.id, { type:'stdout', contents:result });
+                                self.addOutput(event.id, {
+                                    output_type: 'execute_result',
+                                    execution_count: 1,
+                                    data: {
+                                        "text/plain": result
+                                    }
+                                });
+                            },
+                            onOutput: function(content_type, data) {
+                                if (content_type === 'text/html') {
+                                    self.addOutput(event.id, {
+                                        output_type: 'display_data',
+                                        execution_count: 1,
+                                        data: {
+                                            "text/html": data
+                                        }
+                                    });
+                                } else if (content_type === 'text/plain') {
+                                    self.addOutput(event.id, {
+                                        output_type: 'display_data',
+                                        execution_count: 1,
+                                        data: {
+                                            "text/plain": data
+                                        }
+                                    });
+                                } else if (content_type === 'image/png') {
+                                } else {
+                                    console.log('Unknown content_type ' + content_type);
+                                }
                             },
                         });
                     } else {

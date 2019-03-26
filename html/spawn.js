@@ -31,7 +31,7 @@ export function spawn(opts) {
              config = e.data;                                  \
              (', opts.setup.toString(), ')();                  \
              onmessage = function(e) {                         \
-               _handler(e.data, _done);                             \
+               _handler(e.data, _done);                        \
              };                                                \
          };',
         ], { type: 'text/javascript' });
