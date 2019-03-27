@@ -441,30 +441,28 @@ onready(function() {
                                     text: msg
                                 });
                             },
-                            onResponse: function(result) {
+                            onResponse: function(content_type, msg) {
                                 self.addOutput(event.id, {
                                     output_type: 'execute_result',
                                     execution_count: 1,
                                     data: {
-                                        "text/plain": result
+                                        "text/plain": msg
                                     }
                                 });
                             },
-                            onOutput: function(content_type, data) {
+                            onOutput: function(content_type, msg) {
                                 if (content_type === 'text/html') {
                                     self.addOutput(event.id, {
                                         output_type: 'display_data',
-                                        execution_count: 1,
                                         data: {
-                                            "text/html": data
+                                            "text/html": msg
                                         }
                                     });
                                 } else if (content_type === 'text/plain') {
                                     self.addOutput(event.id, {
                                         output_type: 'display_data',
-                                        execution_count: 1,
                                         data: {
-                                            "text/plain": data
+                                            "text/plain": msg
                                         }
                                     });
                                 } else if (content_type === 'image/png') {

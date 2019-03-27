@@ -111,7 +111,7 @@ export function newPythonWorker(opts) {
                     var result = Kernel_eval(kernel, input.data);
                     var result_str = Result_str(result);
                     var result_repr = UTF8ToString(result_str);
-                    done({ type: 'response', data: result_repr });
+                    done({ type: 'response', content_type:'text/plain', data: result_repr });
                     Result_delete(result);
                 }
             } else if (input.type === 'reset') {

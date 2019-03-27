@@ -50,8 +50,8 @@ export function newPythonKernel(opts) {
         };
     }
     if (opts.onResponse === undefined) {
-        opts.onResponse = function(msg) {
-            console.log(msg);
+        opts.onResponse = function(content_type, data) {
+            console.log('Response', content_type, data);
         };
     }
     if (opts.files === undefined) {
@@ -84,7 +84,7 @@ export function newPythonKernel(opts) {
         } else if (msg.type === 'response') {
             if (callbacks.length > 0) {
                 callbacks.shift();
-                findHandler('onResponse', callback, opts, defaultHandler)(msg.data);
+                findHandler('onResponse', callback, opts, defaultHandler)(msg.content_type, msg.data);
             } else {
                 throw 'Unexpected response from kernel'
             }

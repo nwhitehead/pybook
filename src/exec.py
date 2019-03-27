@@ -38,7 +38,7 @@ def run_cell(script, globals_=None, locals_=None):
     resultid = '__result_{}__'.format(uid)
     uid += 1
     expr = False
-    if isinstance(statements[-1], ast.Expr):
+    if len(statements) > 0 and isinstance(statements[-1], ast.Expr):
         expr = True
         value = node.body[-1].value
         node.body[-1] = ast.Assign(targets=[ast.Name(id=resultid, ctx=ast.Store())], value=value)
