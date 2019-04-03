@@ -113,6 +113,7 @@ div.output pre.stderr {
         <div id='starting' class='led'></div>
     </div>
     <button v-on:click="buttonNew">New</button>
+    <button v-on:click="buttonSave">Save</button>
     <cells
         v-on:update:value="handleInput"
         v-on:update:values="handleDrag"
@@ -503,6 +504,12 @@ onready(function() {
             },
             buttonNew (event) {
                 this.$store.commit('new');
+            },
+            buttonSave (event) {
+                const data = JSON.stringify(this.$store.state);
+                const blob = new Blob([data], {type:"application/json"});
+                const url = window.URL.createObjectURL(blob);
+                console.log("saving", url);
             },
         }
     });
