@@ -139,6 +139,18 @@ div.output pre.stderr {
                 </div>
             </div>
         </div>
+        <div class="dropdown is-hoverable">
+            <div class="dropdown-trigger">
+                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-debug">
+                    <span>Debug</span>
+                </button>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu-debug" role="menu">
+                <div class="dropdown-content">
+                    <a class="dropdown-item" v-on:click="debugDump">Console dump</a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <cells
@@ -150,7 +162,6 @@ div.output pre.stderr {
         v-bind:select="getSelect()"
     >
     </cells>
-    <pre>{{ JSON.stringify(notebook, null, 2) }}</pre>
 </div>
 
 <script type='module'>
@@ -577,6 +588,10 @@ onready(function() {
                 if (this.selectionValid(n)) {
                     this.$store.commit('insertAfter', { n });
                 }
+            },
+            debugDump (event) {
+                console.log('Notebook dump');
+                console.log(JSON.stringify(this.notebook, null, 2));
             },
         }
     });
