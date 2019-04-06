@@ -11,6 +11,7 @@
 <script src="Sortable.min.js"></script>
 <script src="vuedraggable.umd.min.js"></script>
 <link rel="stylesheet" href="bulma.min.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
 <style>
 #status {
@@ -59,9 +60,6 @@ div .side-right {
     width: 100%;
 }
 .cellinput.CodeMirror-focused {
-<!--
-    border: 1px solid #8094cf;
--->
 }
 .CodeMirror-scroll {
     width: auto;
@@ -112,8 +110,37 @@ div.output pre.stderr {
         <div id='loading' class='led'></div>
         <div id='starting' class='led'></div>
     </div>
-    <button v-on:click="buttonNew">New</button>
-    <button v-on:click="buttonSave">Save</button>
+
+    <div id="menu">
+        <div class="dropdown is-hoverable">
+            <div class="dropdown-trigger">
+                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-file">
+                    <span>File</span>
+                </button>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu-file" role="menu">
+                <div class="dropdown-content">
+                    <a class="dropdown-item" v-on:click="fileNew">New</a>
+                    <a class="dropdown-item" v-on:click="fileSave">Save</a>
+                </div>
+            </div>
+        </div>
+        <div class="dropdown is-hoverable">
+            <div class="dropdown-trigger">
+                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-edit">
+                    <span>Edit</span>
+                </button>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu-edit" role="menu">
+                <div class="dropdown-content">
+                    <a class="dropdown-item" v-on:click="insertBefore">Insert new cell before</a>
+                    <a class="dropdown-item" v-on:click="insertAfter">Insert new cell after</a>
+                    <a class="dropdown-item" v-on:click="deleteCell">Delete cell</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <cells
         v-on:update:value="handleInput"
         v-on:update:values="handleDrag"
@@ -368,6 +395,15 @@ onready(function() {
             addOutput (state, payload) {
                 state.cells[payload.n].outputs.push(payload.out);
             },
+            insertBefore (state, payload) {
+                const newcell = {
+                    cell_type: 'code',
+                    execution_count: 1,
+                    source: '',
+                    outputs: [],
+                };
+                state.cells.splice(payload.n, 0, newcell);
+            },
             insertAfter (state, payload) {
                 const newcell = {
                     cell_type: 'code',
@@ -376,6 +412,9 @@ onready(function() {
                     outputs: [],
                 };
                 state.cells.splice(payload.n + 1, 0, newcell);
+            },
+            deleteCell (state, payload) {
+                state.cells.splice(payload.n, 1);
             },
             updateCells (state, payload) {
                 state.cells = payload;
@@ -502,14 +541,42 @@ onready(function() {
             handleOuterClick (event) {
                 this.$store.commit('setSelectCell', undefined);
             },
-            buttonNew (event) {
+            fileNew (event) {
                 this.$store.commit('new');
             },
-            buttonSave (event) {
+            fileSave (event) {
                 const data = JSON.stringify(this.$store.state);
                 const blob = new Blob([data], {type:"application/json"});
                 const url = window.URL.createObjectURL(blob);
                 console.log("saving", url);
+            },
+            selectionValid (n) {
+                if (n === undefined) {
+                    return false;
+                }
+                return (n >= 0 && n < this.$store.state.cells.length);
+            },
+            deleteCell (event) {
+                const n = this.$store.state.selectCell;
+                if (this.selectionValid(n)) {
+                    this.$store.commit('deleteCell', { n });
+                }
+                if (this.$store.state.cells.length === 0) {
+                    // If user deleted last cell, start with fresh notebook
+                    this.$store.commit('new');
+                }
+            },
+            insertBefore (event) {
+                const n = this.$store.state.selectCell;
+                if (this.selectionValid(n)) {
+                    this.$store.commit('insertBefore', { n });
+                }
+            },
+            insertAfter (event) {
+                const n = this.$store.state.selectCell;
+                if (this.selectionValid(n)) {
+                    this.$store.commit('insertAfter', { n });
+                }
             },
         }
     });
