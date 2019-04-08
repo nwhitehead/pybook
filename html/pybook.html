@@ -46,18 +46,23 @@ div .side-right {
     flex: 1 1 auto;
     overflow: hidden;
 }
-.cellinput {
+div.cellinput {
     height: auto;
     width: 100%;
     padding: 10px 20px 10px 10px;
 }
-.cellinput.CodeMirror {
-    background-color: #fafcff;
+div.cellinput.CodeMirror {
     border: 1px solid #f0f4ff;
     border-radius: 4px;
     height: auto;
     z-index: 10;
     width: 100%;
+}
+div.code div.cellinput.CodeMirror {
+    background-color: #f6faff;
+}
+div.markdown div.cellinput.CodeMirror {
+    background-color: #fffaf6;
 }
 .cellinput.CodeMirror-focused {
 }
@@ -136,6 +141,10 @@ div.output pre.stderr {
                     <a class="dropdown-item" v-on:click="insertBefore">Insert new cell before</a>
                     <a class="dropdown-item" v-on:click="insertAfter">Insert new cell after</a>
                     <a class="dropdown-item" v-on:click="deleteCell">Delete cell</a>
+                    <a class="dropdown-divider"></a>
+                    <a class="dropdown-item" v-on:click="typeCellCode">Type - code</a>
+                    <a class="dropdown-item" v-on:click="typeCellMarkdownEdit">Type - Markdown - Edit</a>
+                    <a class="dropdown-item" v-on:click="typeCellMarkdownView">Type - Markdown - View</a>
                 </div>
             </div>
         </div>
@@ -267,28 +276,42 @@ onready(function() {
     });
 
     Vue.component('cell', {
-        props: ['value', 'output', 'id', 'selected'],
+        props: ['value', 'output', 'id', 'selected', 'type'],
         template: String.raw`
             <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick">
-                <div class="side-left handle">
+                <div class="side-left">
                 </div>
-                <div class="side-right">
+                <div class="side-right" :class="rightClass">
                     <codemirror
                         v-bind:value="value"
                         v-on:update:value="handleInput"
                         v-on:action="handleAction"
+                        v-if="showEdit"
                         >
                     </codemirror>
                     <celloutput
                         v-bind:values="output"
+                        v-if="showResults"
                     >
                     </celloutput>
                 </div>
             </div>`,
         computed: {
+            showEdit () {
+                return this.type === 'code' || this.type === 'markdown-edit';
+            },
+            showResults () {
+                return this.type === 'code' || this.type === 'markdown-view' || this.type === 'markdown-edit';
+            },
             classObject: function () {
                 return {
                     selected: this.selected
+                }
+            },
+            rightClass: function () {
+                return {
+                    code: this.type === 'code',
+                    markdown: this.type === 'markdown-edit' || this.type === 'markdown-view',
                 }
             },
         },
@@ -324,6 +347,7 @@ onready(function() {
                     v-bind:id="index"
                     v-bind:key="content.id"
                     v-bind:selected="isSelected(index)"
+                    v-bind:type="computeType(content)"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     v-on:appclick="handleClick"
@@ -341,6 +365,12 @@ onready(function() {
             }
         },
         methods: {
+            computeType (content) {
+                if (content.cell_type === 'code') return 'code';
+                if (content.cell_type === 'markdown' && content.metadata !== undefined && content.metadata.subtype === 'view') return 'markdown-view';
+                if (content.cell_type === 'markdown' && content.metadata !== undefined && content.metadata.subtype === 'edit') return 'markdown-edit';
+                throw "Illegal content type";
+            },
             isSelected (index) {
                 return index === this.select;
             },
@@ -429,6 +459,15 @@ onready(function() {
             },
             updateCells (state, payload) {
                 state.cells = payload;
+            },
+            cellType (state, payload) {
+                state.cells[payload.n]['cell_type'] = payload.type;
+                if (payload.subtype !== undefined) {
+                    if (state.cells[payload.n].metadata === undefined) {
+                        state.cells[payload.n].metadata = {}
+                    }
+                    state.cells[payload.n]['metadata'].subtype = payload.subtype;
+                }
             },
             initialiseStore(state) {
                 if (localStorage.getItem('store')) {
@@ -587,6 +626,24 @@ onready(function() {
                 const n = this.$store.state.selectCell;
                 if (this.selectionValid(n)) {
                     this.$store.commit('insertAfter', { n });
+                }
+            },
+            typeCellCode (event) {
+                const n = this.$store.state.selectCell;
+                if (this.selectionValid(n)) {
+                    this.$store.commit('cellType', { n, type:'code' });
+                }
+            },
+            typeCellMarkdownEdit (event) {
+                const n = this.$store.state.selectCell;
+                if (this.selectionValid(n)) {
+                    this.$store.commit('cellType', { n, type:'markdown', subtype:'edit' });
+                }
+            },
+            typeCellMarkdownView (event) {
+                const n = this.$store.state.selectCell;
+                if (this.selectionValid(n)) {
+                    this.$store.commit('cellType', { n, type:'markdown', subtype:'view' });
                 }
             },
             debugDump (event) {
