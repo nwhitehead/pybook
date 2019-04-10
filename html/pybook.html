@@ -8,6 +8,7 @@
 <script defer src="codemirror/python.js"></script>
 <script defer src="vue.js"></script>
 <script defer src="vuex.js"></script>
+<script defer src="marked.min.js"></script>
 <script src="Sortable.min.js"></script>
 <script src="vuedraggable.umd.min.js"></script>
 <link rel="stylesheet" href="bulma.min.css">
@@ -60,7 +61,7 @@ div.cellinput.CodeMirror {
 }
 div.code div.cellinput.CodeMirror {
     background-color: #f6faff;
-}
+}   
 div.markdown div.cellinput.CodeMirror {
     background-color: #fffaf6;
 }
@@ -232,7 +233,7 @@ onready(function() {
         template: String.raw`
             <div>
                 <pre v-if="isPre(value)" :class="getClass(value)"><img v-if="isResult" src="gfx/right2.svg" width=10 height=10></img> {{ value['text/plain'] }}</pre>
-                <pre v-if="isHtml(value)" :class="getClass(value)"><img v-if="isResult" src="gfx/right2.svg" width=10 height=10></img><span v-html="value['text/html']"></span></pre>
+                <div v-if="isHtml(value)" :class="getClass(value)"><img v-if="isResult" src="gfx/right2.svg" width=10 height=10></img><div class="content" v-html="value['text/html']"></div></div>
             </div>
         `,
         methods: {
@@ -290,7 +291,7 @@ onready(function() {
                         >
                     </codemirror>
                     <celloutput
-                        v-bind:values="output"
+                        v-bind:values="filteredOutput"
                         v-if="showResults"
                     >
                     </celloutput>
@@ -306,6 +307,19 @@ onready(function() {
             classObject: function () {
                 return {
                     selected: this.selected
+                }
+            },
+            filteredOutput () {
+                if (this.type === 'code') {
+                    return this.output;
+                }
+                if (this.type === 'markdown-edit' || this.type === 'markdown-view') {
+                    return [ {
+                        output_type:'display_data',
+                        data: {
+                            'text/html': marked(this.value),
+                        },
+                    } ];
                 }
             },
             rightClass: function () {
