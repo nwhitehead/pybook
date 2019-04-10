@@ -109,7 +109,7 @@ div.output pre.stderr {
 
 
 
-<div id="app" v-on:click="handleOuterClick">
+<div id="app" v-on:click.stop="handleOuterClick">
 
     <div id='status'>
         <div id='busy' class='led'></div>
@@ -126,8 +126,8 @@ div.output pre.stderr {
             </div>
             <div class="dropdown-menu" id="dropdown-menu-file" role="menu">
                 <div class="dropdown-content">
-                    <a class="dropdown-item" v-on:click="fileNew">New</a>
-                    <a class="dropdown-item" v-on:click="fileSave">Save</a>
+                    <a class="dropdown-item" v-on:click.stop="fileNew">New</a>
+                    <a class="dropdown-item" v-on:click.stop="fileSave">Save</a>
                 </div>
             </div>
         </div>
@@ -139,13 +139,13 @@ div.output pre.stderr {
             </div>
             <div class="dropdown-menu" id="dropdown-menu-edit" role="menu">
                 <div class="dropdown-content">
-                    <a class="dropdown-item" v-on:click="insertBefore">Insert new cell before</a>
-                    <a class="dropdown-item" v-on:click="insertAfter">Insert new cell after</a>
-                    <a class="dropdown-item" v-on:click="deleteCell">Delete cell</a>
+                    <a class="dropdown-item" v-on:click.stop="insertBefore">Insert new cell before</a>
+                    <a class="dropdown-item" v-on:click.stop="insertAfter">Insert new cell after</a>
+                    <a class="dropdown-item" v-on:click.stop="deleteCell">Delete cell</a>
                     <a class="dropdown-divider"></a>
-                    <a class="dropdown-item" v-on:click="typeCellCode">Type - code</a>
-                    <a class="dropdown-item" v-on:click="typeCellMarkdownEdit">Type - Markdown - Edit</a>
-                    <a class="dropdown-item" v-on:click="typeCellMarkdownView">Type - Markdown - View</a>
+                    <a class="dropdown-item" v-on:click.stop="typeCellCode">Type - code</a>
+                    <a class="dropdown-item" v-on:click.stop="typeCellMarkdownEdit">Type - Markdown - Edit</a>
+                    <a class="dropdown-item" v-on:click.stop="typeCellMarkdownView">Type - Markdown - View</a>
                 </div>
             </div>
         </div>
@@ -157,7 +157,7 @@ div.output pre.stderr {
             </div>
             <div class="dropdown-menu" id="dropdown-menu-debug" role="menu">
                 <div class="dropdown-content">
-                    <a class="dropdown-item" v-on:click="debugDump">Console dump</a>
+                    <a class="dropdown-item" v-on:click.stop="debugDump">Console dump</a>
                 </div>
             </div>
         </div>
@@ -588,7 +588,7 @@ onready(function() {
             },
             handleDrag (event) {
                 this.$store.commit('updateCells', event);
-                this.$store.commit('setSelectCell', null);
+                this.$store.commit('setSelectCell', undefined);
             },
             addOutput (n, out) {
                 this.$store.commit('addOutput', {n, out});
