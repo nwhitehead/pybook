@@ -163,6 +163,17 @@ div.output pre.stderr {
         </div>
     </div>
 
+<nav class="pagination" role="navigation" aria-label="pagination">
+  <a class="pagination-previous">Previous</a>
+  <a class="pagination-next">Next page</a>
+  <ul class="pagination-list">
+    <li v-for="p in pagination">
+      <a v-if="p !== -1" class="pagination-link" v-bind:class="{ 'is-current': p === getPage() + 1 }" :aria-label="p">{{p}}</a>
+      <span v-if="p === -1" class="pagination-ellipsis">&hellip;</span>
+    </li>
+  </ul>
+</nav>
+
     <cells
         v-on:update:value="handleInput"
         v-on:update:values="handleDrag"
@@ -532,7 +543,34 @@ onready(function() {
         computed: {
             notebook() {
                 return this.$store.state;
-            }
+            },
+            pagination() {
+                const pages = this.countPages();
+                const page = this.getPage() + 1;
+                const prePages = 2;
+                const postPages = 2;
+                var result = [];
+                result.push(1);
+                var start = page - prePages;
+                if (start < prePages) {
+                    start = prePages;
+                }
+                if (start > prePages) {
+                    result.push(-1);
+                }
+                var end = page + postPages;
+                if (end > pages - 1) {
+                    end = pages - 1;
+                }
+                for (var i = start; i <= end; i++) {
+                    result.push(i);
+                }
+                if (end < pages - 1) {
+                    result.push(-1);
+                }
+                result.push(pages);
+                return result;
+            },
         },
         methods: {
             handleInput (event) {
