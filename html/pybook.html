@@ -428,18 +428,33 @@ onready(function() {
         state: {
             cells: [],
             selectCell: 0,
+            page: 0,
         },
         mutations: {
             new (state) {
                 Vue.set(state, 'cells', []);
                 Vue.set(state, 'selectCell', 0);
+                Vue.set(state, 'page', 0);
                 const newcell = {
                     cell_type: 'code',
                     execution_count: 1,
                     source: '',
                     outputs: [],
+                    metadata: {
+                        page: 0
+                    }
                 };
                 state.cells.splice(0, 0, newcell);
+                const newcell2 = {
+                    cell_type: 'code',
+                    execution_count: 1,
+                    source: '',
+                    outputs: [],
+                    metadata: {
+                        page: 1
+                    }
+                };
+                state.cells.splice(1, 0, newcell2);
             },
             setSource (state, payload) {
                 Vue.set(state.cells[payload.n], 'source', payload.source);
@@ -593,11 +608,31 @@ onready(function() {
             addOutput (n, out) {
                 this.$store.commit('addOutput', {n, out});
             },
+            cellGetPage (cell) {
+                if (cell.metadata === undefined) {
+                    return 0;
+                }
+                if (cell.metadata.page === undefined) {
+                    return 0;
+                }
+                return cell.metadata.page;
+            },
             getCells () {
-                return this.$store.state.cells;
+                var result = [];
+                const cells = this.$store.state.cells;
+                for (var i = 0; i < cells.length; i++) {
+                    const cell = cells[i];
+                    if (this.cellGetPage(cell) === this.getPage()) {
+                        result.push(cell);
+                    }
+                }
+                return result;
             },
             getSelect () {
                 return this.$store.state.selectCell;
+            },
+            getPage () {
+                return this.$store.state.page;
             },
             handleClick (event) {
                 this.$store.commit('setSelectCell', event.id);
@@ -619,6 +654,21 @@ onready(function() {
                     return false;
                 }
                 return (n >= 0 && n < this.$store.state.cells.length);
+            },
+            countPages () {
+                const cells = this.$store.state.cells;
+                var maxPage = 0;
+                for (var i = 0; i < cells.length; i++) {
+                    const cell = cells[i];
+                    if (cell.metadata && cell.metadata.page > maxPage) {
+                        maxPage = cell.metadata.page;
+                    }
+                }
+                return maxPage + 1;
+            },
+            pageValid (n) {
+                const numPages = this.countPages();
+                return n >= 0 && n < numPages;
             },
             deleteCell (event) {
                 const n = this.$store.state.selectCell;
