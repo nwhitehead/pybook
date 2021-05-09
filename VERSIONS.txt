@@ -4,7 +4,7 @@ Versions
 These are the versions of things currently:
 
 cpython===3.7.0
-emscripten===1.38.28
+emscripten===2.0.20
 codemirror===5.44.0
 zlib===1.2.11
 dill===0.2.9

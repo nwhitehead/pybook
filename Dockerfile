@@ -18,8 +18,8 @@ RUN apt-get update \
 
 RUN git clone https://github.com/emscripten-core/emsdk.git
 RUN ln -sf -T python2.7 /usr/bin/python
-RUN emsdk/emsdk install latest
-RUN emsdk/emsdk activate latest
+RUN emsdk/emsdk install 2.0.20
+RUN emsdk/emsdk activate 2.0.20
 RUN echo "source /emsdk/emsdk_env.sh --build=Release" >> ~/.bashrc
 
 # Build python lib
