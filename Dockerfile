@@ -17,7 +17,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/emscripten-core/emsdk.git
-RUN ln -sf -T python2.7 /usr/bin/python
 RUN emsdk/emsdk install 2.0.20
 RUN emsdk/emsdk activate 2.0.20
 RUN echo "source /emsdk/emsdk_env.sh --build=Release" >> ~/.bashrc
@@ -39,12 +38,13 @@ RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; em++ -o test.asm.j
 COPY dockerSrc src
 WORKDIR /cpython/src
 RUN mkdir -p /out
+## Slight hack here to prevent error message on main.bc file
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make main.bc CXX=\"em++ -c\""
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make python.asm.js -j10"
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make -j10"
 
-# Build numpy
-# RUN apt update && apt install -y unzip
-# COPY packages/numpy /packages/numpy
-# WORKDIR /packages/numpy
-# RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
+# # Build numpy
+# # RUN apt update && apt install -y unzip
+# # COPY packages/numpy /packages/numpy
+# # WORKDIR /packages/numpy
+# # RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
