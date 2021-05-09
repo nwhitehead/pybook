@@ -62,7 +62,7 @@ export function newPythonKernel(opts) {
 
     const workerOpts = {
         files: [
-            'python3.7.zip',
+            'python3.8.zip',
             'localroot.zip'
         ].concat(opts.files)
     };
