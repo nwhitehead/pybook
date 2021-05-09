@@ -1,0 +1,57 @@
+From d7ab8dab499be2c1d50f0daa084ad24a0539c537 Mon Sep 17 00:00:00 2001
+From: Nathan Whitehead <nwhitehe@gmail.com>
+Date: Sun, 9 May 2021 19:30:15 +0000
+Subject: [PATCH] Fix sigset unconditional use.
+
+---
+ Modules/clinic/signalmodule.c.h | 4 +++-
+ Modules/posixmodule.c           | 3 +++
+ 2 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/Modules/clinic/signalmodule.c.h b/Modules/clinic/signalmodule.c.h
+index 3cb1db1..d94a42b 100644
+--- a/Modules/clinic/signalmodule.c.h
++++ b/Modules/clinic/signalmodule.c.h
+@@ -381,6 +381,7 @@ static PyObject *
+ signal_pthread_sigmask(PyObject *module, PyObject *const *args, Py_ssize_t nargs)
+ {
+     PyObject *return_value = NULL;
++#ifdef HAVE_SIGSET_T
+     int how;
+     sigset_t mask;
+ 
+@@ -400,9 +401,10 @@ signal_pthread_sigmask(PyObject *module, PyObject *const *args, Py_ssize_t nargs
+         goto exit;
+     }
+     return_value = signal_pthread_sigmask_impl(module, how, mask);
+-
++#else
+ exit:
+     return return_value;
++#endif
+ }
+ 
+ #endif /* defined(PYPTHREAD_SIGMASK) */
+diff --git a/Modules/posixmodule.c b/Modules/posixmodule.c
+index d7edabe..8a1684b 100644
+--- a/Modules/posixmodule.c
++++ b/Modules/posixmodule.c
+@@ -5425,6 +5425,7 @@ parse_posix_spawn_flags(const char *func_name, PyObject *setpgroup,
+                         PyObject *setsigdef, PyObject *scheduler,
+                         posix_spawnattr_t *attrp)
+ {
++#ifdef HAVE_SIGSET_T
+     long all_flags = 0;
+ 
+     errno = posix_spawnattr_init(attrp);
+@@ -5531,6 +5532,8 @@ parse_posix_spawn_flags(const char *func_name, PyObject *setpgroup,
+ 
+     return 0;
+ 
++#endif
++
+ fail:
+     (void)posix_spawnattr_destroy(attrp);
+     return -1;
+-- 
+2.25.1

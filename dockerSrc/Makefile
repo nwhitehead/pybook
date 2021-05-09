@@ -1,7 +1,7 @@
 
 ROOT=$(abspath ..)
 
-PYVERSION=3.7.10
+PYVERSION=3.8.10
 PYMINOR=$(basename $(PYVERSION))
 
 INSTALL=$(ROOT)/installs/python-$(PYVERSION)
