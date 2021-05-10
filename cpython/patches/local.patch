@@ -1,10 +1,10 @@
-From 3098a3c53d6c5dc214ff3d6ed7cac7e5cf239929 Mon Sep 17 00:00:00 2001
+From 4604226f96d234966d21cb28a04103015d220e1b Mon Sep 17 00:00:00 2001
 From: Nathan Whitehead <nwhitehe@gmail.com>
-Date: Sun, 9 May 2021 18:28:18 +0000
-Subject: [PATCH] Changes
+Date: Sun, 9 May 2021 17:07:39 -0600
+Subject: [PATCH] Patch1
 
 ---
- Lib/platform.py                   |  4 ++--
+ Lib/platform.py                   |  2 +-
  Lib/test/support/__init__.py      |  2 ++
  Lib/test/support/script_helper.py |  5 +++++
  Modules/socketmodule.h            |  2 ++
@@ -14,22 +14,13 @@ Subject: [PATCH] Changes
  config.sub                        |  6 +++++-
  configure                         |  6 ++++++
  configure.ac                      |  6 ++++++
- 10 files changed, 58 insertions(+), 3 deletions(-)
+ 10 files changed, 57 insertions(+), 2 deletions(-)
 
 diff --git a/Lib/platform.py b/Lib/platform.py
-index b7e7bc4..5b804d2 100755
+index 0bce438..8fdfe05 100755
 --- a/Lib/platform.py
 +++ b/Lib/platform.py
-@@ -605,7 +605,7 @@ def _syscmd_uname(option, default=''):
- 
-     """ Interface to the system's uname command.
-     """
--    if sys.platform in ('dos', 'win32', 'win16'):
-+    if sys.platform in ('dos', 'win32', 'win16', 'emscripten'):
-         # XXX Others too ?
-         return default
- 
-@@ -627,7 +627,7 @@ def _syscmd_file(target, default=''):
+@@ -614,7 +614,7 @@ def _syscmd_file(target, default=''):
          default in case the command should fail.
  
      """
@@ -39,10 +30,10 @@ index b7e7bc4..5b804d2 100755
          return default
  
 diff --git a/Lib/test/support/__init__.py b/Lib/test/support/__init__.py
-index fb09e06..64c5f96 100644
+index aee3737..d0be99f 100644
 --- a/Lib/test/support/__init__.py
 +++ b/Lib/test/support/__init__.py
-@@ -952,6 +952,8 @@ if os.name == 'nt':
+@@ -809,6 +809,8 @@ if os.name == 'nt':
                    'Unicode filename tests may not be effective'
                    % (TESTFN_UNENCODABLE, TESTFN_ENCODING))
              TESTFN_UNENCODABLE = None
@@ -52,7 +43,7 @@ index fb09e06..64c5f96 100644
  elif sys.platform != 'darwin':
      try:
 diff --git a/Lib/test/support/script_helper.py b/Lib/test/support/script_helper.py
-index 8351998..d9a4273 100644
+index 37e576d..b68031a 100644
 --- a/Lib/test/support/script_helper.py
 +++ b/Lib/test/support/script_helper.py
 @@ -9,6 +9,7 @@ import os.path
@@ -62,7 +53,7 @@ index 8351998..d9a4273 100644
 +import unittest
  
  from importlib.util import source_from_cache
- from test.support import make_legacy_pyc, strip_python_stderr
+ from test.support import make_legacy_pyc
 @@ -34,6 +35,8 @@ def interpreter_requires_environment():
      situation.  PYTHONPATH or PYTHONUSERSITE are other common environment
      variables that might impact whether or not the interpreter can start.
@@ -72,7 +63,7 @@ index 8351998..d9a4273 100644
      global __cached_interp_requires_environment
      if __cached_interp_requires_environment is None:
          # If PYTHONHOME is set, assume that we need it
-@@ -172,6 +175,8 @@ def spawn_python(*args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kw):
+@@ -171,6 +174,8 @@ def spawn_python(*args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kw):
      kw is extra keyword args to pass to subprocess.Popen. Returns a Popen
      object.
      """
@@ -82,10 +73,10 @@ index 8351998..d9a4273 100644
      if not interpreter_requires_environment():
          cmd_line.append('-E')
 diff --git a/Modules/socketmodule.h b/Modules/socketmodule.h
-index dff1f8f..6014853 100644
+index ba2c9f5..5640169 100644
 --- a/Modules/socketmodule.h
 +++ b/Modules/socketmodule.h
-@@ -154,6 +154,8 @@ typedef int socklen_t;
+@@ -199,6 +199,8 @@ typedef int socklen_t;
  extern "C" {
  #endif
  
@@ -95,10 +86,10 @@ index dff1f8f..6014853 100644
  #define PySocket_MODULE_NAME    "_socket"
  #define PySocket_CAPI_NAME      "CAPI"
 diff --git a/Modules/timemodule.c b/Modules/timemodule.c
-index 096911d..2d26beb 100644
+index 80eab30..c9fdd7d 100644
 --- a/Modules/timemodule.c
 +++ b/Modules/timemodule.c
-@@ -50,6 +50,14 @@
+@@ -62,6 +62,14 @@
  
  #define SEC_TO_NS (1000 * 1000 * 1000)
  
@@ -113,7 +104,7 @@ index 096911d..2d26beb 100644
  /* Forward declarations */
  static int pysleep(_PyTime_t);
  
-@@ -1844,6 +1852,9 @@ PyInit_time(void)
+@@ -2014,6 +2022,9 @@ PyInit_time(void)
  static int
  pysleep(_PyTime_t secs)
  {
@@ -123,14 +114,14 @@ index 096911d..2d26beb 100644
      _PyTime_t deadline, monotonic;
  #ifndef MS_WINDOWS
      struct timeval timeout;
-@@ -1915,4 +1926,5 @@ pysleep(_PyTime_t secs)
+@@ -2085,4 +2096,5 @@ pysleep(_PyTime_t secs)
      } while (1);
  
      return 0;
 +#endif
  }
 diff --git a/Python/ceval.c b/Python/ceval.c
-index 1873e37..208663a 100644
+index 91e879e..048e3fc 100644
 --- a/Python/ceval.c
 +++ b/Python/ceval.c
 @@ -1,3 +1,13 @@
@@ -147,7 +138,7 @@ index 1873e37..208663a 100644
  
  /* Execute compiled code */
  
-@@ -1197,6 +1207,10 @@ main_loop:
+@@ -1373,6 +1383,10 @@ main_loop:
             event needs attention (e.g. a signal handler or
             async I/O handler); see Py_AddPendingCall() and
             Py_MakePendingCalls() above. */
@@ -159,10 +150,10 @@ index 1873e37..208663a 100644
          if (_Py_atomic_load_relaxed(eval_breaker)) {
              opcode = _Py_OPCODE(*next_instr);
 diff --git a/Python/fileutils.c b/Python/fileutils.c
-index 3e1311c..a82f287 100644
+index 769ab59..e3213f0 100644
 --- a/Python/fileutils.c
 +++ b/Python/fileutils.c
-@@ -1131,6 +1131,9 @@ _Py_get_inheritable(int fd)
+@@ -1134,6 +1134,9 @@ _Py_get_inheritable(int fd)
  static int
  set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
  {
@@ -172,7 +163,7 @@ index 3e1311c..a82f287 100644
  #ifdef MS_WINDOWS
      HANDLE handle;
      DWORD flags;
-@@ -1261,6 +1264,7 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
+@@ -1264,6 +1267,7 @@ set_inheritable(int fd, int inheritable, int raise, int *atomic_flag_works)
      }
      return 0;
  #endif
@@ -212,10 +203,10 @@ index ba37cf9..7586055 100755
  		;;
  	-ios)
 diff --git a/configure b/configure
-index 936f3d4..a9742d0 100755
+index 8dcdbf1..9a104ef 100755
 --- a/configure
 +++ b/configure
-@@ -3268,6 +3268,9 @@ then
+@@ -3304,6 +3304,9 @@ then
  	*-*-cygwin*)
  		ac_sys_system=Cygwin
  		;;
@@ -225,7 +216,7 @@ index 936f3d4..a9742d0 100755
  	*-*-vxworks*)
  	    ac_sys_system=VxWorks
  	    ;;
-@@ -3318,6 +3321,9 @@ if test "$cross_compiling" = yes; then
+@@ -3354,6 +3357,9 @@ if test "$cross_compiling" = yes; then
  	*-*-cygwin*)
  		_host_cpu=
  		;;
@@ -236,10 +227,10 @@ index 936f3d4..a9742d0 100755
  		_host_cpu=$host_cpu
  		;;
 diff --git a/configure.ac b/configure.ac
-index e02cc2c..0965bc0 100644
+index b1e4c6c..0be42b4 100644
 --- a/configure.ac
 +++ b/configure.ac
-@@ -392,6 +392,9 @@ then
+@@ -400,6 +400,9 @@ then
  	*-*-cygwin*)
  		ac_sys_system=Cygwin
  		;;
@@ -249,7 +240,7 @@ index e02cc2c..0965bc0 100644
  	*-*-vxworks*)
  	    ac_sys_system=VxWorks
  	    ;;
-@@ -441,6 +444,9 @@ if test "$cross_compiling" = yes; then
+@@ -449,6 +452,9 @@ if test "$cross_compiling" = yes; then
  	*-*-cygwin*)
  		_host_cpu=
  		;;
@@ -261,3 +252,4 @@ index e02cc2c..0965bc0 100644
  		;;
 -- 
 2.25.1
+

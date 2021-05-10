@@ -3,7 +3,7 @@ Versions
 
 These are the versions of things currently:
 
-cpython===3.8.10
+cpython===3.9.5
 emscripten===2.0.20
 codemirror===5.44.0
 zlib===1.2.11
