@@ -42,9 +42,9 @@ RUN mkdir -p /out
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make main.bc CXX=\"em++ -c\""
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make python.asm.js -j10"
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make -j10"
-
-# # Build numpy
-# # RUN apt update && apt install -y unzip
-# # COPY packages/numpy /packages/numpy
-# # WORKDIR /packages/numpy
-# # RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
+# 
+# Build numpy
+# RUN apt update && apt install -y unzip
+# COPY packages/numpy /packages/numpy
+# WORKDIR /packages/numpy
+# RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
