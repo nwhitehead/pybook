@@ -146,6 +146,8 @@ div.output pre.stderr {
                     <a class="dropdown-item" v-on:click.stop="typeCellCode">Type - code</a>
                     <a class="dropdown-item" v-on:click.stop="typeCellMarkdownEdit">Type - Markdown - Edit</a>
                     <a class="dropdown-item" v-on:click.stop="typeCellMarkdownView">Type - Markdown - View</a>
+                    <a class="dropdown-divider"></a>
+                    <a class="dropdown-item" v-on:click.stop="typeSomething">Type something</a>
                 </div>
             </div>
         </div>
@@ -178,7 +180,7 @@ div.output pre.stderr {
         v-on:update:value="handleInput"
         v-on:update:values="handleDrag"
         v-on:action="handleAction"
-        v-on:appclick="handleClick"
+        v-on:click="handleClick"
         v-bind:values="getCells()"
         v-bind:select="getSelect()"
     >
@@ -191,7 +193,8 @@ import { onready } from './onready.js'
 import { signalMap,
          isBusy,
          isStarting, setStarting,
-         setInterrupt, clearInterrupt
+         setInterrupt, clearInterrupt,
+         inputPut
        } from './signal.js';
 import { newPythonKernel } from './python.js';
 
@@ -348,7 +351,7 @@ onready(function() {
                 this.$emit('action', { id:this.id, action:event.action });
             },
             handleClick (event) {
-                this.$emit('appclick', { id:this.id });
+                this.$emit('click', { id:this.id });
             },
         }
     });
@@ -375,7 +378,7 @@ onready(function() {
                     v-bind:type="computeType(content)"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
-                    v-on:appclick="handleClick"
+                    v-on:click="handleClick"
                 >
                 </cell>
             </draggable>`,
@@ -419,7 +422,7 @@ onready(function() {
                 this.$emit('action', event);
             },
             handleClick (event) {
-                this.$emit('appclick', event);
+                this.$emit('click', event);
             },
         }
     });
@@ -717,6 +720,16 @@ onready(function() {
                     // If user deleted last cell, start with fresh notebook
                     this.$store.commit('new');
                 }
+            },
+            typeSomething (event) {
+                var txt = window.prompt('Enter input');
+                for (var i = 0; i < txt.length; i++) {
+                    inputPut(txt.charCodeAt(i));
+                }
+                // Add newline
+                inputPut(10);
+                // Signal no more input
+                inputPut(0);
             },
             insertBefore (event) {
                 const n = this.$store.state.selectCell;

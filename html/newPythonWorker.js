@@ -1,5 +1,5 @@
 import { spawn } from './spawn.js'
-import { signalMap, sharedArray, setStarting, clearStarting } from './signal.js';
+import { signalMap, sharedArray, sharedInputArray, setStarting, INPUT_BUFFER_SIZE } from './signal.js';
 
 export function newPythonWorker(opts) {
     if (opts === undefined) {
@@ -10,6 +10,8 @@ export function newPythonWorker(opts) {
             absurl = config.absurl;
             signalMap = config.signalMap;
             sharedArray = config.sharedArray;
+            sharedInputArray = config.sharedInputArray;
+            INPUT_BUFFER_SIZE = config.INPUT_BUFFER_SIZE;
 
             if (typeof(Module) === "undefined") Module = {};
             if (typeof(Notebook) === "undefined") Notebook = {};
@@ -58,6 +60,34 @@ export function newPythonWorker(opts) {
                 }
             };
             importScripts(absurl + '/python.asm.js');
+
+            function inputGet(value) {
+                var p = Atomics.load(sharedArray, signalMap['input_start']);
+                var e = Atomics.load(sharedArray, signalMap['input_end']);
+                while (e === p) {
+                    // Wait for input, timeout after 100 ms
+                    Atomics.wait(sharedArray, signalMap['input_end'], e, 100);
+                    e = Atomics.load(sharedArray, signalMap['input_end']);
+                    // Check for keyboard interrupt to avoid infinite wait for input
+                    if (Atomics.load(sharedArray, signalMap['interrupt']) === 1) {
+                        // Don't clear interrupt, let it be cleared by main eval loop
+                        return null;
+                    }
+                }
+                var value = Atomics.load(sharedInputArray, p);
+                p = (p + 1) % INPUT_BUFFER_SIZE;
+                Atomics.store(sharedArray, signalMap['input_start'], p);
+                Atomics.notify(sharedArray, signalMap['input_start']);
+                if (value === 0) {
+                    // Let 0 values in input return null here
+                    // This flushes buffer and lets Python process input
+                    // Rule seems to be first null flushes, second null is EOF
+                    value = null;
+                }
+                return value;
+            }
+            FS.init(inputGet);
+
             Kernel_new = Module.cwrap('Kernel_new', 'number', ['string']);
             Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
             Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
@@ -128,7 +158,9 @@ export function newPythonWorker(opts) {
         config: {
             absurl: document.location.protocol + '//' + document.location.host,
             sharedArray: sharedArray,
+            sharedInputArray: sharedInputArray,
             signalMap: signalMap,
+            INPUT_BUFFER_SIZE: INPUT_BUFFER_SIZE,
             opts: opts
         }
     };
