@@ -11,7 +11,7 @@ import traceback
 
 def default_func(value):
     if value is not None:
-        print(f'-> {repr(value)}')
+        print(f'→ {repr(value)}')
 
 def run_cell(script, globals_=None, locals_=None, func=default_func):
     """
