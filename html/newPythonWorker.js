@@ -61,7 +61,23 @@ export function newPythonWorker(opts) {
             };
             importScripts(absurl + '/python.asm.js');
 
-            function inputGet(value) {
+            var buffer = [];
+            function outputPut(value) {
+                if (Notebook.ready) {
+                    send({ type:'stdout', data: value });
+                } else {
+                    // Pre-ready messages go to console
+                    console.log(text);
+                }
+                buffer.push(value);
+                if (value === 10) {
+                    var msg = String.fromCharCode.apply(null, buffer);
+                    Module.print(msg);
+                    console.log('outputPut', value);
+                    buffer = [];
+                }
+            }
+            function inputGet() {
                 var p = Atomics.load(sharedArray, signalMap['input_start']);
                 var e = Atomics.load(sharedArray, signalMap['input_end']);
                 while (e === p) {
@@ -86,15 +102,13 @@ export function newPythonWorker(opts) {
                 }
                 return value;
             }
-            FS.init(inputGet);
+            FS.init(inputGet/*, outputPut*/);
 
             Kernel_new = Module.cwrap('Kernel_new', 'number', ['string']);
             Kernel_delete = Module.cwrap('Kernel_delete', null, ['number']);
-            Kernel_eval = Module.cwrap('Kernel_eval', 'number', ['number', 'string']);
+            Kernel_eval = Module.cwrap('Kernel_eval', null, ['number', 'string']);
             Kernel_version = Module.cwrap('Kernel_version', 'string', []);
             Kernel_reset = Module.cwrap('Kernel_reset', null, ['number']);
-            Result_str = Module.cwrap('Result_str', 'number', ['number']);
-            Result_delete = Module.cwrap('Result_delete', null, ['number']);
 
             // Special function called by hacked cpython ceval.c
             JS_KeyboardInterrupt = function() {
@@ -138,11 +152,8 @@ export function newPythonWorker(opts) {
                 if (!Module.calledRun) {
                     done({ type:'notready' });
                 } else {
-                    var result = Kernel_eval(kernel, input.data);
-                    var result_str = Result_str(result);
-                    var result_repr = UTF8ToString(result_str);
-                    done({ type: 'response', content_type:'text/plain', data: result_repr });
-                    Result_delete(result);
+                    Kernel_eval(kernel, input.data);
+                    done({ type: 'response' });
                 }
             } else if (input.type === 'reset') {
                 if (!Module.calledRun) {

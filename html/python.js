@@ -70,7 +70,7 @@ export function newPythonKernel(opts) {
     var callbacks = [];
     worker.on('message', function(msg) {
         const defaultHandler = function() { console.log('default handler'); };
-        const callback = callbacks[0];
+        const callback = callbacks;
         if (msg.type === 'ready') {
             findHandler('onReady', callback, opts, defaultHandler)(msg.data);
         } else if (msg.type === 'stdout') {
@@ -82,23 +82,16 @@ export function newPythonKernel(opts) {
         } else if (msg.type === 'filesystem') {
             findHandler('onFilesystem', callback, opts, defaultHandler)();
         } else if (msg.type === 'response') {
-            if (callbacks.length > 0) {
-                callbacks.shift();
-                findHandler('onResponse', callback, opts, defaultHandler)(msg.content_type, msg.data);
-            } else {
-                throw 'Unexpected response from kernel'
-            }
-            //
+            findHandler('onResponse', callback, opts, defaultHandler)(msg.content_type, msg.data);
         } else {
             console.log('Unknown message type in main thread onmessage', msg);
             throw 'Unknown message type in main thread onmessage';
         }
     });
-    
+
     return {
-        callbacks: [],
         evaluate: function(expr, callback) {
-            callbacks.push(callback);
+            callbacks = callback;
             worker.send({ type:'execute', data:expr });
         },
         reset: function() {

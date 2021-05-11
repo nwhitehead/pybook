@@ -188,7 +188,7 @@ public:
         destroy();
         init();
     }
-    std::string eval(std::string input)
+    void eval(std::string input)
     {
         get_shared_interrupt(SHARED_BUSY, 1);
         PyObject *result = PyObject_CallFunction(run_cell, "sO", input.c_str(), locals);
@@ -196,32 +196,10 @@ public:
         {
             get_shared_interrupt(SHARED_BUSY, 0);
             PyErr_Print();
-            return std::string("");
+            return;
         }
-        PyObject* repr = PyObject_Repr(result);
-        if (!repr)
-        {
-            get_shared_interrupt(SHARED_BUSY, 0);
-            PyErr_Print();
-            Py_XDECREF(result);
-            return std::string("");
-        }
-        PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
-        if (!str)
-        {
-            get_shared_interrupt(SHARED_BUSY, 0);
-            PyErr_Print();
-            Py_XDECREF(repr);
-            Py_XDECREF(result);
-            return std::string("");
-        }
-        const char *bytes = PyBytes_AS_STRING(str);
-        std::string out = std::string(bytes);
-        Py_XDECREF(str);
-        Py_XDECREF(repr);
         Py_XDECREF(result);
         get_shared_interrupt(SHARED_BUSY, 0);
-        return out;
     }
 private:
     std::string mPath;
@@ -238,17 +216,14 @@ private:
 
 
 typedef void* KernelP; // opaque pointer
-typedef void* ResultP; // opaque pointer
 
 extern "C" {
 
 KernelP Kernel_new(const char *path);
 void Kernel_delete(KernelP kernel);
 void Kernel_reset(KernelP kernel);
-ResultP Kernel_eval(KernelP kernel, const char *input);
+void Kernel_eval(KernelP kernel, const char *input);
 const char* Kernel_version();
-const char* Result_str(ResultP result);
-void Result_delete(ResultP result);
 
 }
 
@@ -269,27 +244,14 @@ void Kernel_reset(KernelP kernel)
     reinterpret_cast<Kernel*>(kernel)->reset();
 }
 
-ResultP Kernel_eval(KernelP kernel, const char *input)
+void Kernel_eval(KernelP kernel, const char *input)
 {
     Kernel *k = reinterpret_cast<Kernel*>(kernel);
     assert(k);
-    std::string result = k->eval(input);
-    return reinterpret_cast<ResultP>(new std::string(result));
+    k->eval(input);
 }
 
 const char* Kernel_version() 
 {
     return Py_GetVersion();
-}
-
-const char* Result_str(ResultP result)
-{
-    assert(result);
-    return reinterpret_cast<std::string*>(result)->c_str();
-}
-
-void Result_delete(ResultP result)
-{
-    assert(result);
-    delete reinterpret_cast<std::string*>(result);
 }

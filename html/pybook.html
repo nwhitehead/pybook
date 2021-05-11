@@ -602,13 +602,8 @@ onready(function() {
                                 });
                             },
                             onResponse: function(content_type, msg) {
-                                self.addOutput(event.id, {
-                                    output_type: 'execute_result',
-                                    execution_count: 1,
-                                    data: {
-                                        "text/plain": msg
-                                    }
-                                });
+                                // Adding -> things is handled by run_cell and exec
+                                // This could change styling to show eval is done TODO
                             },
                             onOutput: function(content_type, msg) {
                                 if (content_type === 'text/html') {
