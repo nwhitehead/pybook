@@ -51,8 +51,8 @@ Third is bootup. This lights up when the kernel is first started up, and turns o
 
 Example that shows loading (first time evaluated):
 
-    import dill
-    help(dill)
+    import png
+    help(png)
 
 ### Sleep
 
