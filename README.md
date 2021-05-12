@@ -77,3 +77,27 @@ Example:
 
     import pybook
     pybook.output_text_content("text/html", "<b>Hello</b>")
+
+## Internals
+
+* cpython/
+    * Build instructions for compiling Python in emscripten.
+    * Includes patches to make build work.
+    * Includes patches to support some hooks into eval function.
+* kernel/
+    * Source code for C++ kernel that uses Python.
+    * Includes `pybook` module directly in C++ source.
+    * This kernel is the main function that is compiled into Web Assembly.
+    * Includes list of libraries to be pre-loaded that are required to load Python modules from zip archives.
+* web/
+    * Symbolic links to built wasm output
+    * lib/
+        * UI libraries needed for notebook interface
+    * src/
+        * JavaScript modules for Python evaluation, worker threads, notebook UI
+    * gfx/
+        * Minor graphics stuff for web interface
+* localroot/
+    * Python files available to kernel in notebook outside of Python standard libraries.
+* Makefile
+    * Top level makefile for everything

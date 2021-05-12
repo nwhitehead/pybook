@@ -1,11 +1,8 @@
 
-all: generate localroot
+all: build/out/python.asm.js build/out/python.asm.wasm build/out/python.asm.data build/localroot.zip
 .PHONY:all
 
-generate: build/out/python.asm.js
-.PHONY:generate
-
-build/out/python.asm.js: dockerSrc/ Dockerfile cpython/* cpython/patches/*
+build/out/python.asm.js build/out/python.asm.wasm build/out/python.asm.data: kernel/ Dockerfile cpython/* cpython/patches/*
 	docker build . -t cpython-emscripten
 	mkdir -p build
 	docker create -it --name artifacts cpython-emscripten /bin/bash
@@ -21,11 +18,8 @@ custom:
 .PHONY:custom
 
 serve: all
-	python3 server.py --port=8063 --directory=html
+	python3 server.py --port=8063 --directory=web
 .PHONY:serve
 
-localroot: build/localroot.zip
-.PHONY:localroot
-
-build/localroot.zip: src/
-	cd src; zip ../build/localroot.zip -r .
+build/localroot.zip: localroot/
+	cd localroot; zip ../build/localroot.zip -r .

@@ -27,15 +27,13 @@ WORKDIR /cpython
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
 
 # Build zlib, needed for zip archives in pythonpath
-COPY Makefile.zlib /cpython
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make -f Makefile.zlib"
 
 # Build a test program to cache C++ libs
-COPY test.cpp /cpython/src/test.cpp
-RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; em++ -o test.asm.js -std=c++14 -Wall /cpython/src/test.cpp"
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; em++ -o test.asm.js -std=c++14 -Wall /cpython/test.cpp"
 
 # Build main app (kernel)
-COPY dockerSrc src
+COPY kernel src
 WORKDIR /cpython/src
 RUN mkdir -p /out
 ## Slight hack here to prevent error message on main.bc file

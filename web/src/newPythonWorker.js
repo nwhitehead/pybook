@@ -59,7 +59,7 @@ export function newPythonWorker(opts) {
                     console.warn(text);
                 }
             };
-            importScripts(absurl + '/python.asm.js');
+            importScripts(absurl + '/lib/python.asm.js');
 
             var buffer = [];
             function outputPut(value) {
