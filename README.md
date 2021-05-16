@@ -121,9 +121,6 @@ To build packages (from main project directory):
 
 ### Notes on numpy source changes
 
-Built the patched numpy source, moved to packages/ dir to be same height as normal.
-make /home/$USER/pybook/packages/numpy/build/.patched
-
 tp_print updated to tp_vectorcall blah
 sse is being annoying, tried to enable in emcc with -msse -msse2 -msimd128 but hit errors
 Solution is copying config.h file already in archive.
@@ -131,5 +128,10 @@ Solution is copying config.h file already in archive.
 Need to add -L to get libs, not sure why.
     -Lbuild/temp.linux-x86_64-3.9 
 
-Need to undef LONG_BITS to have python headers redefine correctly.
-Right now I'm doing this manually in host/include/python-3.9.5/pyport.h file
+GRRR, final build is working and packaged into `numpy.zip` but Python wasm version doesn't have dlopen turned on. Tried to load `_dummy.so` module directly but got error:
+
+    import sys
+    sys.path=['/python3.9.zip', '/localroot.zip', '/numpy.zip', '/']
+    import _dummy
+
+    To use dlopen, you need to use Emscripten's linking support, see https://github.com/emscripten-core/emscripten/wiki/Linking

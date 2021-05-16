@@ -63,7 +63,9 @@ export function newPythonKernel(opts) {
     const workerOpts = {
         files: [
             'python3.9.zip',
-            'localroot.zip'
+            'localroot.zip',
+            'numpy.zip',
+            '_dummy.so'
         ].concat(opts.files)
     };
     const worker = newPythonWorker(workerOpts);

@@ -19,12 +19,12 @@ export function newPythonWorker(opts) {
             // Load customized version of FS.createLazyFile
             // Loads into CustomFS.createLazyFile, can't directly go into FS
             // because it gets overwritten by main import. 
-            importScripts(absurl + '/myCreateLazyFile.js');
+            importScripts(absurl + '/src/myCreateLazyFile.js');
 
             // Emscripten asm.js file needs to load data file
             // Inside Web Worker the url needs to be absolute
             Module.locateFile = function(path, prefix) {
-                return absurl + '/' + path;
+                return absurl + '/lib/' + path;
             };
             const files = config.opts.files;
             var filenames = [];
