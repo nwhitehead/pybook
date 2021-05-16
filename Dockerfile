@@ -49,7 +49,7 @@ WORKDIR /packages/numpy
 RUN /bin/bash -c "make /packages/numpy/build/.patched"
 ENV PATH "/cpython/build/3.9.5/host/bin:$PATH"
 WORKDIR /pyodide-build
-RUN python3 setup.py install
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; python3 setup.py install"
 WORKDIR /packages/numpy/build/numpy-1.15.1
 COPY Makefile.envs /
 RUN mkdir /tools
@@ -59,4 +59,5 @@ RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/py
 RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/pyodide_build-0.18.0.dev0-py3.9.egg/pyodide_build/pywasmcross.py /tools/gcc"
 RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/pyodide_build-0.18.0.dev0-py3.9.egg/pyodide_build/pywasmcross.py /tools/gfortran"
 RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/pyodide_build-0.18.0.dev0-py3.9.egg/pyodide_build/pywasmcross.py /tools/ld"
-RUN python3 -m pyodide_build pywasmcross
+RUN /bin/bash -c "chmod a+x /tools/*"
+RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; GCC=emcc CC=emcc AR=emar python3 -m pyodide_build pywasmcross || true"

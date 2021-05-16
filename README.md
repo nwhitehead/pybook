@@ -130,3 +130,6 @@ Solution is copying config.h file already in archive.
 
 Need to add -L to get libs, not sure why.
     -Lbuild/temp.linux-x86_64-3.9 
+
+Need to undef LONG_BITS to have python headers redefine correctly.
+Right now I'm doing this manually in host/include/python-3.9.5/pyport.h file

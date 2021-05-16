@@ -55,7 +55,7 @@ export MAIN_MODULE_LDFLAGS= $(LDFLAGS_BASE) -s MAIN_MODULE=1 \
 
 export SIDE_MODULE_CXXFLAGS = $(CXXFLAGS_BASE)
 
-export SIDE_MODULE_CFLAGS= $(CFLAGS_BASE)
+export SIDE_MODULE_CFLAGS= $(CFLAGS_BASE) -I../../config
 export MAIN_MODULE_CFLAGS= $(CFLAGS_BASE) \
     	-Wall \
     	-Wno-warn-absolute-paths \
