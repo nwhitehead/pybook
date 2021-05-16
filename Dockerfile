@@ -42,7 +42,21 @@ RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make python.asm.js
 RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make -j10"
 # 
 # Build numpy
-# RUN apt update && apt install -y unzip
-# COPY packages/numpy /packages/numpy
-# WORKDIR /packages/numpy
-# RUN /bin/bash -c "source /emsdk/emsdk_env.sh --build=Release; make"
+RUN apt update && apt install -y unzip
+COPY packages/numpy /packages/numpy
+COPY pyodide-build /pyodide-build
+WORKDIR /packages/numpy
+RUN /bin/bash -c "make /packages/numpy/build/.patched"
+ENV PATH "/cpython/build/3.9.5/host/bin:$PATH"
+WORKDIR /pyodide-build
+RUN python3 setup.py install
+WORKDIR /packages/numpy/build/numpy-1.15.1
+COPY Makefile.envs /
+RUN mkdir /tools
+RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/pyodide_build-0.18.0.dev0-py3.9.egg/pyodide_build/pywasmcross.py /tools/ar"
+RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/pyodide_build-0.18.0.dev0-py3.9.egg/pyodide_build/pywasmcross.py /tools/c++"
+RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/pyodide_build-0.18.0.dev0-py3.9.egg/pyodide_build/pywasmcross.py /tools/cc"
+RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/pyodide_build-0.18.0.dev0-py3.9.egg/pyodide_build/pywasmcross.py /tools/gcc"
+RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/pyodide_build-0.18.0.dev0-py3.9.egg/pyodide_build/pywasmcross.py /tools/gfortran"
+RUN /bin/bash -c "ln -s /cpython/build/3.9.5/host/lib/python3.9/site-packages/pyodide_build-0.18.0.dev0-py3.9.egg/pyodide_build/pywasmcross.py /tools/ld"
+RUN python3 -m pyodide_build pywasmcross

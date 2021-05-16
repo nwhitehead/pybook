@@ -101,3 +101,32 @@ Example:
     * Python files available to kernel in notebook outside of Python standard libraries.
 * Makefile
     * Top level makefile for everything
+
+## Bare Build
+
+You can build outside of the docker container. You'll need the various prerequisites listed
+in the Dockerfile. One important one that is not obvious is `libffi-dev`. If you don't have this and try to build, you will need to clean up after installing it and rebuild from scratch.
+
+To build the main python interpreter:
+
+    cd cpython
+    make
+
+To build packages (from main project directory):
+
+    export PATH=`pwd`/cpython/build/3.9.5/host/bin:$PATH
+    cd packages/PyCExtension
+    python3 -m pyodide_build pywasmcross
+    chmod a+x ../../tools/*
+
+### Notes on numpy source changes
+
+Built the patched numpy source, moved to packages/ dir to be same height as normal.
+make /home/$USER/pybook/packages/numpy/build/.patched
+
+tp_print updated to tp_vectorcall blah
+sse is being annoying, tried to enable in emcc with -msse -msse2 -msimd128 but hit errors
+Solution is copying config.h file already in archive.
+
+Need to add -L to get libs, not sure why.
+    -Lbuild/temp.linux-x86_64-3.9 

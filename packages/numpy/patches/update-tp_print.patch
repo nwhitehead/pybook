@@ -1,0 +1,16 @@
+diff --git a/numpy/random/mtrand/mtrand.c b/numpy/random/mtrand/mtrand.c
+index 5e2a14c..67c2489 100644
+--- a/numpy/random/mtrand/mtrand.c
++++ b/numpy/random/mtrand/mtrand.c
+@@ -43909,7 +43909,7 @@ static int __Pyx_modinit_type_init_code(void) {
+   __pyx_vtabptr_6mtrand_RandomState = &__pyx_vtable_6mtrand_RandomState;
+   __pyx_vtable_6mtrand_RandomState._shuffle_raw = (PyObject *(*)(struct __pyx_obj_6mtrand_RandomState *, npy_intp, npy_intp, npy_intp, char *, char *))__pyx_f_6mtrand_11RandomState__shuffle_raw;
+   if (PyType_Ready(&__pyx_type_6mtrand_RandomState) < 0) __PYX_ERR(0, 593, __pyx_L1_error)
+-  __pyx_type_6mtrand_RandomState.tp_print = 0;
++  __pyx_type_6mtrand_RandomState.tp_vectorcall_offset = 0;
+   if ((CYTHON_USE_TYPE_SLOTS && CYTHON_USE_PYTYPE_LOOKUP) && likely(!__pyx_type_6mtrand_RandomState.tp_dictoffset && __pyx_type_6mtrand_RandomState.tp_getattro == PyObject_GenericGetAttr)) {
+     __pyx_type_6mtrand_RandomState.tp_getattro = __Pyx_PyObject_GenericGetAttr;
+   }
+-- 
+2.25.1
+

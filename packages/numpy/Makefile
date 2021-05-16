@@ -2,10 +2,11 @@
 ROOT=$(abspath .)
 
 PACKAGE=numpy
-PYVERSION=3.7.0
+PYVERSION=3.9.5
 PYMINOR=$(basename $(PYVERSION))
 PYINSTALL=/cpython/installs/python-$(PYVERSION)
-PYTHON=/cpython/build/$(PYVERSION)/host/bin/python$(PYMINOR)
+HOSTPYTHONPATH=/cpython/build/$(PYVERSION)/host/bin
+PYTHON=$(HOSTPYTHONPATH)/python$(PYMINOR)
 
 NUMPYVER=1.15.1
 BUILD=$(ROOT)/build
@@ -38,6 +39,7 @@ $(TARBALL):
 	wget -q -O $@ $(URL)
 
 
+
 $(BUILD)/.patched: $(TARBALL)
 	[ -d $(BUILD) ] || (mkdir -p $(BUILD); cd $(BUILD); unzip $(TARBALL))
 	cat patches/*.patch | (cd $(BUILD)/numpy-$(NUMPYVER) ; patch -p1)
@@ -46,18 +48,7 @@ $(BUILD)/.patched: $(TARBALL)
 
 $(BUILD)/doit: $(BUILD)/.patched
 #	cp config/* $(BUILD)/numpy-$(NUMPYVER)
-	( \
-		cd $(BUILD)/numpy-$(NUMPYVER); \
-		CC=emcc AR=emar $(PYTHON) setup.py build -I math.h ; \
-	)
-
-
-$(BUILD)/$(LIB): $(BUILD)/Makefile $(HOSTPYTHON) $(HOSTPGEN) Setup.local
-	cp Setup.local $(BUILD)/Modules/
-	cat pyconfig.undefs.h >> $(BUILD)/pyconfig.h
-	( \
-		cp build/$(PYVERSION)/host/lib/python$(PYMINOR)/`$(HOSTPYTHON) -c "import sysconfig; print(sysconfig._get_sysconfigdata_name())"`.py build/$(PYVERSION)/Python-$(PYVERSION)/Lib/_sysconfigdata__emscripten_.py; \
-		cd $(BUILD); \
-		emmake make HOSTPYTHON=$(HOSTPYTHON) HOSTPGEN=$(HOSTPGEN) CROSS_COMPILE=yes $(LIB) \
-	)
-	touch $(BUILD)/$(LIB)
+	cd $(BUILD)/numpy-$(NUMPYVER); \
+	PATH=$(HOSTPYTHONPATH):$(SHELL); \
+	python3 /pyodide-build/setup.py install; \
+	python3 -m pyodide_build pywasmcross
