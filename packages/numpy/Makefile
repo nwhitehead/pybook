@@ -39,16 +39,7 @@ $(TARBALL):
 	wget -q -O $@ $(URL)
 
 
-
 $(BUILD)/.patched: $(TARBALL)
 	[ -d $(BUILD) ] || (mkdir -p $(BUILD); cd $(BUILD); unzip $(TARBALL))
 	cat patches/*.patch | (cd $(BUILD)/numpy-$(NUMPYVER) ; patch -p1)
 	touch $@
-
-
-$(BUILD)/doit: $(BUILD)/.patched
-#	cp config/* $(BUILD)/numpy-$(NUMPYVER)
-	cd $(BUILD)/numpy-$(NUMPYVER); \
-	PATH=$(HOSTPYTHONPATH):$(SHELL); \
-	python3 /pyodide-build/setup.py install; \
-	python3 -m pyodide_build pywasmcross
