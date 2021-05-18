@@ -29,7 +29,7 @@ $(ZLIBBUILD)/.patched: $(ZLIBTARBALL)
 $(ZLIBBUILD)/Makefile: $(ZLIBBUILD)/.patched
 	( \
 		cd $(ZLIBBUILD); \
-		emconfigure ./configure --prefix=$(ZLIBINSTALL) ; \
+		emconfigure CFLAGS=-fPIC CXXFLAGS=-fPIC ./configure --prefix=$(ZLIBINSTALL) ; \
 	)
 
 

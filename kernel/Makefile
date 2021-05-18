@@ -13,13 +13,16 @@ ZLIBLIB=libz.a
 
 CXX=em++
 OPTFLAGS=-O2
-CXXFLAGS=-std=c++14 -Wall -Werror $(OPTFLAGS) -g -I ../installs/python-$(PYVERSION)/include/python$(PYMINOR)/ -Wno-warn-absolute-paths
+CXXFLAGS=-std=c++14 -Wall -Werror $(OPTFLAGS) -fPIC -g -I ../installs/python-$(PYVERSION)/include/python$(PYMINOR)/ -Wno-warn-absolute-paths
 LDFLAGS=$(OPTFLAGS) $(INSTALL)/lib/$(LIB) $(ZLIBBUILD)/$(ZLIBLIB) \
+  -fPIC \
+  -s MAIN_MODULE=1 \
   -s TOTAL_MEMORY=268435456 \
   -s ASSERTIONS=0 \
   -s EMULATE_FUNCTION_POINTER_CASTS=1 \
   -s "EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap', 'UTF8ToString']" \
   -s "EXPORTED_FUNCTIONS=['_main', '_Kernel_new', '_Kernel_delete', '_Kernel_reset', '_Kernel_eval', '_Kernel_version']" \
+  -s EXPORT_ALL=1 \
   --memory-init-file 0
 
 dist: all

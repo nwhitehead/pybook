@@ -1,8 +1,7 @@
 
 ROOT=$(abspath .)
 
-PYVERSION=3.9.5
-PYMINOR=$(basename $(PYVERSION))
+include Makefile.envs
 
 HOSTINSTALL=$(ROOT)/build/$(PYVERSION)/host
 HOSTBUILD=$(HOSTINSTALL)/Python-$(PYVERSION)
@@ -79,7 +78,7 @@ $(BUILD)/Makefile: $(BUILD)/.patched $(ZLIBBUILD)/.patched $(HOSTPYTHON)
 	cp config.site $(BUILD)/
 	( \
 		cd $(BUILD); \
-		PATH=$(HOSTINSTALL)/bin:$(PATH) CONFIG_SITE=./config.site READELF=true emconfigure ./configure --without-pymalloc --disable-shared --disable-ipv6 --host=asmjs-unknown-emscripten --build=$(shell $(BUILD)/config.guess) --prefix=$(INSTALL) ; \
+		PATH=$(HOSTINSTALL)/bin:$(PATH) CONFIG_SITE=./config.site READELF=true emconfigure ./configure CFLAGS=-fPIC CXXFLAGS=-fPIC --without-pymalloc --disable-shared --disable-ipv6 --host=asmjs-unknown-emscripten --build=$(shell $(BUILD)/config.guess) --prefix=$(INSTALL) ; \
 	)
 
 
