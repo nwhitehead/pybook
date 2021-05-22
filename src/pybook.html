@@ -133,25 +133,38 @@ div.output pre.stderr {
         </div>
         <div class="dropdown is-hoverable">
             <div class="dropdown-trigger">
-                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-edit">
-                    <span>Edit</span>
+                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-cell">
+                    <span>Cell</span>
                 </button>
             </div>
-            <div class="dropdown-menu" id="dropdown-menu-edit" role="menu">
+            <div class="dropdown-menu" id="dropdown-menu-cell" role="menu">
                 <div class="dropdown-content">
                     <a class="dropdown-item" v-on:click.stop="insertCellBefore">Insert new cell before</a>
                     <a class="dropdown-item" v-on:click.stop="insertCellAfter">Insert new cell after</a>
                     <a class="dropdown-item" v-on:click.stop="deleteCell">Delete cell</a>
-                    <a class="dropdown-divider"></a>
-                    <a class="dropdown-item" v-on:click.stop="insertPageBefore">Insert new page before</a>
-                    <a class="dropdown-item" v-on:click.stop="insertPageAfter">Insert new page after</a>
-                    <a class="dropdown-item" v-on:click.stop="deletePage">Delete page</a>
                     <a class="dropdown-divider"></a>
                     <a class="dropdown-item" v-on:click.stop="typeCellCode">Type - code</a>
                     <a class="dropdown-item" v-on:click.stop="typeCellMarkdownEdit">Type - Markdown - Edit</a>
                     <a class="dropdown-item" v-on:click.stop="typeCellMarkdownView">Type - Markdown - View</a>
                     <a class="dropdown-divider"></a>
                     <a class="dropdown-item" v-on:click.stop="typeSomething">Type something</a>
+                </div>
+            </div>
+        </div>
+        <div class="dropdown is-hoverable">
+            <div class="dropdown-trigger">
+                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-page">
+                    <span>Page</span>
+                </button>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu-page" role="menu">
+                <div class="dropdown-content">
+                    <a class="dropdown-item" v-on:click.stop="insertPageBefore">Insert new page before</a>
+                    <a class="dropdown-item" v-on:click.stop="insertPageAfter">Insert new page after</a>
+                    <a class="dropdown-item" v-on:click.stop="deletePage">Delete page</a>
+                    <a class="dropdown-divider"></a>
+                    <a class="dropdown-item" v-on:click.stop="movePageBefore">Move page before</a>
+                    <a class="dropdown-item" v-on:click.stop="movePageAfter">Move page after</a>
                 </div>
             </div>
         </div>
@@ -170,8 +183,8 @@ div.output pre.stderr {
     </div>
 
 <nav class="pagination" role="navigation" aria-label="pagination">
-  <a class="pagination-previous">Previous</a>
-  <a class="pagination-next">Next page</a>
+  <a class="pagination-previous" v-on:click="pagePrevious">Previous</a>
+  <a class="pagination-next" v-on:click="pageNext">Next</a>
   <ul class="pagination-list">
     <li v-for="p in pagination">
       <a v-if="p !== -1" class="pagination-link" v-on:click="handlePage(p - 1)" v-bind:class="{ 'is-current': p === getPage() + 1 }" :aria-label="p">{{p}}</a>
@@ -526,6 +539,11 @@ onready(function() {
             updateCells (state, payload) {
                 state.cells[payload.p] = payload.cells;
             },
+            movePage (state, payload) {
+                const page = state.cells[payload.p];
+                state.cells.splice(payload.p, 1); // remove page
+                state.cells.splice(payload.position, 0, page); // add original page
+            },
             cellType (state, payload) {
                 state.cells[payload.p][payload.n]['cell_type'] = payload.type;
                 if (payload.subtype !== undefined) {
@@ -823,6 +841,32 @@ onready(function() {
                 console.log('Notebook dump');
                 console.log(JSON.stringify(this.notebook, null, 2));
             },
+            movePageBefore (event) {
+                const p = this.getPage();
+                if (p > 0) {
+                    this.$store.commit('movePage', { p:p, position:p - 1 });
+                    this.$store.commit('setPage', p - 1);
+                }
+            },
+            movePageAfter (event) {
+                const p = this.getPage();
+                if (p < this.$store.state.cells.length - 1) {
+                    this.$store.commit('movePage', { p:p, position:p + 1 });
+                    this.$store.commit('setPage', p + 1);
+                }
+            },
+            pagePrevious (event) {
+                const p = this.getPage();
+                if (p > 0) {
+                    this.$store.commit('setPage', p - 1);
+                }
+            },
+            pageNext (event) {
+                const p = this.getPage();
+                if (p < this.$store.state.cells.length - 1) {
+                    this.$store.commit('setPage', p + 1);
+                }
+            }
         }
     });
 
