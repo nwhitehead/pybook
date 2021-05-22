@@ -139,9 +139,13 @@ div.output pre.stderr {
             </div>
             <div class="dropdown-menu" id="dropdown-menu-edit" role="menu">
                 <div class="dropdown-content">
-                    <a class="dropdown-item" v-on:click.stop="insertBefore">Insert new cell before</a>
-                    <a class="dropdown-item" v-on:click.stop="insertAfter">Insert new cell after</a>
+                    <a class="dropdown-item" v-on:click.stop="insertCellBefore">Insert new cell before</a>
+                    <a class="dropdown-item" v-on:click.stop="insertCellAfter">Insert new cell after</a>
                     <a class="dropdown-item" v-on:click.stop="deleteCell">Delete cell</a>
+                    <a class="dropdown-divider"></a>
+                    <a class="dropdown-item" v-on:click.stop="insertPageBefore">Insert new page before</a>
+                    <a class="dropdown-item" v-on:click.stop="insertPageAfter">Insert new page after</a>
+                    <a class="dropdown-item" v-on:click.stop="deletePage">Delete page</a>
                     <a class="dropdown-divider"></a>
                     <a class="dropdown-item" v-on:click.stop="typeCellCode">Type - code</a>
                     <a class="dropdown-item" v-on:click.stop="typeCellMarkdownEdit">Type - Markdown - Edit</a>
@@ -231,7 +235,7 @@ onready(function() {
                     self.$emit('action', { id:self.id, action:'terminate' });
                 },
                 'Ctrl-I': function(cm) {
-                    self.$emit('action', { id:self.id, action:'insert-after' });
+                    self.$emit('action', { id:self.id, action:'insert-cell-after' });
                 },
             });
         },
@@ -443,27 +447,12 @@ onready(function() {
 
     const store = new Vuex.Store({
         state: {
-            cells: [],
+            cells: [[]],
             selectCell: 0,
             page: 0,
         },
-        getters: {
-            /// Get the absolute position of the currently selected cell in the cells array
-            selectedCellPosition: state => {
-                let seen = 0;
-                for (var i = 0; i < state.cells.length; i++) {
-                    if (state.cells[i].metadata.page === state.page) {
-                        seen++;
-                        if (state.selectCell === seen - 1) {
-                            return i;
-                        }
-                    }
-                }
-            }
-        },
         mutations: {
-            new (state) {
-                Vue.set(state, 'cells', []);
+            newNotebook (state) {
                 Vue.set(state, 'selectCell', 0);
                 Vue.set(state, 'page', 0);
                 const newcell = {
@@ -471,69 +460,79 @@ onready(function() {
                     execution_count: 1,
                     source: '',
                     outputs: [],
-                    metadata: {
-                        page: 0
-                    }
+                    metadata: {}
                 };
-                state.cells.splice(0, 0, newcell);
-                const newcell2 = {
-                    cell_type: 'code',
-                    execution_count: 1,
-                    source: '',
-                    outputs: [],
-                    metadata: {
-                        page: 1
-                    }
-                };
-                state.cells.splice(1, 0, newcell2);
+                const newpage = [ newcell ];
+                Vue.set(state, 'cells', [newpage]);
             },
             setSource (state, payload) {
-                Vue.set(state.cells[payload.n], 'source', payload.source);
+                Vue.set(state.cells[payload.p][payload.n], 'source', payload.source);
             },
             clearOutput (state, payload) {
-                Vue.set(state.cells[payload.n], 'outputs', []);
+                Vue.set(state.cells[payload.p][payload.n], 'outputs', []);
             },
             addOutput (state, payload) {
-                state.cells[payload.n].outputs.push(payload.out);
+                state.cells[payload.p][payload.n].outputs.push(payload.out);
             },
-            insertBefore (state, payload) {
+            insertCellBefore (state, payload) {
                 const newcell = {
                     cell_type: 'code',
                     execution_count: 1,
                     source: '',
                     outputs: [],
-                    metadata: {
-                        page: state.page,
-                    },
+                    metadata: {}
                 };
-                state.cells.splice(payload.n, 0, newcell);
+                state.cells[payload.p].splice(payload.n, 0, newcell);
             },
-            insertAfter (state, payload) {
+            insertCellAfter (state, payload) {
                 const newcell = {
                     cell_type: 'code',
                     execution_count: 1,
                     source: '',
                     outputs: [],
-                    metadata: {
-                        page: state.page,
-                    },
+                    metadata: {}
                 };
-                state.cells.splice(payload.n + 1, 0, newcell);
+                state.cells[payload.p].splice(payload.n + 1, 0, newcell);
                 // Vue.set(state, 'selectCell', state.selectCell + 1); // Doesn't move codemirror cursor yet
             },
+            insertPageBefore (state, payload) {
+                const newcell = {
+                    cell_type: 'code',
+                    execution_count: 1,
+                    source: '',
+                    outputs: [],
+                    metadata: {}
+                };
+                const newpage = [ newcell ];
+                state.cells.splice(payload.p, 0, newpage);
+            },
+            insertPageAfter (state, payload) {
+                const newcell = {
+                    cell_type: 'code',
+                    execution_count: 1,
+                    source: '',
+                    outputs: [],
+                    metadata: {}
+                };
+                const newpage = [ newcell ];
+                state.cells.splice(payload.p + 1, 0, newpage);
+            },
+            deletePage (state, payload) {
+                state.cells.splice(payload.p, 1);
+            },
             deleteCell (state, payload) {
-                state.cells.splice(payload.n, 1);
+                state.cells[payload.p].splice(payload.n, 1);
             },
             updateCells (state, payload) {
-                state.cells = payload;
+                state.cells[payload.p] = payload.cells;
             },
             cellType (state, payload) {
-                state.cells[payload.n]['cell_type'] = payload.type;
+                state.cells[payload.p][payload.n]['cell_type'] = payload.type;
                 if (payload.subtype !== undefined) {
-                    if (state.cells[payload.n].metadata === undefined) {
-                        state.cells[payload.n].metadata = {}
+                    if (state.cells[payload.p][payload.n].metadata === undefined) {
+                        state.cells[payload.p][payload.n].metadata = {}
                     }
-                    state.cells[payload.n]['metadata'].subtype = payload.subtype;
+                    state.cells[payload.p][payload.n]['metadata'].subtype = payload.subtype;
                 }
             },
             initialiseStore(state) {
@@ -577,6 +576,14 @@ onready(function() {
             },
             pagination() {
                 const pages = this.countPages();
+                // Simple case is not too many pages, just show them all in this case
+                if (pages <= 9) {
+                    let result = [];
+                    for (let i = 0; i < pages; i++) {
+                        result.push(i + 1);
+                    }
+                    return result;
+                }
                 const page = this.getPage() + 1;
                 const prePages = 2;
                 const postPages = 2;
@@ -605,25 +612,26 @@ onready(function() {
         },
         methods: {
             handleInput (event) {
-                this.$store.commit('setSource', {n:event.id, source:event.value});
+                this.$store.commit('setSource', {p:this.getPage(), n:event.id, source:event.value});
             },
             handleAction (event) {
+                const p = this.getPage();
                 var action = event.action;
                 const self = this;
                 if (action === 'eval') {
                     if (!isBusy() && !isStarting()) {
-                        this.$store.commit('clearOutput', {n:event.id});
+                        this.$store.commit('clearOutput', {p, n:event.id});
                         clearInterrupt();
-                        python.evaluate(this.$store.state.cells[event.id].source, {
+                        python.evaluate(this.$store.state.cells[p][event.id].source, {
                             onStdout: function(msg) {
-                                self.addOutput(event.id, { 
+                                self.addOutput(p, event.id, { 
                                     output_type: 'stream',
                                     name: 'stdout',
                                     text: msg
                                 });
                             },
                             onStderr: function(msg) {
-                                self.addOutput(event.id, { 
+                                self.addOutput(p, event.id, { 
                                     output_type: 'stream',
                                     name: 'stderr',
                                     text: msg
@@ -635,14 +643,14 @@ onready(function() {
                             },
                             onOutput: function(content_type, msg) {
                                 if (content_type === 'text/html') {
-                                    self.addOutput(event.id, {
+                                    self.addOutput(p, event.id, {
                                         output_type: 'display_data',
                                         data: {
                                             "text/html": msg
                                         }
                                     });
                                 } else if (content_type === 'text/plain') {
-                                    self.addOutput(event.id, {
+                                    self.addOutput(p, event.id, {
                                         output_type: 'display_data',
                                         data: {
                                             "text/plain": msg
@@ -662,8 +670,8 @@ onready(function() {
                 } else if (action === 'break') {
                     console.log('Interrupting python');
                     setInterrupt();
-                } else if (action === 'insert-after') {
-                    this.$store.commit('insertAfter', { n:event.id });
+                } else if (action === 'insert-cell-after') {
+                    this.$store.commit('insertCellAfter', { p, n:event.id });
                 } else if (action === 'terminate') {
                     console.log('Terminating python');
                     python.terminate();
@@ -672,34 +680,18 @@ onready(function() {
                 }
             },
             handleDrag (event) {
-                this.$store.commit('updateCells', event);
+                const p = this.getPage();
+                this.$store.commit('updateCells', { p, cells:event });
                 this.$store.commit('setSelectCell', undefined);
             },
             handlePage (page) {
                 this.$store.commit('setPage', page);
             },
-            addOutput (n, out) {
-                this.$store.commit('addOutput', {n, out});
-            },
-            cellGetPage (cell) {
-                if (cell.metadata === undefined) {
-                    return 0;
-                }
-                if (cell.metadata.page === undefined) {
-                    return 0;
-                }
-                return cell.metadata.page;
+            addOutput (p, n, out) {
+                this.$store.commit('addOutput', {p, n, out});
             },
             getCells () {
-                var result = [];
-                const cells = this.$store.state.cells;
-                for (var i = 0; i < cells.length; i++) {
-                    const cell = cells[i];
-                    if (this.cellGetPage(cell) === this.getPage()) {
-                        result.push(cell);
-                    }
-                }
-                return result;
+                return this.$store.state.cells[this.getPage()];
             },
             getSelect () {
                 return this.$store.state.selectCell;
@@ -714,7 +706,7 @@ onready(function() {
                 this.$store.commit('setSelectCell', undefined);
             },
             fileNew (event) {
-                this.$store.commit('new');
+                this.$store.commit('newNotebook');
             },
             fileSave (event) {
                 const data = JSON.stringify(this.$store.state);
@@ -726,31 +718,35 @@ onready(function() {
                 if (n === undefined) {
                     return false;
                 }
-                return (n >= 0 && n < this.$store.state.cells.length);
+                return (n >= 0 && n < this.$store.state.cells[this.getPage()].length);
             },
             countPages () {
-                const cells = this.$store.state.cells;
-                var maxPage = 0;
-                for (var i = 0; i < cells.length; i++) {
-                    const cell = cells[i];
-                    if (cell.metadata && cell.metadata.page > maxPage) {
-                        maxPage = cell.metadata.page;
-                    }
-                }
-                return maxPage + 1;
+                return this.$store.state.cells.length;
             },
             pageValid (n) {
-                const numPages = this.countPages();
-                return n >= 0 && n < numPages;
+                return n >= 0 && n < this.countPages();
             },
             deleteCell (event) {
+                const p = this.getPage();
                 const n = this.$store.state.selectCell;
-                if (this.selectionValid(n)) {
-                    this.$store.commit('deleteCell', { n });
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    this.$store.commit('deleteCell', { p, n });
+                    if (this.$store.state.cells[p].length === 0) {
+                        // If user deleted last cell, delete page
+                       this.$store.commit('deletePage', { p });
+                    }
+                }
+            },
+            deletePage (event) {
+                const p = this.getPage();
+                this.$store.commit('deletePage', { p });
+                if (this.getPage() >= this.$store.state.cells.length) {
+                    // If we deleted the last page, move to new last page
+                    this.$store.commit('setPage', this.$store.state.cells.length - 1);
                 }
                 if (this.$store.state.cells.length === 0) {
-                    // If user deleted last cell, start with fresh notebook
-                    this.$store.commit('new');
+                    // If user deleted last page, start with fresh notebook
+                    this.$store.commit('newNotebook');
                 }
             },
             typeSomething (event) {
@@ -763,34 +759,51 @@ onready(function() {
                 // Signal no more input
                 inputPut(0);
             },
-            insertBefore (event) {
+            insertCellBefore (event) {
+                const p = this.getPage();
                 const n = this.$store.state.selectCell;
-                if (this.selectionValid(n)) {
-                    this.$store.commit('insertBefore', { n });
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    this.$store.commit('insertCellBefore', { p, n });
                 }
             },
-            insertAfter (event) {
+            insertCellAfter (event) {
+                const p = this.getPage();
                 const n = this.$store.state.selectCell;
-                if (this.selectionValid(n)) {
-                    this.$store.commit('insertAfter', { n });
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    this.$store.commit('insertCellAfter', { p, n });
+                }
+            },
+            insertPageBefore (event) {
+                const p = this.getPage();
+                if (this.pageValid(p)) {
+                    this.$store.commit('insertPageBefore', { p });
+                }
+            },
+            insertPageAfter (event) {
+                const p = this.getPage();
+                if (this.pageValid(p)) {
+                    this.$store.commit('insertPageAfter', { p });
                 }
             },
             typeCellCode (event) {
+                const p = this.getPage();
                 const n = this.$store.state.selectCell;
-                if (this.selectionValid(n)) {
-                    this.$store.commit('cellType', { n, type:'code' });
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    this.$store.commit('cellType', { p, n, type:'code' });
                 }
             },
             typeCellMarkdownEdit (event) {
+                const p = this.getPage();
                 const n = this.$store.state.selectCell;
-                if (this.selectionValid(n)) {
-                    this.$store.commit('cellType', { n, type:'markdown', subtype:'edit' });
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    this.$store.commit('cellType', { p, n, type:'markdown', subtype:'edit' });
                 }
             },
             typeCellMarkdownView (event) {
+                const p = this.getPage();
                 const n = this.$store.state.selectCell;
-                if (this.selectionValid(n)) {
-                    this.$store.commit('cellType', { n, type:'markdown', subtype:'view' });
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    this.$store.commit('cellType', { p, n, type:'markdown', subtype:'view' });
                 }
             },
             debugDump (event) {
