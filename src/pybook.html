@@ -50,7 +50,7 @@ div .side-right {
 div.cellinput {
     height: auto;
     width: 100%;
-    padding: 10px 20px 10px 10px;
+    padding: 10px 8px 10px 10px;
 }
 div.cellinput.CodeMirror {
     border: 1px solid #f0f4ff;
@@ -297,7 +297,7 @@ onready(function() {
         props: ['value', 'output', 'id', 'selected', 'type'],
         template: String.raw`
             <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick">
-                <div class="side-left">
+                <div class="side-left handle">
                 </div>
                 <div class="side-right" :class="rightClass">
                     <codemirror
