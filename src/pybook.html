@@ -170,7 +170,7 @@ div.output pre.stderr {
   <a class="pagination-next">Next page</a>
   <ul class="pagination-list">
     <li v-for="p in pagination">
-      <a v-if="p !== -1" class="pagination-link" v-bind:class="{ 'is-current': p === getPage() + 1 }" :aria-label="p">{{p}}</a>
+      <a v-if="p !== -1" class="pagination-link" v-on:click="handlePage(p - 1)" v-bind:class="{ 'is-current': p === getPage() + 1 }" :aria-label="p">{{p}}</a>
       <span v-if="p === -1" class="pagination-ellipsis">&hellip;</span>
     </li>
   </ul>
@@ -355,7 +355,7 @@ onready(function() {
             },
             handleClick (event) {
                 this.$emit('click', { id:this.id });
-            },
+            }
         }
     });
 
@@ -447,6 +447,20 @@ onready(function() {
             selectCell: 0,
             page: 0,
         },
+        getters: {
+            /// Get the absolute position of the currently selected cell in the cells array
+            selectedCellPosition: state => {
+                let seen = 0;
+                for (var i = 0; i < state.cells.length; i++) {
+                    if (state.cells[i].metadata.page === state.page) {
+                        seen++;
+                        if (state.selectCell === seen - 1) {
+                            return i;
+                        }
+                    }
+                }
+            }
+        },
         mutations: {
             new (state) {
                 Vue.set(state, 'cells', []);
@@ -488,6 +502,9 @@ onready(function() {
                     execution_count: 1,
                     source: '',
                     outputs: [],
+                    metadata: {
+                        page: state.page,
+                    },
                 };
                 state.cells.splice(payload.n, 0, newcell);
             },
@@ -497,8 +514,12 @@ onready(function() {
                     execution_count: 1,
                     source: '',
                     outputs: [],
+                    metadata: {
+                        page: state.page,
+                    },
                 };
                 state.cells.splice(payload.n + 1, 0, newcell);
+                // Vue.set(state, 'selectCell', state.selectCell + 1); // Doesn't move codemirror cursor yet
             },
             deleteCell (state, payload) {
                 state.cells.splice(payload.n, 1);
@@ -525,6 +546,10 @@ onready(function() {
             setSelectCell(state, payload) {
                 Vue.set(state, 'selectCell', payload);
             },
+            setPage(state, payload) {
+                Vue.set(state, 'selectCell', 0);
+                Vue.set(state, 'page', payload);
+            }
         }
     });
 
@@ -649,6 +674,9 @@ onready(function() {
             handleDrag (event) {
                 this.$store.commit('updateCells', event);
                 this.$store.commit('setSelectCell', undefined);
+            },
+            handlePage (page) {
+                this.$store.commit('setPage', page);
             },
             addOutput (n, out) {
                 this.$store.commit('addOutput', {n, out});
