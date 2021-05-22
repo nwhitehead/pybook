@@ -577,7 +577,9 @@ onready(function() {
             pagination() {
                 const pages = this.countPages();
                 // Simple case is not too many pages, just show them all in this case
-                if (pages <= 9) {
+                let prePages = 3;
+                let postPages = 3;
+                if (pages <= 2 + 2 + prePages + 1 + postPages) {
                     let result = [];
                     for (let i = 0; i < pages; i++) {
                         result.push(i + 1);
@@ -585,26 +587,37 @@ onready(function() {
                     return result;
                 }
                 const page = this.getPage() + 1;
-                const prePages = 2;
-                const postPages = 2;
                 var result = [];
                 result.push(1);
                 var start = page - prePages;
-                if (start < prePages) {
-                    start = prePages;
+                if (start <= 3) {
+                    // If there is not enough room for first ellipsis,
+                    // put pages in that spot instead.
+                    postPages += 3 - start;
+                    start = 3;
                 }
-                if (start > prePages) {
-                    result.push(-1);
+                if (start >= 3) {
+                    // If we would just put ... but the page would do as nicely, put the page
+                    if (start == 3) {
+                        result.push(2);
+                    } else {
+                        result.push(-1);
+                    }
                 }
                 var end = page + postPages;
-                if (end > pages - 1) {
-                    end = pages - 1;
+                if (end >= pages - 1) {
+                    start -= end - (pages - 1) + 1;
+                    end = pages - 2;
                 }
                 for (var i = start; i <= end; i++) {
                     result.push(i);
                 }
-                if (end < pages - 1) {
-                    result.push(-1);
+                if (end <= pages - 2) {
+                    if (end == pages - 2) {
+                        result.push(pages - 1);
+                    } else {
+                        result.push(-1);
+                    }
                 }
                 result.push(pages);
                 return result;
