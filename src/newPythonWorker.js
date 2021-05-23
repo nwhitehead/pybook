@@ -24,7 +24,10 @@ export function newPythonWorker(opts) {
                     e = Atomics.load(sharedArray, signalMap['input_end']);
                     // Check for keyboard interrupt to avoid infinite wait for input
                     if (Atomics.load(sharedArray, signalMap['interrupt']) !== 0) {
-                        // Don't clear interrupt, let it be cleared by main eval loop
+                        // Clear interrupt
+                        Atomics.store(sharedArray, signalMap['interrup'], 0);
+                        // Throw exception (will be wrapped in JsException)
+                        pyodide.runPython('raise KeyboardInterrupt');
                         return null;
                     }
                 }
@@ -71,7 +74,6 @@ export function newPythonWorker(opts) {
                     send({ type:'output', subtype:'binary', content_type:content_type, data:content_data });
                   },
                   input_stdin: function() {
-                      console.log('input_stdin called');
                       return inputGet();
                   }
                 };
