@@ -143,6 +143,9 @@ div.output pre.stderr {
                     <a class="dropdown-item" v-on:click.stop="insertCellAfter">Insert new cell after</a>
                     <a class="dropdown-item" v-on:click.stop="deleteCell">Delete cell</a>
                     <a class="dropdown-divider"></a>
+                    <a class="dropdown-item" v-on:click.stop="moveCellBefore">Move cell before</a>
+                    <a class="dropdown-item" v-on:click.stop="moveCellAfter">Move cell after</a>
+                    <a class="dropdown-divider"></a>
                     <a class="dropdown-item" v-on:click.stop="typeCellCode">Type - code</a>
                     <a class="dropdown-item" v-on:click.stop="typeCellMarkdownEdit">Type - Markdown - Edit</a>
                     <a class="dropdown-item" v-on:click.stop="typeCellMarkdownView">Type - Markdown - View</a>
@@ -538,6 +541,12 @@ onready(function() {
             updateCells (state, payload) {
                 Vue.set(state.cells, payload.p, payload.cells);
             },
+            moveCell (state, payload) {
+                const page = state.cells[payload.p];
+                const cell = page[payload.n];
+                page.splice(payload.n, 1); // remove cell
+                page.splice(payload.position, 0, cell); // add original cell
+            },
             movePage (state, payload) {
                 const page = state.cells[payload.p];
                 state.cells.splice(payload.p, 1); // remove page
@@ -650,6 +659,11 @@ onready(function() {
             }
         },
         methods: {
+            updateFocus() {
+                // Look at selected cell, call focus() on that codemirror instance
+                const n = this.selectCell;
+
+            },
             handleInput (event) {
                 this.$store.commit('setSource', {p:this.page, n:event.id, source:event.value});
             },
@@ -710,7 +724,7 @@ onready(function() {
                     console.log('Interrupting python');
                     setInterrupt();
                 } else if (action === 'insert-cell-after') {
-                    this.$store.commit('insertCellAfter', { p, n:event.id });
+                    this.insertCellAfter(event);
                 } else if (action === 'terminate') {
                     console.log('Terminating python');
                     python.terminate();
@@ -794,6 +808,7 @@ onready(function() {
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellBefore', { p, n });
+                    this.$store.commit('setSelectCell', n);
                 }
             },
             insertCellAfter (event) {
@@ -801,6 +816,7 @@ onready(function() {
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellAfter', { p, n });
+                    this.$store.commit('setSelectCell', n + 1);
                 }
             },
             insertPageBefore (event) {
@@ -839,6 +855,22 @@ onready(function() {
             debugDump (event) {
                 console.log('Notebook dump');
                 console.log(JSON.stringify(this.notebook, null, 2));
+            },
+            moveCellBefore (event) {
+                const p = this.page;
+                const n = this.$store.state.selectCell;
+                if (this.pageValid(p) && n > 0) {
+                    this.$store.commit('moveCell', { p, n, position:n - 1 });
+                    this.$store.commit('setSelectCell', n - 1);
+                }
+            },
+            moveCellAfter (event) {
+                const p = this.page;
+                const n = this.$store.state.selectCell;
+                if (this.pageValid(p) && n < this.$store.state.cells[p].length - 1) {
+                    this.$store.commit('moveCell', { p, n, position:n + 1 });
+                    this.$store.commit('setSelectCell', n + 1);
+                }
             },
             movePageBefore (event) {
                 const p = this.page;
