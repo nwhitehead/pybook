@@ -203,6 +203,7 @@ div.output pre.stderr {
         v-on:click="handleClick"
         v-bind:values="cells"
         v-bind:select="selectCell"
+        ref="cells"
     >
     </cells>
 </div>
@@ -263,6 +264,11 @@ onready(function() {
                 }
             },
         },
+        methods: {
+            focus () {
+                this.editor.focus();
+            }
+        }
     });
 
     Vue.component('dataoutput', {
@@ -325,6 +331,7 @@ onready(function() {
                         v-on:update:value="handleInput"
                         v-on:action="handleAction"
                         v-if="showEdit"
+                        ref="codemirror"
                         >
                     </codemirror>
                     <celloutput
@@ -375,6 +382,9 @@ onready(function() {
             },
             handleClick (event) {
                 this.$emit('click', { id:this.id });
+            },
+            focus () {
+                this.$refs.codemirror.focus();
             }
         }
     });
@@ -402,6 +412,7 @@ onready(function() {
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     v-on:click="handleClick"
+                    ref="cell"
                 >
                 </cell>
             </draggable>`,
@@ -447,6 +458,9 @@ onready(function() {
             handleClick (event) {
                 this.$emit('click', event);
             },
+            focus (n) {
+                this.$refs.cell[n].focus();
+            }
         }
     });
 
@@ -660,9 +674,14 @@ onready(function() {
         },
         methods: {
             updateFocus() {
-                // Look at selected cell, call focus() on that codemirror instance
-                const n = this.selectCell;
-
+                // Look at selectCell, call focus() on that codemirror instance
+                // Wait until DOM updates in case we're adding new cells or rearranging editors
+                this.$nextTick( () => {
+                    const n = this.selectCell;
+                    if (n) {
+                        this.$refs.cells.focus(n);
+                    }
+                });
             },
             handleInput (event) {
                 this.$store.commit('setSource', {p:this.page, n:event.id, source:event.value});
@@ -751,6 +770,7 @@ onready(function() {
             },
             fileNew (event) {
                 this.$store.commit('newNotebook');
+                this.updateFocus();
             },
             fileSave (event) {
                 const data = JSON.stringify(this.$store.state);
@@ -775,11 +795,16 @@ onready(function() {
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('deleteCell', { p, n });
+                    if (n === this.$store.state.cells[p].length) {
+                        // If last cell deleted, select new last one
+                        this.$store.commit('setSelectCell', n - 1)
+                    }
                     if (this.$store.state.cells[p].length === 0) {
                         // If user deleted last cell, delete page
-                       this.$store.commit('deletePage', { p });
+                        this.deletePage();
                     }
                 }
+                this.updateFocus();
             },
             deletePage (event) {
                 const p = this.page;
@@ -792,6 +817,7 @@ onready(function() {
                     // If user deleted last page, start with fresh notebook
                     this.$store.commit('newNotebook');
                 }
+                this.updateFocus();
             },
             typeSomething (event) {
                 var txt = window.prompt('Enter input');
@@ -809,6 +835,7 @@ onready(function() {
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellBefore', { p, n });
                     this.$store.commit('setSelectCell', n);
+                    this.updateFocus();
                 }
             },
             insertCellAfter (event) {
@@ -817,18 +844,21 @@ onready(function() {
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellAfter', { p, n });
                     this.$store.commit('setSelectCell', n + 1);
+                    this.updateFocus();
                 }
             },
             insertPageBefore (event) {
                 const p = this.page;
                 if (this.pageValid(p)) {
                     this.$store.commit('insertPageBefore', { p });
+                    this.updateFocus();
                 }
             },
             insertPageAfter (event) {
                 const p = this.page;
                 if (this.pageValid(p)) {
                     this.$store.commit('insertPageAfter', { p });
+                    this.updateFocus();
                 }
             },
             typeCellCode (event) {
@@ -862,6 +892,7 @@ onready(function() {
                 if (this.pageValid(p) && n > 0) {
                     this.$store.commit('moveCell', { p, n, position:n - 1 });
                     this.$store.commit('setSelectCell', n - 1);
+                    this.updateFocus();
                 }
             },
             moveCellAfter (event) {
@@ -870,6 +901,7 @@ onready(function() {
                 if (this.pageValid(p) && n < this.$store.state.cells[p].length - 1) {
                     this.$store.commit('moveCell', { p, n, position:n + 1 });
                     this.$store.commit('setSelectCell', n + 1);
+                    this.updateFocus();
                 }
             },
             movePageBefore (event) {
@@ -877,6 +909,7 @@ onready(function() {
                 if (p > 0) {
                     this.$store.commit('movePage', { p:p, position:p - 1 });
                     this.$store.commit('setPage', p - 1);
+                    this.updateFocus();
                 }
             },
             movePageAfter (event) {
@@ -884,18 +917,21 @@ onready(function() {
                 if (p < this.$store.state.cells.length - 1) {
                     this.$store.commit('movePage', { p:p, position:p + 1 });
                     this.$store.commit('setPage', p + 1);
+                    this.updateFocus();
                 }
             },
             pagePrevious (event) {
                 const p = this.page;
                 if (p > 0) {
                     this.$store.commit('setPage', p - 1);
+                    this.updateFocus();
                 }
             },
             pageNext (event) {
                 const p = this.page;
                 if (p < this.$store.state.cells.length - 1) {
                     this.$store.commit('setPage', p + 1);
+                    this.updateFocus();
                 }
             }
         }
