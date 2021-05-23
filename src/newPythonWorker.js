@@ -15,6 +15,32 @@ export function newPythonWorker(opts) {
 
             importScripts(absurl + '/lib/pyodide/pyodide.js');
 
+            function inputGet() {
+                var p = Atomics.load(sharedArray, signalMap['input_start']);
+                var e = Atomics.load(sharedArray, signalMap['input_end']);
+                while (e === p) {
+                    // Wait for input, timeout after 100 ms
+                    Atomics.wait(sharedArray, signalMap['input_end'], e, 100);
+                    e = Atomics.load(sharedArray, signalMap['input_end']);
+                    // Check for keyboard interrupt to avoid infinite wait for input
+                    if (Atomics.load(sharedArray, signalMap['interrupt']) !== 0) {
+                        // Don't clear interrupt, let it be cleared by main eval loop
+                        return null;
+                    }
+                }
+                var value = Atomics.load(sharedInputArray, p);
+                p = (p + 1) % INPUT_BUFFER_SIZE;
+                Atomics.store(sharedArray, signalMap['input_start'], p);
+                Atomics.notify(sharedArray, signalMap['input_start']);
+                if (value === 0) {
+                    // Let 0 values in input return null here
+                    // This flushes buffer and lets Python process input
+                    // Rule seems to be first null flushes, second null is EOF
+                    value = null;
+                }
+                return value;
+            }
+
             loaded = false;
             loadPyodide({indexURL : absurl + '/lib/pyodide'}).then( function() {
                 let version = pyodide.runPython("import sys; sys.version");
@@ -43,6 +69,10 @@ export function newPythonWorker(opts) {
                     //     import pyodide
                     //     output_binary_content('image/png', pyodide.to_js(b'...'))
                     send({ type:'output', subtype:'binary', content_type:content_type, data:content_data });
+                  },
+                  input_stdin: function() {
+                      console.log('input_stdin called');
+                      return inputGet();
                   }
                 };
                 pyodide.setInterruptBuffer(sharedArray);

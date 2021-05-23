@@ -118,13 +118,39 @@ class WriteBuffer:
             self.handler(self.stream)
             self.stream = ''
 
+class ReadBuffer:
+    '''
+    Helper class to line-buffer reads redirected from user cells.
+
+    '''
+    def __init__(self, handler):
+        self.stream = ''
+        self.handler = handler
+    def read(self):
+        return self.handler()
+    def readline(self):
+        s = ''
+        while True:
+            c = self.handler()
+            if c is None:
+                return s
+            s = s + chr(c)
+    def flush(self):
+        pass
+
+class redirect_stdin(contextlib._RedirectStream):
+    ''' Redirect stdin '''
+    _stream = "stdin"
+
 def wrapped_run_cell(*args, **kwargs):
     import pybook
     out = WriteBuffer(pybook.output_stdout)
     err = WriteBuffer(pybook.output_stderr)
+    inp = ReadBuffer(pybook.input_stdin)
     with contextlib.redirect_stdout(out):
         with contextlib.redirect_stderr(err):
-            run_cell(*args, **kwargs)
+            with redirect_stdin(inp):
+                run_cell(*args, **kwargs)
 
 def redefine_builtins():
     import pybook
