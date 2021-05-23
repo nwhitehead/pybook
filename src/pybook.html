@@ -254,6 +254,12 @@ onready(function() {
                 'Ctrl-I': function(cm) {
                     self.$emit('action', { id:self.id, action:'insert-cell-after' });
                 },
+                'Ctrl-Up': function(cm) {
+                    self.$emit('action', { id:self.id, action:'select-cell-before' });
+                },
+                'Ctrl-Down': function(cm) {
+                    self.$emit('action', { id:self.id, action:'select-cell-after' });
+                },
             });
         },
         watch: {
@@ -678,7 +684,7 @@ onready(function() {
                 // Wait until DOM updates in case we're adding new cells or rearranging editors
                 this.$nextTick( () => {
                     const n = this.selectCell;
-                    if (n) {
+                    if (n !== undefined) {
                         this.$refs.cells.focus(n);
                     }
                 });
@@ -747,6 +753,10 @@ onready(function() {
                 } else if (action === 'terminate') {
                     console.log('Terminating python');
                     python.terminate();
+                } else if (action === 'select-cell-before') {
+                    this.selectCellBefore(event);
+                } else if (action === 'select-cell-after') {
+                    this.selectCellAfter(event);
                 } else {
                     console.log("Unknown action", action, event.id);
                 }
@@ -758,6 +768,8 @@ onready(function() {
             },
             handlePage (page) {
                 this.$store.commit('setPage', page);
+                this.$store.commit('setSelectCell', 0);
+                this.updateFocus();
             },
             addOutput (p, n, out) {
                 this.$store.commit('addOutput', {p, n, out});
@@ -766,7 +778,20 @@ onready(function() {
                 this.$store.commit('setSelectCell', event.id);
             },
             handleOuterClick (event) {
-                this.$store.commit('setSelectCell', undefined);
+                // This is getting triggered by clicking page buttons, so ignore for now
+                //this.$store.commit('setSelectCell', undefined);
+            },
+            selectCellBefore (event) {
+                if (this.selectCell > 0) {
+                    this.$store.commit('setSelectCell', this.selectCell - 1);
+                    this.updateFocus();
+                }
+            },
+            selectCellAfter (event) {
+                if (this.selectCell < this.cells.length - 1) {
+                    this.$store.commit('setSelectCell', this.selectCell + 1);
+                    this.updateFocus();
+                }
             },
             fileNew (event) {
                 this.$store.commit('newNotebook');
@@ -809,6 +834,7 @@ onready(function() {
             deletePage (event) {
                 const p = this.page;
                 this.$store.commit('deletePage', { p });
+                this.$store.commit('setSelectCell', 0);
                 if (this.page >= this.$store.state.cells.length) {
                     // If we deleted the last page, move to new last page
                     this.$store.commit('setPage', this.$store.state.cells.length - 1);
@@ -851,6 +877,7 @@ onready(function() {
                 const p = this.page;
                 if (this.pageValid(p)) {
                     this.$store.commit('insertPageBefore', { p });
+                    this.$store.commit('setSelectCell', 0);
                     this.updateFocus();
                 }
             },
@@ -858,6 +885,7 @@ onready(function() {
                 const p = this.page;
                 if (this.pageValid(p)) {
                     this.$store.commit('insertPageAfter', { p });
+                    this.$store.commit('setSelectCell', 0);
                     this.updateFocus();
                 }
             },
@@ -924,6 +952,7 @@ onready(function() {
                 const p = this.page;
                 if (p > 0) {
                     this.$store.commit('setPage', p - 1);
+                    this.$store.commit('setSelectCell', 0);
                     this.updateFocus();
                 }
             },
@@ -931,6 +960,7 @@ onready(function() {
                 const p = this.page;
                 if (p < this.$store.state.cells.length - 1) {
                     this.$store.commit('setPage', p + 1);
+                    this.$store.commit('setSelectCell', 0);
                     this.updateFocus();
                 }
             }
