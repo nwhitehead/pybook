@@ -245,6 +245,12 @@ onready(function() {
                 'Ctrl-Enter': function(cm) {
                     self.$emit('action', { id:self.id, action:'eval' });
                 },
+                'Shift-Enter': function(cm) {
+                    self.$emit('action', { id:self.id, action:'eval-next' });
+                },
+                'Alt-Enter': function(cm) {
+                    self.$emit('action', { id:self.id, action:'eval-new' });
+                },
                 'Ctrl-C': function(cm) {
                     self.$emit('action', { id:self.id, action:'break' });
                 },
@@ -259,6 +265,12 @@ onready(function() {
                 },
                 'Ctrl-Down': function(cm) {
                     self.$emit('action', { id:self.id, action:'select-cell-after' });
+                },
+                'Ctrl-Right': function(cm) {
+                    self.$emit('action', { id:self.id, action:'select-page-after' });
+                },
+                'Ctrl-Left': function(cm) {
+                    self.$emit('action', { id:self.id, action:'select-page-before' });
                 },
             });
         },
@@ -692,56 +704,80 @@ onready(function() {
             handleInput (event) {
                 this.$store.commit('setSource', {p:this.page, n:event.id, source:event.value});
             },
+            clearOutput (p, n) {
+                this.$store.commit('clearOutput', {p, n});
+            },
+            internalEval (p, n) {
+                this.clearOutput(p, n);
+                const self = this;
+                python.evaluate(this.$store.state.cells[p][n].source, {
+                    onStdout: function(msg) {
+                        self.addOutput(p, n, { 
+                            output_type: 'stream',
+                            name: 'stdout',
+                            text: msg
+                        });
+                    },
+                    onStderr: function(msg) {
+                        self.addOutput(p, n, { 
+                            output_type: 'stream',
+                            name: 'stderr',
+                            text: msg
+                        });
+                    },
+                    onResponse: function(content_type, msg) {
+                        // Adding -> things is handled by run_cell and exec
+                        // This could change styling to show eval is done TODO
+                    },
+                    onOutput: function(content_type, msg) {
+                        if (content_type === 'text/html') {
+                            self.addOutput(p, n, {
+                                output_type: 'display_data',
+                                data: {
+                                    "text/html": msg
+                                }
+                            });
+                        } else if (content_type === 'text/plain') {
+                            self.addOutput(p, n, {
+                                output_type: 'display_data',
+                                data: {
+                                    "text/plain": msg
+                                }
+                            });
+                        } else if (content_type === 'image/png') {
+                            console.log('PNG data ', msg);
+                            // TODO... make it show up
+                        } else {
+                            console.log('Unknown content_type ' + content_type);
+                        }
+                    },
+                });
+
+            },
             handleAction (event) {
                 const p = this.page;
+                const n = event.id;
                 var action = event.action;
-                const self = this;
                 if (action === 'eval') {
                     if (!isBusy() && !isStarting()) {
-                        this.$store.commit('clearOutput', {p, n:event.id});
                         clearInterrupt();
-                        python.evaluate(this.$store.state.cells[p][event.id].source, {
-                            onStdout: function(msg) {
-                                self.addOutput(p, event.id, { 
-                                    output_type: 'stream',
-                                    name: 'stdout',
-                                    text: msg
-                                });
-                            },
-                            onStderr: function(msg) {
-                                self.addOutput(p, event.id, { 
-                                    output_type: 'stream',
-                                    name: 'stderr',
-                                    text: msg
-                                });
-                            },
-                            onResponse: function(content_type, msg) {
-                                // Adding -> things is handled by run_cell and exec
-                                // This could change styling to show eval is done TODO
-                            },
-                            onOutput: function(content_type, msg) {
-                                if (content_type === 'text/html') {
-                                    self.addOutput(p, event.id, {
-                                        output_type: 'display_data',
-                                        data: {
-                                            "text/html": msg
-                                        }
-                                    });
-                                } else if (content_type === 'text/plain') {
-                                    self.addOutput(p, event.id, {
-                                        output_type: 'display_data',
-                                        data: {
-                                            "text/plain": msg
-                                        }
-                                    });
-                                } else if (content_type === 'image/png') {
-                                    console.log('PNG data ', msg);
-                                    // TODO... make it show up
-                                } else {
-                                    console.log('Unknown content_type ' + content_type);
-                                }
-                            },
-                        });
+                        this.internalEval(p, n);
+                    } else {
+                        beep();
+                    }
+                } else if (action === 'eval-next') {
+                    if (!isBusy() && !isStarting()) {
+                        clearInterrupt();
+                        this.internalEval(p, n);
+                        this.selectCellAfter();
+                    } else {
+                        beep();
+                    }
+                } else if (action === 'eval-new') {
+                    if (!isBusy() && !isStarting()) {
+                        clearInterrupt();
+                        this.internalEval(p, n);
+                        this.insertCellAfter();
                     } else {
                         beep();
                     }
@@ -757,6 +793,10 @@ onready(function() {
                     this.selectCellBefore(event);
                 } else if (action === 'select-cell-after') {
                     this.selectCellAfter(event);
+                } else if (action === 'select-page-before') {
+                    this.pagePrevious();
+                } else if (action === 'select-page-after') {
+                    this.pageNext();
                 } else {
                     console.log("Unknown action", action, event.id);
                 }
