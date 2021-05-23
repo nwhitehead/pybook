@@ -187,7 +187,7 @@ div.output pre.stderr {
   <a class="pagination-next" v-on:click="pageNext">Next</a>
   <ul class="pagination-list">
     <li v-for="p in pagination">
-      <a v-if="p !== -1" class="pagination-link" v-on:click="handlePage(p - 1)" v-bind:class="{ 'is-current': p === getPage() + 1 }" :aria-label="p">{{p}}</a>
+      <a v-if="p !== -1" class="pagination-link" v-on:click="handlePage(p - 1)" v-bind:class="{ 'is-current': p === page + 1 }" :aria-label="p">{{p}}</a>
       <span v-if="p === -1" class="pagination-ellipsis">&hellip;</span>
     </li>
   </ul>
@@ -198,8 +198,8 @@ div.output pre.stderr {
         v-on:update:values="handleDrag"
         v-on:action="handleAction"
         v-on:click="handleClick"
-        v-bind:values="getCells()"
-        v-bind:select="getSelect()"
+        v-bind:values="cells"
+        v-bind:select="selectCell"
     >
     </cells>
 </div>
@@ -389,7 +389,7 @@ onready(function() {
                 v-on:end="dragEnd"
             >
                 <cell
-                    v-for="(content, index) in values"
+                    v-for="(content, index) in contents"
                     v-bind:value="content.source"
                     v-bind:output="content.outputs"
                     v-bind:id="index"
@@ -506,7 +506,6 @@ onready(function() {
                     metadata: {}
                 };
                 state.cells[payload.p].splice(payload.n + 1, 0, newcell);
-                // Vue.set(state, 'selectCell', state.selectCell + 1); // Doesn't move codemirror cursor yet
             },
             insertPageBefore (state, payload) {
                 const newcell = {
@@ -537,7 +536,7 @@ onready(function() {
                 state.cells[payload.p].splice(payload.n, 1);
             },
             updateCells (state, payload) {
-                state.cells[payload.p] = payload.cells;
+                Vue.set(state.cells, payload.p, payload.cells);
             },
             movePage (state, payload) {
                 const page = state.cells[payload.p];
@@ -545,12 +544,12 @@ onready(function() {
                 state.cells.splice(payload.position, 0, page); // add original page
             },
             cellType (state, payload) {
-                state.cells[payload.p][payload.n]['cell_type'] = payload.type;
+                Vue.set(state.cells[payload.p][payload.n], 'cell_type', payload.type);
                 if (payload.subtype !== undefined) {
                     if (state.cells[payload.p][payload.n].metadata === undefined) {
-                        state.cells[payload.p][payload.n].metadata = {}
+                        Vue.set(state.cells[payload.p][payload.n], 'metadata', {});
                     }
-                    state.cells[payload.p][payload.n]['metadata'].subtype = payload.subtype;
+                    Vue.set(state.cells[payload.p][payload.n].metadata, 'subtype', payload.subtype);
                 }
             },
             initialiseStore(state) {
@@ -604,7 +603,7 @@ onready(function() {
                     }
                     return result;
                 }
-                const page = this.getPage() + 1;
+                const page = this.page + 1;
                 var result = [];
                 result.push(1);
                 var start = page - prePages;
@@ -640,13 +639,22 @@ onready(function() {
                 result.push(pages);
                 return result;
             },
+            page () {
+                return this.$store.state.page;
+            },
+            selectCell () {
+                return this.$store.state.selectCell;
+            },
+            cells () {
+                return this.$store.state.cells[this.page];
+            }
         },
         methods: {
             handleInput (event) {
-                this.$store.commit('setSource', {p:this.getPage(), n:event.id, source:event.value});
+                this.$store.commit('setSource', {p:this.page, n:event.id, source:event.value});
             },
             handleAction (event) {
-                const p = this.getPage();
+                const p = this.page;
                 var action = event.action;
                 const self = this;
                 if (action === 'eval') {
@@ -711,7 +719,7 @@ onready(function() {
                 }
             },
             handleDrag (event) {
-                const p = this.getPage();
+                const p = this.page;
                 this.$store.commit('updateCells', { p, cells:event });
                 this.$store.commit('setSelectCell', undefined);
             },
@@ -720,15 +728,6 @@ onready(function() {
             },
             addOutput (p, n, out) {
                 this.$store.commit('addOutput', {p, n, out});
-            },
-            getCells () {
-                return this.$store.state.cells[this.getPage()];
-            },
-            getSelect () {
-                return this.$store.state.selectCell;
-            },
-            getPage () {
-                return this.$store.state.page;
             },
             handleClick (event) {
                 this.$store.commit('setSelectCell', event.id);
@@ -749,7 +748,7 @@ onready(function() {
                 if (n === undefined) {
                     return false;
                 }
-                return (n >= 0 && n < this.$store.state.cells[this.getPage()].length);
+                return (n >= 0 && n < this.$store.state.cells[this.page].length);
             },
             countPages () {
                 return this.$store.state.cells.length;
@@ -758,7 +757,7 @@ onready(function() {
                 return n >= 0 && n < this.countPages();
             },
             deleteCell (event) {
-                const p = this.getPage();
+                const p = this.page;
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('deleteCell', { p, n });
@@ -769,9 +768,9 @@ onready(function() {
                 }
             },
             deletePage (event) {
-                const p = this.getPage();
+                const p = this.page;
                 this.$store.commit('deletePage', { p });
-                if (this.getPage() >= this.$store.state.cells.length) {
+                if (this.page >= this.$store.state.cells.length) {
                     // If we deleted the last page, move to new last page
                     this.$store.commit('setPage', this.$store.state.cells.length - 1);
                 }
@@ -791,47 +790,47 @@ onready(function() {
                 inputPut(0);
             },
             insertCellBefore (event) {
-                const p = this.getPage();
+                const p = this.page;
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellBefore', { p, n });
                 }
             },
             insertCellAfter (event) {
-                const p = this.getPage();
+                const p = this.page;
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellAfter', { p, n });
                 }
             },
             insertPageBefore (event) {
-                const p = this.getPage();
+                const p = this.page;
                 if (this.pageValid(p)) {
                     this.$store.commit('insertPageBefore', { p });
                 }
             },
             insertPageAfter (event) {
-                const p = this.getPage();
+                const p = this.page;
                 if (this.pageValid(p)) {
                     this.$store.commit('insertPageAfter', { p });
                 }
             },
             typeCellCode (event) {
-                const p = this.getPage();
+                const p = this.page;
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('cellType', { p, n, type:'code' });
                 }
             },
             typeCellMarkdownEdit (event) {
-                const p = this.getPage();
+                const p = this.page;
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('cellType', { p, n, type:'markdown', subtype:'edit' });
                 }
             },
             typeCellMarkdownView (event) {
-                const p = this.getPage();
+                const p = this.page;
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('cellType', { p, n, type:'markdown', subtype:'view' });
@@ -842,27 +841,27 @@ onready(function() {
                 console.log(JSON.stringify(this.notebook, null, 2));
             },
             movePageBefore (event) {
-                const p = this.getPage();
+                const p = this.page;
                 if (p > 0) {
                     this.$store.commit('movePage', { p:p, position:p - 1 });
                     this.$store.commit('setPage', p - 1);
                 }
             },
             movePageAfter (event) {
-                const p = this.getPage();
+                const p = this.page;
                 if (p < this.$store.state.cells.length - 1) {
                     this.$store.commit('movePage', { p:p, position:p + 1 });
                     this.$store.commit('setPage', p + 1);
                 }
             },
             pagePrevious (event) {
-                const p = this.getPage();
+                const p = this.page;
                 if (p > 0) {
                     this.$store.commit('setPage', p - 1);
                 }
             },
             pageNext (event) {
-                const p = this.getPage();
+                const p = this.page;
                 if (p < this.$store.state.cells.length - 1) {
                     this.$store.commit('setPage', p + 1);
                 }
