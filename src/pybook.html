@@ -114,10 +114,17 @@ div.output pre.stderr {
 
 <div id="app" tabindex="0"
     v-on:click.stop="handleOuterClick"
-    v-on:keyup.right.ctrl.prevent="pageNext"
-    v-on:keyup.left.ctrl.prevent="pagePrevious"
-    v-on:keyup.up.ctrl.prevent="cellPrevious"
-    v-on:keyup.down.ctrl.prevent="cellNext"
+    v-on:keyup.right.ctrl="pageNext"
+    v-on:keyup.left.ctrl="pagePrevious"
+    v-on:keyup.up.ctrl="cellPrevious"
+    v-on:keyup.down.ctrl="cellNext"
+    v-on:keyup.esc="modeToggle"
+    v-on:keyup.enter.ctrl="eval"
+    v-on:keyup.enter.shift="evalNext"
+    v-on:keyup.enter.alt="evalNew"
+    v-on:keyup.c.ctrl='interrupt'
+    v-on:keyup.k.ctrl='terminate'
+    v-on:keyup.i.ctrl='insertCellAfter'
 >
 
     <div id='status'>
@@ -251,24 +258,18 @@ onready(function() {
                 self.$emit('update:value', cm.getValue());
             });
             self.editor.setOption('extraKeys', {
-                'Ctrl-Enter': function(cm) {
-                    self.$emit('action', { id:self.id, action:'eval' });
-                },
-                'Shift-Enter': function(cm) {
-                    self.$emit('action', { id:self.id, action:'eval-next' });
-                },
-                'Alt-Enter': function(cm) {
-                    self.$emit('action', { id:self.id, action:'eval-new' });
-                },
-                'Ctrl-C': function(cm) {
-                    self.$emit('action', { id:self.id, action:'break' });
-                },
-                'Ctrl-K': function(cm) {
-                    self.$emit('action', { id:self.id, action:'terminate' });
-                },
-                'Ctrl-I': function(cm) {
-                    self.$emit('action', { id:self.id, action:'insert-cell-after' });
-                },
+                // Remove default actions for commands handled at higher app level
+                'Ctrl-Up': function(cm) {},
+                'Ctrl-Down': function(cm) {},
+                'Ctrl-Left': function(cm) {},
+                'Ctrl-Right': function(cm) {},
+                'Esc': function(cm) {},
+                'Ctrl-Enter': function(cm) {},
+                'Shift-Enter': function(cm) {},
+                'Alt-Enter': function(cm) {},
+                'Ctrl-C': function(cm) {},
+                'Ctrl-K': function(cm) {},
+                'Ctrl-I': function(cm) {},
             });
         },
         watch: {
@@ -521,11 +522,10 @@ onready(function() {
             cells: [[]],
             selectCell: 0,
             page: 0,
+            mode: 'edit',
         },
         mutations: {
             newNotebook (state) {
-                Vue.set(state, 'selectCell', 0);
-                Vue.set(state, 'page', 0);
                 const newcell = {
                     cell_type: 'code',
                     execution_count: 1,
@@ -535,6 +535,9 @@ onready(function() {
                 };
                 const newpage = [ newcell ];
                 Vue.set(state, 'cells', [newpage]);
+                Vue.set(state, 'selectCell', 0);
+                Vue.set(state, 'page', 0);
+                Vue.set(state, 'mode', 'edit');
             },
             setSource (state, payload) {
                 Vue.set(state.cells[payload.p][payload.n], 'source', payload.source);
@@ -629,6 +632,11 @@ onready(function() {
             setPage(state, payload) {
                 Vue.set(state, 'selectCell', 0);
                 Vue.set(state, 'page', payload);
+            },
+            setMode(state, payload) {
+                if (payload === 'edit' || payload === 'command') {
+                    Vue.set(state, 'mode', payload);
+                }
             }
         }
     });
@@ -711,9 +719,17 @@ onready(function() {
             },
             cells () {
                 return this.$store.state.cells[this.page];
+            },
+            mode () {
+                return this.$store.state.mode;
             }
         },
         methods: {
+            modeToggle () {
+                let newMode = (this.mode === 'command') ? 'edit' : 'command';
+                this.$store.commit('setMode', newMode);
+                this.updateFocus();
+            },
             updateFocus() {
                 // Look at selectCell, call focus() on that codemirror instance
                 // Wait until DOM updates in case we're adding new cells or rearranging editors
@@ -721,8 +737,10 @@ onready(function() {
                     const n = this.selectCell;
                     this.$refs.cells.blurAll();
                     this.$el.focus();
-                    if (n !== undefined) {
-                        this.$refs.cells.focus(n);
+                    if (this.mode === 'edit') {
+                        if (n !== undefined) {
+                           this.$refs.cells.focus(n);
+                        }
                     }
                 });
             },
@@ -779,9 +797,9 @@ onready(function() {
                 });
 
             },
-            eval (event) {
+            eval () {
                 const p = this.page;
-                const n = event.id;
+                const n = this.selectCell;
                 if (!isBusy() && !isStarting()) {
                     clearInterrupt();
                     this.internalEval(p, n);
@@ -789,49 +807,42 @@ onready(function() {
                     beep();
                 }
             },
-            evalNext (event) {
+            evalNext () {
                 const p = this.page;
-                const n = event.id;
+                const n = this.selectCell;
                 if (!isBusy() && !isStarting()) {
                     clearInterrupt();
                     this.internalEval(p, n);
-                    this.selectCellAfter();
+                    this.cellNext();
                 } else {
                     beep();
                 }
+            },
+            evalNew () {
+                const p = this.page;
+                const n = this.selectCell;
+                if (!isBusy() && !isStarting()) {
+                    clearInterrupt();
+                    this.internalEval(p, n);
+                    this.insertCellAfter();
+                } else {
+                    beep();
+                }
+            },
+            interrupt () {
+                console.log('Interrupting python');
+                setInterrupt();
+            },
+            terminate () {
+                console.log('Terminating python');
+                python.terminate();
             },
             handleAction (event) {
                 const p = this.page;
                 const n = event.id;
                 var action = event.action;
-                if (action === 'eval') {
-                    this.eval(event);
-                } else if (action === 'eval-next') {
-                    this.evalNext(event);
-                } else if (action === 'eval-new') {
-                    if (!isBusy() && !isStarting()) {
-                        clearInterrupt();
-                        this.internalEval(p, n);
-                        this.insertCellAfter();
-                    } else {
-                        beep();
-                    }
-                } else if (action === 'break') {
-                    console.log('Interrupting python');
-                    setInterrupt();
-                } else if (action === 'insert-cell-after') {
+                if (action === 'insert-cell-after') {
                     this.insertCellAfter(event);
-                } else if (action === 'terminate') {
-                    console.log('Terminating python');
-                    python.terminate();
-                } else if (action === 'select-cell-before') {
-                    this.cellPrevious(event);
-                } else if (action === 'select-cell-after') {
-                    this.cellNext(event);
-                } else if (action === 'select-page-before') {
-                    this.pagePrevious();
-                } else if (action === 'select-page-after') {
-                    this.pageNext();
                 } else {
                     console.log("Unknown action", action, event.id);
                 }
