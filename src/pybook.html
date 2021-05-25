@@ -15,6 +15,9 @@
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
 <style>
+#app {
+    outline: none !important;
+}
 #status {
     display: flex;
     width: auto;
@@ -109,7 +112,13 @@ div.output pre.stderr {
 
 
 
-<div id="app" v-on:click.stop="handleOuterClick">
+<div id="app" tabindex="0"
+    v-on:click.stop="handleOuterClick"
+    v-on:keyup.right.ctrl.prevent="pageNext"
+    v-on:keyup.left.ctrl.prevent="pagePrevious"
+    v-on:keyup.up.ctrl.prevent="cellPrevious"
+    v-on:keyup.down.ctrl.prevent="cellNext"
+>
 
     <div id='status'>
         <div id='busy' class='led'></div>
@@ -260,18 +269,6 @@ onready(function() {
                 'Ctrl-I': function(cm) {
                     self.$emit('action', { id:self.id, action:'insert-cell-after' });
                 },
-                'Ctrl-Up': function(cm) {
-                    self.$emit('action', { id:self.id, action:'select-cell-before' });
-                },
-                'Ctrl-Down': function(cm) {
-                    self.$emit('action', { id:self.id, action:'select-cell-after' });
-                },
-                'Ctrl-Right': function(cm) {
-                    self.$emit('action', { id:self.id, action:'select-page-after' });
-                },
-                'Ctrl-Left': function(cm) {
-                    self.$emit('action', { id:self.id, action:'select-page-before' });
-                },
             });
         },
         watch: {
@@ -285,6 +282,11 @@ onready(function() {
         methods: {
             focus () {
                 this.editor.focus();
+                return true;
+            },
+            blur () {
+                this.editor.getInputField().blur();
+                return true;
             }
         }
     });
@@ -402,8 +404,20 @@ onready(function() {
                 this.$emit('click', { id:this.id });
             },
             focus () {
-                this.$refs.codemirror.focus();
+                if (this.$refs.codemirror) {
+                    return this.$refs.codemirror.focus();
+                } else {
+                    return false;
+                }
+            },
+            blur () {
+                if (this.$refs.codemirror) {
+                    return this.$refs.codemirror.blur();
+                } else {
+                    return false;
+                }
             }
+
         }
     });
 
@@ -477,7 +491,16 @@ onready(function() {
                 this.$emit('click', event);
             },
             focus (n) {
-                this.$refs.cell[n].focus();
+                return this.$refs.cell[n].focus();
+            },
+            blur (n) {
+                return this.$refs.cell[n].blur();
+            },
+            blurAll () {
+                for (let i = 0; i < this.values.length; i++) {
+                    this.blur(i);
+                }
+                return true;
             }
         }
     });
@@ -696,6 +719,8 @@ onready(function() {
                 // Wait until DOM updates in case we're adding new cells or rearranging editors
                 this.$nextTick( () => {
                     const n = this.selectCell;
+                    this.$refs.cells.blurAll();
+                    this.$el.focus();
                     if (n !== undefined) {
                         this.$refs.cells.focus(n);
                     }
@@ -754,25 +779,35 @@ onready(function() {
                 });
 
             },
+            eval (event) {
+                const p = this.page;
+                const n = event.id;
+                if (!isBusy() && !isStarting()) {
+                    clearInterrupt();
+                    this.internalEval(p, n);
+                } else {
+                    beep();
+                }
+            },
+            evalNext (event) {
+                const p = this.page;
+                const n = event.id;
+                if (!isBusy() && !isStarting()) {
+                    clearInterrupt();
+                    this.internalEval(p, n);
+                    this.selectCellAfter();
+                } else {
+                    beep();
+                }
+            },
             handleAction (event) {
                 const p = this.page;
                 const n = event.id;
                 var action = event.action;
                 if (action === 'eval') {
-                    if (!isBusy() && !isStarting()) {
-                        clearInterrupt();
-                        this.internalEval(p, n);
-                    } else {
-                        beep();
-                    }
+                    this.eval(event);
                 } else if (action === 'eval-next') {
-                    if (!isBusy() && !isStarting()) {
-                        clearInterrupt();
-                        this.internalEval(p, n);
-                        this.selectCellAfter();
-                    } else {
-                        beep();
-                    }
+                    this.evalNext(event);
                 } else if (action === 'eval-new') {
                     if (!isBusy() && !isStarting()) {
                         clearInterrupt();
@@ -790,9 +825,9 @@ onready(function() {
                     console.log('Terminating python');
                     python.terminate();
                 } else if (action === 'select-cell-before') {
-                    this.selectCellBefore(event);
+                    this.cellPrevious(event);
                 } else if (action === 'select-cell-after') {
-                    this.selectCellAfter(event);
+                    this.cellNext(event);
                 } else if (action === 'select-page-before') {
                     this.pagePrevious();
                 } else if (action === 'select-page-after') {
@@ -821,13 +856,13 @@ onready(function() {
                 // This is getting triggered by clicking page buttons, so ignore for now
                 //this.$store.commit('setSelectCell', undefined);
             },
-            selectCellBefore (event) {
+            cellPrevious (event) {
                 if (this.selectCell > 0) {
                     this.$store.commit('setSelectCell', this.selectCell - 1);
                     this.updateFocus();
                 }
             },
-            selectCellAfter (event) {
+            cellNext (event) {
                 if (this.selectCell < this.cells.length - 1) {
                     this.$store.commit('setSelectCell', this.selectCell + 1);
                     this.updateFocus();
@@ -1003,9 +1038,14 @@ onready(function() {
                     this.$store.commit('setSelectCell', 0);
                     this.updateFocus();
                 }
+            },
+            handleKeyup (event) {
+                console.log('Keyup', event);
             }
         }
     });
+
+    window.app = app;
 
     setInterval(function() {
         var elem = document.getElementById('busy');
