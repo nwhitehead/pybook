@@ -41,6 +41,9 @@ div#status p {
     border: 1px solid #00f;
     border-left-width: 5px;
 }
+.side-left.working {
+    background: #edf;
+}
 
 div .side-left {
     min-height: 40px;
@@ -341,10 +344,10 @@ onready(function() {
     });
 
     Vue.component('cell', {
-        props: ['value', 'output', 'id', 'selected', 'type'],
+        props: ['value', 'output', 'id', 'selected', 'type', 'state'],
         template: String.raw`
             <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick">
-                <div class="side-left handle">
+                <div class="side-left handle" :class="leftClass">
                 </div>
                 <div class="side-right" :class="rightClass">
                     <codemirror
@@ -371,7 +374,8 @@ onready(function() {
             },
             classObject: function () {
                 return {
-                    selected: this.selected
+                    selected: this.selected,
+                    working: this.state === 'working',
                 }
             },
             filteredOutput () {
@@ -385,6 +389,11 @@ onready(function() {
                             'text/html': marked(this.value),
                         },
                     } ];
+                }
+            },
+            leftClass: function() {
+                return {
+                    working: this.state === 'working',
                 }
             },
             rightClass: function () {
@@ -442,6 +451,7 @@ onready(function() {
                     v-bind:key="content.id"
                     v-bind:selected="isSelected(index)"
                     v-bind:type="computeType(content)"
+                    v-bind:state="content.state"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     v-on:click="handleClick"
@@ -534,6 +544,7 @@ onready(function() {
             cells: [newPage()],
             selectCell: 0,
             page: 0,
+            state: '',
             mode: 'edit',
         },
         mutations: {
@@ -551,6 +562,9 @@ onready(function() {
             },
             addOutput (state, payload) {
                 state.cells[payload.p][payload.n].outputs.push(payload.out);
+            },
+            setCellState (state, payload) {
+                Vue.set(state.cells[payload.p][payload.n], 'state', payload.state);
             },
             insertCellBefore (state, payload) {
                 state.cells[payload.p].splice(payload.n, 0, newCell());
@@ -724,8 +738,12 @@ onready(function() {
             clearOutput (p, n) {
                 this.$store.commit('clearOutput', {p, n});
             },
+            setCellState (p, n, state) {
+                this.$store.commit('setCellState', {p, n, state});
+            },
             internalEval (p, n) {
                 this.clearOutput(p, n);
+                this.setCellState(p, n, 'working');
                 const self = this;
                 python.evaluate(this.$store.state.cells[p][n].source, {
                     onStdout: function(msg) {
@@ -745,6 +763,8 @@ onready(function() {
                     onResponse: function(content_type, msg) {
                         // Adding -> things is handled by run_cell and exec
                         // This could change styling to show eval is done TODO
+                        console.log('onResponse', p, n);
+                        self.setCellState(p, n, '');
                     },
                     onOutput: function(content_type, msg) {
                         if (content_type === 'text/html') {
