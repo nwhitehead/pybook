@@ -517,24 +517,28 @@ onready(function() {
     };
     var python = newPythonKernel(opts);
 
+    function newCell() {
+        return {
+            cell_type: 'code',
+            execution_count: 1,
+            source: '',
+            outputs: [],
+            metadata: {}
+        };
+    }
+    function newPage() {
+        return [ newCell() ];
+    }
     const store = new Vuex.Store({
         state: {
-            cells: [[]],
+            cells: [newPage()],
             selectCell: 0,
             page: 0,
             mode: 'edit',
         },
         mutations: {
             newNotebook (state) {
-                const newcell = {
-                    cell_type: 'code',
-                    execution_count: 1,
-                    source: '',
-                    outputs: [],
-                    metadata: {}
-                };
-                const newpage = [ newcell ];
-                Vue.set(state, 'cells', [newpage]);
+                Vue.set(state, 'cells', [newPage()]);
                 Vue.set(state, 'selectCell', 0);
                 Vue.set(state, 'page', 0);
                 Vue.set(state, 'mode', 'edit');
@@ -549,46 +553,16 @@ onready(function() {
                 state.cells[payload.p][payload.n].outputs.push(payload.out);
             },
             insertCellBefore (state, payload) {
-                const newcell = {
-                    cell_type: 'code',
-                    execution_count: 1,
-                    source: '',
-                    outputs: [],
-                    metadata: {}
-                };
-                state.cells[payload.p].splice(payload.n, 0, newcell);
+                state.cells[payload.p].splice(payload.n, 0, newCell());
             },
             insertCellAfter (state, payload) {
-                const newcell = {
-                    cell_type: 'code',
-                    execution_count: 1,
-                    source: '',
-                    outputs: [],
-                    metadata: {}
-                };
-                state.cells[payload.p].splice(payload.n + 1, 0, newcell);
+                state.cells[payload.p].splice(payload.n + 1, 0, newCell());
             },
             insertPageBefore (state, payload) {
-                const newcell = {
-                    cell_type: 'code',
-                    execution_count: 1,
-                    source: '',
-                    outputs: [],
-                    metadata: {}
-                };
-                const newpage = [ newcell ];
-                state.cells.splice(payload.p, 0, newpage);
+                state.cells.splice(payload.p, 0, newPage());
             },
             insertPageAfter (state, payload) {
-                const newcell = {
-                    cell_type: 'code',
-                    execution_count: 1,
-                    source: '',
-                    outputs: [],
-                    metadata: {}
-                };
-                const newpage = [ newcell ];
-                state.cells.splice(payload.p + 1, 0, newpage);
+                state.cells.splice(payload.p + 1, 0, newPage());
             },
             deletePage (state, payload) {
                 state.cells.splice(payload.p, 1);
