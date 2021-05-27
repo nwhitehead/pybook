@@ -121,13 +121,16 @@ div.output pre.stderr {
     v-on:keyup.left.ctrl="pagePrevious"
     v-on:keyup.up.ctrl="cellPrevious"
     v-on:keyup.down.ctrl="cellNext"
-    v-on:keyup.esc="modeToggle"
+    v-on:keyup.esc="ifEdit(modeCommand)"
+    v-on:keyup.enter="ifCommand(modeEdit)"
     v-on:keyup.enter.ctrl="eval"
     v-on:keyup.enter.shift="evalNext"
     v-on:keyup.enter.alt="evalNew"
     v-on:keyup.c.ctrl='interrupt'
     v-on:keyup.k.ctrl='terminate'
     v-on:keyup.i.ctrl='insertCellAfter'
+    v-on:keyup.up='ifCommand(cellPrevious)'
+    v-on:keyup.down='ifCommand(cellNext)'
 >
 
     <div id='status'>
@@ -301,6 +304,7 @@ onready(function() {
             <div>
                 <pre v-if="isPre(value)" :class="getClass(value)"><img v-if="isResult" src="../gfx/right2.svg" width=10 height=10></img> {{ value['text/plain'] }}</pre>
                 <div v-if="isHtml(value)" :class="getClass(value)"><img v-if="isResult" src="../gfx/right2.svg" width=10 height=10></img><div class="content" v-html="value['text/html']"></div></div>
+                <img v-if="isSVG(value)" :src="dataURI(value['image/svg+xml'])" />
             </div>
         `,
         methods: {
@@ -313,6 +317,12 @@ onready(function() {
             isHtml (value) {
                 return value['text/html'] !== undefined;
             },
+            isSVG (value) {
+                return value['image/svg+xml'] !== undefined;
+            },
+            dataURI (value) {
+                return 'data:image/svg+xml;base64,' + btoa(value);
+            }
         }
     });
 
@@ -713,10 +723,33 @@ onready(function() {
             }
         },
         methods: {
-            modeToggle () {
-                let newMode = (this.mode === 'command') ? 'edit' : 'command';
-                this.$store.commit('setMode', newMode);
-                this.updateFocus();
+            ifCommand (func) {
+                let self = this;
+                return function () {
+                    if (self.mode === 'command') {
+                        return func();
+                    }
+                }
+            },
+            ifEdit (func) {
+                let self = this;
+                return function () {
+                    if (self.mode === 'edit') {
+                        return func();
+                    }
+                }
+            },
+            modeCommand () {
+                if (this.mode !== 'command') {
+                    this.$store.commit('setMode', 'command');
+                    this.updateFocus();
+                }
+            },
+            modeEdit () {
+                if (this.mode !== 'edit') {
+                    this.$store.commit('setMode', 'edit');
+                    this.updateFocus();
+                }
             },
             updateFocus() {
                 // Look at selectCell, call focus() on that codemirror instance
@@ -763,7 +796,6 @@ onready(function() {
                     onResponse: function(content_type, msg) {
                         // Adding -> things is handled by run_cell and exec
                         // This could change styling to show eval is done TODO
-                        console.log('onResponse', p, n);
                         self.setCellState(p, n, '');
                     },
                     onOutput: function(content_type, msg) {
@@ -779,6 +811,13 @@ onready(function() {
                                 output_type: 'display_data',
                                 data: {
                                     "text/plain": msg
+                                }
+                            });
+                        } else if (content_type === 'image/svg+xml') {
+                            self.addOutput(p, n, {
+                                output_type: 'display_data',
+                                data: {
+                                    "image/svg+xml": msg
                                 }
                             });
                         } else if (content_type === 'image/png') {

@@ -80,6 +80,7 @@ export function newPythonWorker(opts) {
                 pyodide.setInterruptBuffer(sharedArray);
                 pyodide.registerJsModule('pybook', pybook); // synchronous
                 pyodide.loadPackage('exec').then( () => {
+                    pyodide.runPython('import sys; sys.setrecursionlimit(120)');
                     pyodide.runPython('import exec');
                     // Clear starting flag
                     Atomics.store(sharedArray, signalMap['starting'], 0);
@@ -111,14 +112,6 @@ export function newPythonWorker(opts) {
                     runCellAsync(input.data).then( (resp) => {
                         done({ type: 'response' });
                     });
-                }
-            } else if (input.type === 'reset') {
-                if (!loaded) {
-                    done({ type:'notready' });
-                } else {
-                    // How do you reset pyodide?
-                    console.error('Cannot reset Pyodide');
-                    Atomics.store(sharedArray, signalMap['starting'], 0);
                 }
             } else {
                 throw 'Unknown message type in webworker onmessage';
