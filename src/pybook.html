@@ -41,6 +41,11 @@ div#status p {
     border: 1px solid #00f;
     border-left-width: 5px;
 }
+.cell.command {
+    background: #ddd;
+    border: 1px solid #080;
+    border-left-width: 8px;
+}
 .side-left.working {
     background: #edf;
 }
@@ -225,6 +230,7 @@ div.output pre.stderr {
         v-on:click="handleClick"
         v-bind:values="cells"
         v-bind:select="selectCell"
+        v-bind:command="command"
         ref="cells"
     >
     </cells>
@@ -354,7 +360,7 @@ onready(function() {
     });
 
     Vue.component('cell', {
-        props: ['value', 'output', 'id', 'selected', 'type', 'state'],
+        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command'],
         template: String.raw`
             <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick">
                 <div class="side-left handle" :class="leftClass">
@@ -385,6 +391,7 @@ onready(function() {
             classObject: function () {
                 return {
                     selected: this.selected,
+                    command: this.command,
                     working: this.state === 'working',
                 }
             },
@@ -444,7 +451,7 @@ onready(function() {
     Vue.component('draggable', vuedraggable);
 
     Vue.component('cells', {
-        props: [ 'values', 'select' ],
+        props: [ 'values', 'select', 'command' ],
         template: String.raw`
             <draggable
                 class="cells"
@@ -460,6 +467,7 @@ onready(function() {
                     v-bind:id="index"
                     v-bind:key="content.id"
                     v-bind:selected="isSelected(index)"
+                    v-bind:command="isSelected(index) && command"
                     v-bind:type="computeType(content)"
                     v-bind:state="content.state"
                     v-on:update:value="handleInput"
@@ -724,6 +732,9 @@ onready(function() {
             },
             mode () {
                 return this.$store.state.mode;
+            },
+            command () {
+                return this.$store.state.mode === 'command';
             }
         },
         methods: {
