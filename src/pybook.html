@@ -117,20 +117,20 @@ div.output pre.stderr {
 
 <div id="app" tabindex="0"
     v-on:click.stop="handleOuterClick"
-    v-on:keyup.right.ctrl="pageNext"
-    v-on:keyup.left.ctrl="pagePrevious"
-    v-on:keyup.up.ctrl="cellPrevious"
-    v-on:keyup.down.ctrl="cellNext"
-    v-on:keyup.esc="ifEdit(modeCommand)"
-    v-on:keyup.enter="ifCommand(modeEdit)"
-    v-on:keyup.enter.ctrl="eval"
-    v-on:keyup.enter.shift="evalNext"
-    v-on:keyup.enter.alt="evalNew"
-    v-on:keyup.c.ctrl='interrupt'
-    v-on:keyup.k.ctrl='terminate'
-    v-on:keyup.i.ctrl='insertCellAfter'
-    v-on:keyup.up='ifCommand(cellPrevious)'
-    v-on:keyup.down='ifCommand(cellNext)'
+    v-on:keyup.right.ctrl.exact="pageNext"
+    v-on:keyup.left.ctrl.exact="pagePrevious"
+    v-on:keyup.up.ctrl.exact="cellPrevious"
+    v-on:keyup.down.ctrl.exact="cellNext"
+    v-on:keyup.esc.exact="ifEdit(modeCommand)"
+    v-on:keyup.enter.exact="ifCommand(modeEdit)"
+    v-on:keyup.enter.ctrl.exact="eval"
+    v-on:keyup.enter.shift.exact="evalNext"
+    v-on:keyup.enter.alt.exact="evalNew"
+    v-on:keyup.c.ctrl.exact='interrupt'
+    v-on:keyup.k.ctrl.exact='terminate'
+    v-on:keyup.i.ctrl.exact='insertCellAfter'
+    v-on:keyup.up.exact='ifCommand(cellPrevious)'
+    v-on:keyup.down.exact='ifCommand(cellNext)'
 >
 
     <div id='status'>
@@ -657,6 +657,10 @@ onready(function() {
         beforeCreate() {
             this.$store.commit('initialiseStore');
         },
+        mounted () {
+            this.modeEdit();
+            this.updateFocus();
+        },
         computed: {
             notebook() {
                 return this.$store.state;
@@ -724,19 +728,15 @@ onready(function() {
         },
         methods: {
             ifCommand (func) {
-                let self = this;
-                return function () {
-                    if (self.mode === 'command') {
-                        return func();
-                    }
+                var self = this;
+                if (self.mode === 'command') {
+                    return func();
                 }
             },
             ifEdit (func) {
-                let self = this;
-                return function () {
-                    if (self.mode === 'edit') {
-                        return func();
-                    }
+                var self = this;
+                if (self.mode === 'edit') {
+                    return func();
                 }
             },
             modeCommand () {
