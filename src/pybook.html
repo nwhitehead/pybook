@@ -136,6 +136,12 @@ div.output pre.stderr {
     v-on:keyup.i.ctrl.exact='insertCellAfter'
     v-on:keyup.up.exact='ifCommand(cellPrevious)'
     v-on:keyup.down.exact='ifCommand(cellNext)'
+    v-on:keyup.a.exact='ifCommand(insertCellBefore)'
+    v-on:keyup.b.exact='ifCommand(insertCellAfter)'
+    v-on:keyup.d.exact='ifCommand(deleteCell)'
+    v-on:keyup.y.exact='ifCommand(typeCellCode)'
+    v-on:keyup.m.exact='ifCommand(typeCellMarkdownEdit)'
+    v-on:keyup.m.shift.exact='ifCommand(typeCellMarkdownView)'
 >
 
     <div id='status'>
@@ -802,8 +808,16 @@ onready(function() {
             setCellState (p, n, state) {
                 this.$store.commit('setCellState', {p, n, state});
             },
+            cellType (p, n)
+            {
+                return this.$store.state.cells[p][n].cell_type;
+            },
             internalEval (p, n) {
                 this.clearOutput(p, n);
+                if (this.cellType(p, n) !== 'code') {
+                    beep();
+                    return;
+                }
                 this.setCellState(p, n, 'working');
                 const self = this;
                 python.evaluate(this.$store.state.cells[p][n].source, {
