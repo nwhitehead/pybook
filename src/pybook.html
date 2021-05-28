@@ -247,6 +247,11 @@ import { signalMap,
        } from './signal.js';
 import { newPythonKernel } from './python.js';
 
+// The event bus is for application events that bypass the component hierarchy.
+// It is currently used to pass focus clicks from deep children back to toplevel.
+// Tightly coupled events from child->parent are not put on the event bus.
+const EventBus = new Vue();
+
 onready(function() {
 
     // Global variable keeping list of all codemirror editors
@@ -268,6 +273,9 @@ onready(function() {
             self.editor.setValue(self.value || '');
             self.editor.on('change', function(cm) {
                 self.$emit('update:value', cm.getValue());
+            });
+            self.editor.on('focus', function(cm) {
+                EventBus.$emit('cmfocus', { id:self.id });
             });
             self.editor.setOption('extraKeys', {
                 // Remove default actions for commands handled at higher app level
@@ -368,6 +376,7 @@ onready(function() {
                 <div class="side-right" :class="rightClass">
                     <codemirror
                         v-bind:value="value"
+                        v-bind:id="id"
                         v-on:update:value="handleInput"
                         v-on:action="handleAction"
                         v-if="showEdit"
@@ -666,8 +675,16 @@ onready(function() {
             this.$store.commit('initialiseStore');
         },
         mounted () {
-            this.modeEdit();
-            this.updateFocus();
+            const self = this;
+            self.modeEdit();
+            self.updateFocus();
+            EventBus.$on('cmfocus', function (event) {
+                // If user clicks on CodeMirror edit area, switch to edit mode
+                // Otherwise the cursor will focus and we'll still be in command mode
+                // Note this also triggers when we tell CodeMirror to focus
+                // Be careful not to get into infinite loops
+                self.modeEdit();
+            });
         },
         computed: {
             notebook() {
@@ -1096,7 +1113,7 @@ onready(function() {
             },
             handleKeyup (event) {
                 console.log('Keyup', event);
-            }
+            },
         }
     });
 
