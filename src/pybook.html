@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<title>Test of VueJS Notebook</title>
+<title>PyBook Notebook</title>
 <script defer src="../lib/codemirror/codemirror.js"></script>
 <link rel="stylesheet" href="../lib/codemirror/codemirror.css">
 <script defer src="../lib/codemirror/python.js"></script>
@@ -15,20 +15,22 @@
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
 <style>
-#app {
-    outline: none !important;
-}
-#status {
-    display: flex;
+
+div.status {
+    display: inline-flex;
     width: auto;
     height: 32px;
     margin: 10px;
 }
-div#status p {
+div.status p {
     padding: 0;
     margin: 0;
     font-size: 10pt;
     font-family: monospace;
+}
+
+#app {
+    outline: none !important;
 }
 .cell {
     position: relative;
@@ -144,12 +146,6 @@ div.output pre.stderr {
     v-on:keyup.m.shift.exact='ifCommand(typeCellMarkdownView)'
 >
 
-    <div id='status'>
-        <div id='busy' class='led'></div>
-        <div id='loading' class='led'></div>
-        <div id='starting' class='led'></div>
-    </div>
-
     <div id="menu">
         <div class="dropdown is-hoverable">
             <div class="dropdown-trigger">
@@ -214,10 +210,15 @@ div.output pre.stderr {
                 <div class="dropdown-content">
                     <a class="dropdown-item" v-on:click.stop="debugDump">Console dump</a>
                 </div>
-            </div>
+            </div>    
         </div>
+        <status
+            v-bind:value="status"
+        >
+
     </div>
 
+    
 <nav class="pagination" role="navigation" aria-label="pagination">
   <a class="pagination-previous" v-on:click="pagePrevious">Previous</a>
   <a class="pagination-next" v-on:click="pageNext">Next</a>
@@ -263,6 +264,14 @@ onready(function() {
     // Global variable keeping list of all codemirror editors
     // Needed to quickly update dragdrop state (prevent dropping in editors)
     Vue.prototype.$globalCMList = [];
+
+    Vue.component('status', {
+        props: ['value'],
+        template: String.raw`
+            <div class="status">
+                <p>{{ value }}</p>
+            </div>`,
+    });
 
     Vue.component('codemirror', {
         props: ['options', 'value', 'id'],
@@ -550,13 +559,10 @@ onready(function() {
     });
 
     const opts = {
-        onFilesystem: function() {
-            var elem = document.getElementById('loading');
-            elem.classList.add('on');
-            setTimeout(function() {
-                elem.classList.remove('on');
-            }, 200);                                
-        }
+        onReady: function (version) {
+            EventBus.$emit('update:status', 'Ready');
+            console.log(version);
+        },
     };
     var python = newPythonKernel(opts);
 
@@ -674,8 +680,11 @@ onready(function() {
     var app = new Vue({
         el: '#app',
         store,
-        data: {
-            opts: { lineNumbers: true },
+        data: () => {
+            return {
+                opts: { lineNumbers: true },
+                status: 'Initializing',
+            };
         },
         beforeCreate() {
             this.$store.commit('initialiseStore');
@@ -690,6 +699,9 @@ onready(function() {
                 // Note this also triggers when we tell CodeMirror to focus
                 // Be careful not to get into infinite loops
                 self.modeEdit();
+            });
+            EventBus.$on('update:status', function (payload) {
+                self.status = payload;
             });
         },
         computed: {
@@ -819,6 +831,7 @@ onready(function() {
                     return;
                 }
                 this.setCellState(p, n, 'working');
+                EventBus.$emit('update:status', 'Working');
                 const self = this;
                 python.evaluate(this.$store.state.cells[p][n].source, {
                     onStdout: function(msg) {
@@ -839,6 +852,7 @@ onready(function() {
                         // Adding -> things is handled by run_cell and exec
                         // This could change styling to show eval is done TODO
                         self.setCellState(p, n, '');
+                        EventBus.$emit('update:status', 'Ready');
                     },
                     onOutput: function(content_type, msg) {
                         if (content_type === 'text/html') {
@@ -1132,21 +1146,6 @@ onready(function() {
     });
 
     window.app = app;
-
-    setInterval(function() {
-        var elem = document.getElementById('busy');
-        if (isBusy()) {
-            elem.classList.add('on');
-        } else {
-            elem.classList.remove('on');
-        }
-        var elem = document.getElementById('starting');
-        if (isStarting()) {
-            elem.classList.add('on');
-        } else {
-            elem.classList.remove('on');
-        }
-    }, 100);
 
 });
 

@@ -93,10 +93,36 @@ export function newPythonWorker(opts) {
         },
         fn: function(input, done) {
 
+            // Load package by loading dependencies first serially
+            async function loadDependenciesFirst (pkg) {
+                if (Array.isArray(pkg)) {
+                    for (let pkgi of pkg) {
+                        await loadDependenciesFirst(pkgi);
+                    }
+                    return;
+                }
+                // We manually loaded pybook in JavaScript, it is not a package
+                if (pkg === 'pybook') {
+                    return;
+                }
+                const deps = Module.packages.dependencies[pkg];
+                for (let deppkg of deps) {
+                    await loadDependenciesFirst(deppkg);
+                }
+                await pyodide.loadPackage(pkg);
+            }
+
+            // This function duplicates pyodide.loadPackagesFromImports
+            // pyodide.loadPackagesFromImports did not work at all
+            // Had deadlock on packages with dependency chains
+            async function loadPackagesFromImports (code) {
+                let imports = pyodide.pyodide_py.find_imports(code).toJs();
+                await loadDependenciesFirst(imports);
+            }
+
             // Version of pyodide.runPythonAsync that goes through exec.wrapped_run_cell
             async function runCellAsync(code, messageCallback, errorCallback) {
-                // Load any packages imported
-                await pyodide.loadPackagesFromImports(code, messageCallback, errorCallback).catch( error => {});
+                await loadPackagesFromImports(code);
                 const exec_module = pyodide.globals.get('exec');
                 const eval_func = exec_module.wrapped_run_cell;
                 Atomics.store(sharedArray, signalMap['busy'], 1);
@@ -111,6 +137,8 @@ export function newPythonWorker(opts) {
                     // Now run the code
                     runCellAsync(input.data).then( (resp) => {
                         done({ type: 'response' });
+                    }, (error) => {
+                        console.log('There was an internal error during evalution');
                     });
                 }
             } else {

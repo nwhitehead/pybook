@@ -50,6 +50,7 @@ export function spawn(opts) {
         }
         if (type === 'error') {
             worker.onerror = handler;
+            console.log('error in spawned thread');
             return worker;
         }
         if (type === 'terminate') {
