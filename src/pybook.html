@@ -46,7 +46,8 @@ div.status p {
 .cell.command {
     background: #ddd;
     border: 1px solid #080;
-    border-left-width: 8px;
+    border-left-width: 5px;
+    border-right-width: 5px;
 }
 .side-left.working {
     background: #edf;
@@ -920,10 +921,12 @@ onready(function() {
             },
             interrupt () {
                 console.log('Interrupting python');
+                EventBus.$emit('update:status', 'Interrupt');
                 setInterrupt();
             },
             terminate () {
                 console.log('Terminating python');
+                EventBus.$emit('update:status', 'Initializing');
                 python.terminate();
             },
             handleAction (event) {
