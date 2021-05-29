@@ -116,8 +116,11 @@ export function newPythonWorker(opts) {
             // pyodide.loadPackagesFromImports did not work at all
             // Had deadlock on packages with dependency chains
             async function loadPackagesFromImports (code) {
-                let imports = pyodide.pyodide_py.find_imports(code).toJs();
-                await loadDependenciesFirst(imports);
+                try {
+                    let imports = pyodide.pyodide_py.find_imports(code).toJs();
+                    await loadDependenciesFirst(imports);
+                } catch (e) {
+                }
             }
 
             // Version of pyodide.runPythonAsync that goes through exec.wrapped_run_cell
@@ -137,8 +140,6 @@ export function newPythonWorker(opts) {
                     // Now run the code
                     runCellAsync(input.data).then( (resp) => {
                         done({ type: 'response' });
-                    }, (error) => {
-                        console.log('There was an internal error during evalution');
                     });
                 }
             } else {
