@@ -145,22 +145,10 @@ div.output pre.stderr {
     v-on:keyup.y.exact='ifCommand(typeCellCode)'
     v-on:keyup.m.exact='ifCommand(typeCellMarkdownEdit)'
     v-on:keyup.m.shift.exact='ifCommand(typeCellMarkdownView)'
+    v-on:keyup.a.alt.exact='switchDocId'
 >
 
     <div id="menu">
-        <div class="dropdown is-hoverable">
-            <div class="dropdown-trigger">
-                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-file">
-                    <span>File</span>
-                </button>
-            </div>
-            <div class="dropdown-menu" id="dropdown-menu-file" role="menu">
-                <div class="dropdown-content">
-                    <a class="dropdown-item" v-on:click.stop="fileNew">New</a>
-                    <a class="dropdown-item" v-on:click.stop="fileSave">Save</a>
-                </div>
-            </div>
-        </div>
         <div class="dropdown is-hoverable">
             <div class="dropdown-trigger">
                 <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-cell">
@@ -210,6 +198,7 @@ div.output pre.stderr {
             <div class="dropdown-menu" id="dropdown-menu-debug" role="menu">
                 <div class="dropdown-content">
                     <a class="dropdown-item" v-on:click.stop="debugDump">Console dump</a>
+                    <a class="dropdown-item" v-on:click.stop="debugClear">Clear local files</a>
                 </div>
             </div>    
         </div>
@@ -261,6 +250,19 @@ import { newPythonKernel } from './python.js';
 const EventBus = new Vue();
 
 onready(function() {
+
+    Vue.component('notebooks', {
+        props: ['values'],
+        template: String.raw`
+            <div class="notebooks">
+                <template v-for="value in values">
+                    <pre>{{ value.name }}</pre>
+                </template>
+            </div>
+        `,
+        methods: {
+        }
+    });
 
     // Global variable keeping list of all codemirror editors
     // Needed to quickly update dragdrop state (prevent dropping in editors)
@@ -570,7 +572,6 @@ onready(function() {
     function newCell() {
         return {
             cell_type: 'code',
-            execution_count: 1,
             source: '',
             outputs: [],
             metadata: {}
@@ -579,12 +580,34 @@ onready(function() {
     function newPage() {
         return [ newCell() ];
     }
+    // The file store is a data structure keeping track of local files
+    // files: array of files
+    //      each file is dict with 'filename' and 'identifier'
+    // selected: which file is currently open or null
+    const filestore = new Vuex.Store({
+        state: {
+            files: {},
+            selected: null,
+        },
+        mutations: {
+            select (state, payload) {
+                Vue.set(state.selected, payload);
+            },
+            initializeFileStore(state, payload) {
+                const stored = localStorage.getItem(payload);
+                if (stored) {
+                    this.replaceState(
+                        Object.assign(state, JSON.parse(stored))
+                    );
+                }
+            },
+        },
+    });
     const store = new Vuex.Store({
         state: {
             cells: [newPage()],
             selectCell: 0,
             page: 0,
-            state: '',
             mode: 'edit',
         },
         mutations: {
@@ -647,10 +670,11 @@ onready(function() {
                     Vue.set(state.cells[payload.p][payload.n].metadata, 'subtype', payload.subtype);
                 }
             },
-            initialiseStore(state) {
-                if (localStorage.getItem('store')) {
+            initializeStore(state, payload) {
+                const stored = localStorage.getItem(payload);
+                if (stored) {
                     this.replaceState(
-                        Object.assign(state, JSON.parse(localStorage.getItem('store')))
+                        Object.assign(state, JSON.parse(stored))
                     );
                 }
             },
@@ -669,11 +693,6 @@ onready(function() {
         }
     });
 
-    // Subscribe to store updates
-    store.subscribe(function (mutation, state) {
-        localStorage.setItem('store', JSON.stringify(state));
-    });
-
     function beep() {
         console.log('Beep (placeholder for visual effect)');
     }
@@ -685,10 +704,16 @@ onready(function() {
             return {
                 opts: { lineNumbers: true },
                 status: 'Initializing',
+                docId: 'pb001',
             };
         },
-        beforeCreate() {
-            this.$store.commit('initialiseStore');
+        created() {
+            // Subscribe to store updates
+            const self = this;
+            this.$store.subscribe(function (mutation, state) {
+                localStorage.setItem(self.docId, JSON.stringify(state));
+            });
+            this.initializeStore();
         },
         mounted () {
             const self = this;
@@ -774,6 +799,14 @@ onready(function() {
             }
         },
         methods: {
+            initializeStore () {
+                // Initialize store to localstorage value if it exists
+                this.$store.commit('initializeStore', this.docId);
+            },
+            switchDocId () {
+                this.docId = 'pb002';
+                this.initializeStore();
+            },
             ifCommand (func) {
                 var self = this;
                 if (self.mode === 'command') {
@@ -1091,6 +1124,11 @@ onready(function() {
             debugDump (event) {
                 console.log('Notebook dump');
                 console.log(JSON.stringify(this.notebook, null, 2));
+            },
+            debugClear (event) {
+                localStorage.clear();
+                this.fileNew();
+                this.initializeStore();
             },
             moveCellBefore (event) {
                 const p = this.page;
