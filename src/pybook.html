@@ -227,7 +227,7 @@ div.output pre.stderr {
         v-on:click="handleClick"
         v-bind:values="cells"
         v-bind:select="selectCell"
-        v-bind:command="command"
+        v-bind:command="isCommandMode"
         ref="cells"
     >
     </cells>
@@ -580,42 +580,13 @@ onready(function() {
     function newPage() {
         return [ newCell() ];
     }
-    // The file store is a data structure keeping track of local files
-    // files: array of files
-    //      each file is dict with 'filename' and 'identifier'
-    // selected: which file is currently open or null
-    const filestore = new Vuex.Store({
-        state: {
-            files: {},
-            selected: null,
-        },
-        mutations: {
-            select (state, payload) {
-                Vue.set(state.selected, payload);
-            },
-            initializeFileStore(state, payload) {
-                const stored = localStorage.getItem(payload);
-                if (stored) {
-                    this.replaceState(
-                        Object.assign(state, JSON.parse(stored))
-                    );
-                }
-            },
-        },
-    });
     const store = new Vuex.Store({
         state: {
             cells: [newPage()],
-            selectCell: 0,
-            page: 0,
-            mode: 'edit',
         },
         mutations: {
             newNotebook (state) {
                 Vue.set(state, 'cells', [newPage()]);
-                Vue.set(state, 'selectCell', 0);
-                Vue.set(state, 'page', 0);
-                Vue.set(state, 'mode', 'edit');
             },
             setSource (state, payload) {
                 Vue.set(state.cells[payload.p][payload.n], 'source', payload.source);
@@ -677,18 +648,6 @@ onready(function() {
                         Object.assign(state, JSON.parse(stored))
                     );
                 }
-            },
-            setSelectCell(state, payload) {
-                Vue.set(state, 'selectCell', payload);
-            },
-            setPage(state, payload) {
-                Vue.set(state, 'selectCell', 0);
-                Vue.set(state, 'page', payload);
-            },
-            setMode(state, payload) {
-                if (payload === 'edit' || payload === 'command') {
-                    Vue.set(state, 'mode', payload);
-                }
             }
         }
     });
@@ -704,7 +663,10 @@ onready(function() {
             return {
                 opts: { lineNumbers: true },
                 status: 'Initializing',
+                mode: 'edit',
                 docId: 'pb001',
+                selectCell: 0,
+                page: 0,
             };
         },
         created() {
@@ -782,20 +744,11 @@ onready(function() {
                 result.push(pages);
                 return result;
             },
-            page () {
-                return this.$store.state.page;
-            },
-            selectCell () {
-                return this.$store.state.selectCell;
-            },
             cells () {
                 return this.$store.state.cells[this.page];
             },
-            mode () {
-                return this.$store.state.mode;
-            },
-            command () {
-                return this.$store.state.mode === 'command';
+            isCommandMode () {
+                return this.mode === 'command';
             }
         },
         methods: {
@@ -821,13 +774,13 @@ onready(function() {
             },
             modeCommand () {
                 if (this.mode !== 'command') {
-                    this.$store.commit('setMode', 'command');
+                    this.mode = 'command';
                     this.updateFocus();
                 }
             },
             modeEdit () {
                 if (this.mode !== 'edit') {
-                    this.$store.commit('setMode', 'edit');
+                    this.mode = 'edit';
                     this.updateFocus();
                 }
             },
@@ -975,37 +928,38 @@ onready(function() {
             handleDrag (event) {
                 const p = this.page;
                 this.$store.commit('updateCells', { p, cells:event });
-                this.$store.commit('setSelectCell', undefined);
+                this.selectCell = undefined;
             },
             handlePage (page) {
-                this.$store.commit('setPage', page);
-                this.$store.commit('setSelectCell', 0);
+                this.page = page;
+                this.selectCell = 0;
                 this.updateFocus();
             },
             addOutput (p, n, out) {
                 this.$store.commit('addOutput', {p, n, out});
             },
             handleClick (event) {
-                this.$store.commit('setSelectCell', event.id);
+                this.selectCell = event.id;
             },
             handleOuterClick (event) {
                 // This is getting triggered by clicking page buttons, so ignore for now
-                //this.$store.commit('setSelectCell', undefined);
             },
             cellPrevious (event) {
                 if (this.selectCell > 0) {
-                    this.$store.commit('setSelectCell', this.selectCell - 1);
+                    this.selectCell = this.selectCell - 1;
                     this.updateFocus();
                 }
             },
             cellNext (event) {
                 if (this.selectCell < this.cells.length - 1) {
-                    this.$store.commit('setSelectCell', this.selectCell + 1);
+                    this.selectCell = this.selectCell + 1;
                     this.updateFocus();
                 }
             },
             fileNew (event) {
                 this.$store.commit('newNotebook');
+                this.mode = 'edit';
+                this.selectCell = 0;
                 this.updateFocus();
             },
             fileSave (event) {
@@ -1033,7 +987,7 @@ onready(function() {
                     this.$store.commit('deleteCell', { p, n });
                     if (n === this.$store.state.cells[p].length) {
                         // If last cell deleted, select new last one
-                        this.$store.commit('setSelectCell', n - 1)
+                        this.selectCell = n - 1;
                     }
                     if (this.$store.state.cells[p].length === 0) {
                         // If user deleted last cell, delete page
@@ -1045,10 +999,10 @@ onready(function() {
             deletePage (event) {
                 const p = this.page;
                 this.$store.commit('deletePage', { p });
-                this.$store.commit('setSelectCell', 0);
+                this.selectCell = 0;
                 if (this.page >= this.$store.state.cells.length) {
                     // If we deleted the last page, move to new last page
-                    this.$store.commit('setPage', this.$store.state.cells.length - 1);
+                    this.page = this.$store.state.cells.length - 1;
                 }
                 if (this.$store.state.cells.length === 0) {
                     // If user deleted last page, start with fresh notebook
@@ -1071,7 +1025,7 @@ onready(function() {
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellBefore', { p, n });
-                    this.$store.commit('setSelectCell', n);
+                    this.selectCell = n;
                     this.updateFocus();
                 }
             },
@@ -1080,7 +1034,7 @@ onready(function() {
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellAfter', { p, n });
-                    this.$store.commit('setSelectCell', n + 1);
+                    this.selectCell = n + 1;
                     this.updateFocus();
                 }
             },
@@ -1088,7 +1042,7 @@ onready(function() {
                 const p = this.page;
                 if (this.pageValid(p)) {
                     this.$store.commit('insertPageBefore', { p });
-                    this.$store.commit('setSelectCell', 0);
+                    this.selectCell = 0;
                     this.updateFocus();
                 }
             },
@@ -1096,7 +1050,7 @@ onready(function() {
                 const p = this.page;
                 if (this.pageValid(p)) {
                     this.$store.commit('insertPageAfter', { p });
-                    this.$store.commit('setSelectCell', 0);
+                    this.selectCell = 0;
                     this.updateFocus();
                 }
             },
@@ -1135,7 +1089,7 @@ onready(function() {
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && n > 0) {
                     this.$store.commit('moveCell', { p, n, position:n - 1 });
-                    this.$store.commit('setSelectCell', n - 1);
+                    this.selectCell = n - 1;
                     this.updateFocus();
                 }
             },
@@ -1144,7 +1098,7 @@ onready(function() {
                 const n = this.$store.state.selectCell;
                 if (this.pageValid(p) && n < this.$store.state.cells[p].length - 1) {
                     this.$store.commit('moveCell', { p, n, position:n + 1 });
-                    this.$store.commit('setSelectCell', n + 1);
+                    this.selectCell = n + 1;
                     this.updateFocus();
                 }
             },
@@ -1152,7 +1106,7 @@ onready(function() {
                 const p = this.page;
                 if (p > 0) {
                     this.$store.commit('movePage', { p:p, position:p - 1 });
-                    this.$store.commit('setPage', p - 1);
+                    this.page = p - 1;
                     this.updateFocus();
                 }
             },
@@ -1160,23 +1114,23 @@ onready(function() {
                 const p = this.page;
                 if (p < this.$store.state.cells.length - 1) {
                     this.$store.commit('movePage', { p:p, position:p + 1 });
-                    this.$store.commit('setPage', p + 1);
+                    this.page = p + 1;
                     this.updateFocus();
                 }
             },
             pagePrevious (event) {
                 const p = this.page;
                 if (p > 0) {
-                    this.$store.commit('setPage', p - 1);
-                    this.$store.commit('setSelectCell', 0);
+                    this.page = p - 1;
+                    this.selectCell = 0;
                     this.updateFocus();
                 }
             },
             pageNext (event) {
                 const p = this.page;
                 if (p < this.$store.state.cells.length - 1) {
-                    this.$store.commit('setPage', p + 1);
-                    this.$store.commit('setSelectCell', 0);
+                    this.page = p + 1;
+                    this.selectCell = 0;
                     this.updateFocus();
                 }
             },
