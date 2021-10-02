@@ -1,5 +1,11 @@
 # PyBook
 
+To test:
+
+    python serve.py
+
+Then go to http://localhost:8001/src/pybook.html
+
 ## Demo
 
     import matplotlib
