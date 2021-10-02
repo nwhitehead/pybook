@@ -199,12 +199,13 @@ div.output pre.stderr {
                 <div class="dropdown-content">
                     <a class="dropdown-item" v-on:click.stop="debugDump">Console dump</a>
                     <a class="dropdown-item" v-on:click.stop="debugClear">Clear local files</a>
+                    <fileimport></fileimport>
                 </div>
             </div>    
         </div>
         <status
             v-bind:value="status"
-        >
+        ></status>
 
     </div>
 
@@ -264,9 +265,25 @@ onready(function() {
         }
     });
 
-    // Global variable keeping list of all codemirror editors
-    // Needed to quickly update dragdrop state (prevent dropping in editors)
-    Vue.prototype.$globalCMList = [];
+    Vue.component('fileimport', {
+        props: [],
+        template: String.raw`
+            <div class="fileimport">
+                <input type="file" ref="select" @change="readFile()" />
+            </div>`,
+        methods: {
+            readFile() {
+                console.log('readFile()');
+                this.file = this.$refs.select.files[0];
+                const reader = new FileReader();
+                reader.onload = (res) => {
+                    console.log(res.target.result);
+                };
+                reader.onerror = (err) => console.log(err);
+                reader.readAsText(this.file);
+            }
+        }
+    });
 
     Vue.component('status', {
         props: ['value'],
@@ -275,6 +292,10 @@ onready(function() {
                 <p>{{ value }}</p>
             </div>`,
     });
+
+    // Global variable keeping list of all codemirror editors
+    // Needed to quickly update dragdrop state (prevent dropping in editors)
+    Vue.prototype.$globalCMList = [];
 
     Vue.component('codemirror', {
         props: ['options', 'value', 'id'],

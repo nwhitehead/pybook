@@ -4,25 +4,28 @@ This is the file format for the PyBook scientific notebook. It is designed to be
 
 Things like graphics must be encoded in text format so won't be pretty, but are possible to include. If you don't want output in the saved notebooks, you can remove it before saving notebooks.
 
-## Python source file
+## Source File
 
-In general the saved notebook should be a runnable Python program in the right environment. This means all the "metadata" is designed to be comments in Python. The final filename ends with:
-`.pbnb` which stands for PyBook Note Book, somewhat similar to Jupyter's `.ipynb`.
+In general the saved notebook will not be a runnable Python program but will be runnable in the PyBook environment. There could also be a way to run notebooks non-interactively after parsing.
+
+The final filename ends with `.pbnb` which stands for PyBook Note Book, somewhat similar to Jupyter's `.ipynb`.
 
 ## Cells
 
 Notebooks have at least one cell. Each cell starts with one of the following tags:
     * `#%` for Python code
-    * `#%md` for Markdown text
+    * `#%%` for Markdown text
 
 Tags may also include options.
 
 ### Python Code options
 
 The `#%` tag for Python code includes the following options:
-    * `hidden` means the code is not shown in the interface
-    * `eval` means to automatically evaluate on notebook load
-    * `hideoutput` means to hide any output
+    * `hidden` means the code is not shown in the interface (default is to show code)
+    * `auto` means to automatically evaluate on notebook load (default is to not eval on load)
+    * `hideoutput` means to hide any output (default is to show all output)
+    * `noedit` means to make the contents not editable (default is editable)
+    * `noeval` means to make the contents not evaluatable (defualt is evaluatable)
 
 The tags can come in any order, but cannot be repeated.
 
@@ -39,7 +42,7 @@ The tags are followed by exactly one character of whitespace. The single line ta
 
 ### Markdown
 
-Markdown is normal markdown, within triple quotes. So first line of `'''` and last line of `'''` are ignroed in Markdown rendering. Only small hiccup is that this messes up triple quotes in the Markdown text. The fix is to escape `'''` with `\'''` for every occurrence. Each occurrence of `\'''` will be replaced with `'''` inside the Markdown body before being rendered. For extreme cases of Markdown text discussing the escape mechanism, there may be more than one escape backslash before the triple quotes. Only one level will be removed before interpreting as Markdown.
+Markdown is normal markdown, within triple quotes. So first line of `'''` and last line of `'''` are ignored in Markdown rendering. Only small hiccup is that this messes up triple quotes in the Markdown text. The fix is to escape `'''` with `\'''` for every occurrence. Each occurrence of `\'''` will be replaced with `'''` inside the Markdown body before being rendered. For extreme cases of Markdown text discussing the escape mechanism, there may be more than one escape backslash before the triple quotes. Only one level will be removed before interpreting as Markdown.
 
 ## Pages
 
