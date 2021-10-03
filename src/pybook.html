@@ -244,6 +244,7 @@ import { signalMap,
          inputPut
        } from './signal.js';
 import { newPythonKernel } from './python.js';
+import { parse } from './parser.js';
 
 // The event bus is for application events that bypass the component hierarchy.
 // It is currently used to pass focus clicks from deep children back to toplevel.
@@ -278,6 +279,8 @@ onready(function() {
                 const reader = new FileReader();
                 reader.onload = (res) => {
                     console.log(res.target.result);
+                    const parsed = parse(res.target.result);
+                    console.log(parsed);
                 };
                 reader.onerror = (err) => console.log(err);
                 reader.readAsText(this.file);
