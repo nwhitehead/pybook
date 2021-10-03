@@ -16,7 +16,13 @@ Notebooks have at least one cell. Each cell starts with one of the following tag
     * `#%` for Python code
     * `#%%` for Markdown text
 
-Tags may also include options.
+You can explicitly end a cell with:
+    * `#%end` to end Python code block
+    * `#%%end` to end Markdown text
+
+Beginning a new cell automatically closes the previous cell. Text outside of cells is ignored.
+
+Tags may also include options, separated by spaces.
 
 ### Python Code options
 

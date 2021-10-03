@@ -13,8 +13,13 @@ test('parseSpecialDelimiterLine1', () => {
         { 'type': 'Code', options: ['hidden', 'noexec']});
 });
 
-test('parser', () => {
+test('parser1', () => {
     const tst = '#%% hidden\n# Headline\n#%\nprint(42)\n';
     const res = parse(tst);
-    console.log(res);
+    expect(res.length).toBe(1);
+    expect(res[0].length).toBe(2);
+    expect(res[0][0].type).toBe('Markdown');
+    expect(res[0][0].options).toStrictEqual(['hidden']);
+    expect(res[0][1].type).toBe('Code');
+    expect(res[0][1].options).toStrictEqual([]);
 });

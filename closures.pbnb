@@ -26,4 +26,11 @@ assigns `x` the value `5`.
 Now you try. Write code to assign the variable `y` the value `7`. 
 Click "Submit" when you think you have it.
 
+#% 
+y = 
+#%end
+
+#% submit
+#%page
 #%%
+

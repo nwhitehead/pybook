@@ -32,18 +32,18 @@ export function parseSpecialDelimiterLine(txt) {
     const delim = parts[0];
     let type = '';
     // Match delim against fixed set of allowed possibilities
-    if (delim === '#%') {
-        type = 'Code';
+    const matches = {
+        '#%': 'Code',
+        '#%%': 'Markdown',
+        '#%page': 'Page',
+        '#%end': 'EndCode',
+        '#%%end': 'EndMarkdown',
+        '#%pageend': 'EndPage'
+    };
+    if (matches[delim] !== undefined) {
+        type = matches[delim];
     } else {
-        if (delim === '#%%') {
-            type = 'Markdown';
-        } else {
-            if (delim === '#%page') {
-                type = 'Page';
-            } else {
-                throw 'Unknown delimiter';
-            }
-        }
+        throw new Error('Unknown delimiter');
     }
     return { type, options };
 }
@@ -64,7 +64,7 @@ export function parse(text) {
             return;
         }
         if (currentType === '') {
-            throw 'No item to finish';
+            return; // No item to finish
         }
         const itemStr = item.join('\n');
         page.push({ type:currentType, options:currentOptions, data:itemStr });
@@ -75,7 +75,7 @@ export function parse(text) {
     function finishPage() {
         finishItem();
         if (page.length === 0) {
-            throw 'No page to finish';
+            return; // No page to finish
         }
         pages.push(page);
         page = [];
@@ -85,22 +85,34 @@ export function parse(text) {
         const line = lines[i];
         if (isSpecialDelimiter(line)) {
             const delim = parseSpecialDelimiterLine(line);
-            if (delim.type === 'Markdown') {
-                finishItem();
-                currentType = delim.type;
-                currentOptions = delim.options;
-            } else {
-                if (delim.type === 'Code') {
+            const matches = {
+                'Markdown': () => {
                     finishItem();
                     currentType = delim.type;
                     currentOptions = delim.options;
-                } else {
-                    if (delim.type === 'Page') {
-                        finishPage();
-                    } else {
-                        throw 'Unexpected delimiter';
-                    }
+                },
+                'Code': () => {
+                    finishItem();
+                    currentType = delim.type;
+                    currentOptions = delim.options;
+                },
+                'Page': () => {
+                    finishPage();
+                },
+                'EndMarkdown': () => {
+                    finishItem();
+                },
+                'EndCode': () => {
+                    finishItem();
+                },
+                'EndPage': () => {
+                    finishPage();
                 }
+            };
+            if (matches[delim.type] !== undefined) {
+                matches[delim.type]();
+            } else {
+                throw new Error('Unexpected delimiter');
             }
         } else {
             item.push(line);
