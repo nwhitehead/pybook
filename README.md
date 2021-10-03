@@ -6,6 +6,18 @@ To test:
 
 Then go to http://localhost:8001/src/pybook.html
 
+## Unit Testing
+
+Unit testing requires Jest. Using ES6 modules, so you need a recent node (I have v14.18).
+
+Do:
+
+    npm install jest --global
+
+To run tests in `src/` do:
+
+    NODE_OPTIONS='--experimental-vm-modules' jest
+
 ## Demo
 
     import matplotlib
