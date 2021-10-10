@@ -6,6 +6,7 @@
 <script defer src="../lib/codemirror/codemirror.js"></script>
 <link rel="stylesheet" href="../lib/codemirror/codemirror.css">
 <script defer src="../lib/codemirror/python.js"></script>
+<script defer src="../lib/codemirror/markdown.js"></script>
 <script defer src="../lib/vue.js"></script>
 <script defer src="../lib/vuex.js"></script>
 <script defer src="../lib/marked.min.js"></script>
@@ -336,6 +337,11 @@ onready(function() {
                 'Ctrl-C': function(cm) {},
                 'Ctrl-K': function(cm) {},
                 'Ctrl-I': function(cm) {},
+                // Make pressing "tab" key insert spaces to correct indent level
+                'Tab': function(cm) {
+                    let spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
+                    cm.replaceSelection(spaces);
+                },
             });
         },
         watch: {
@@ -345,6 +351,12 @@ onready(function() {
                     this.editor.setValue(v);
                 }
             },
+            options: function(opts) {
+                // If options changes, need to set each one in editor
+                Object.entries(opts).forEach(([k, v]) => {
+                    this.editor.setOption(k, v);
+                });
+            }
         },
         methods: {
             focus () {
@@ -414,7 +426,7 @@ onready(function() {
     });
 
     Vue.component('cell', {
-        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command', 'hidden'],
+        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command', 'hidden', 'editable'],
         template: String.raw`
             <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick" v-if="!hidden">
                 <div class="side-left handle" :class="leftClass">
@@ -423,6 +435,8 @@ onready(function() {
                     <codemirror
                         v-bind:value="value"
                         v-bind:id="id"
+                        v-bind:editable="editable"
+                        v-bind:options="cmOptions"
                         v-on:update:value="handleInput"
                         v-on:action="handleAction"
                         v-if="showEdit"
@@ -437,6 +451,19 @@ onready(function() {
                 </div>
             </div>`,
         computed: {
+            cmOptions () {
+                let options = { };
+                if (this.type === 'code') {
+                    options.mode = 'python';
+                }
+                if (this.type === 'markdown-edit' || this.type === 'markdown-view') {
+                    options.mode = 'markdown';
+                }
+                if (this.editable === false) {
+                    options.readOnly = true;
+                }
+                return options;
+            },
             showEdit () {
                 return this.type === 'code' || this.type === 'markdown-edit';
             },
