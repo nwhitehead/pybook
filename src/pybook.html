@@ -852,9 +852,15 @@ onready(function() {
             setCellState (p, n, state) {
                 this.$store.commit('setCellState', {p, n, state});
             },
-            cellType (p, n)
-            {
+            cellType (p, n) {
                 return this.$store.state.cells[p][n].cell_type;
+            },
+            metadata (p, n) {
+                return this.$store.state.cells[p][n].metadata;
+            },
+            isHidden (p, n) {
+                const mdata = this.metadata(p, n);
+                return mdata && mdata.hidden === true;
             },
             internalEval (p, n) {
                 this.clearOutput(p, n);
@@ -990,14 +996,24 @@ onready(function() {
                 // This is getting triggered by clicking page buttons, so ignore for now
             },
             cellPrevious (event) {
-                if (this.selectCell > 0) {
-                    this.selectCell = this.selectCell - 1;
+                let c = this.selectCell - 1;
+                // Skip hidden cells (but don't go off page)
+                while (c >= 0 && this.isHidden(this.page, c)) {
+                    c--;
+                }
+                if (c >= 0 && !this.isHidden(this.page, c)) {
+                    this.selectCell = c;
                     this.updateFocus();
                 }
             },
             cellNext (event) {
-                if (this.selectCell < this.cells.length - 1) {
-                    this.selectCell = this.selectCell + 1;
+                let c = this.selectCell + 1;
+                // Skip hidden cells (but don't go off page)
+                while (c < this.cells.length - 1 && this.isHidden(this.page, c)) {
+                    c++;
+                }
+                if (c < this.cells.length && !this.isHidden(this.page, c)) {
+                    this.selectCell = c;
                     this.updateFocus();
                 }
             },
