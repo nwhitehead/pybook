@@ -148,7 +148,8 @@ div.output pre.stderr {
     v-on:keyup.a.exact='ifCommand(insertCellBefore)'
     v-on:keyup.b.exact='ifCommand(insertCellAfter)'
     v-on:keyup.d.exact='ifCommand(deleteCell)'
-    v-on:keyup.h.exact='ifCommand(hideCell)'
+    v-on:keyup.h.exact='ifCommand(toggleHiddenCell)'
+    v-on:keyup.r.exact='ifCommand(toggleReadOnlyCell)'
     v-on:keyup.y.exact='ifCommand(typeCellCode)'
     v-on:keyup.m.exact='ifCommand(typeCellMarkdownEdit)'
     v-on:keyup.m.shift.exact='ifCommand(typeCellMarkdownView)'
@@ -448,12 +449,12 @@ onready(function() {
                             ref="codemirror"
                             >
                         </codemirror>
-                        <celloutput
-                            v-bind:values="filteredOutput"
-                            v-if="showResults"
-                        >
-                        </celloutput>
                     </div>
+                    <celloutput
+                        v-bind:values="filteredOutput"
+                        v-if="showResults"
+                    >
+                    </celloutput>
                 </div>
             </div>`,
         computed: {
@@ -465,9 +466,7 @@ onready(function() {
                 if (this.type === 'markdown-edit' || this.type === 'markdown-view') {
                     options.mode = 'markdown';
                 }
-                if (this.readonly) {
-                    options.readOnly = true;
-                }
+                options.readOnly = this.readonly;
                 return options;
             },
             showEdit () {
@@ -717,12 +716,17 @@ onready(function() {
                 state.cells.splice(payload.p, 1); // remove page
                 state.cells.splice(payload.position, 0, page); // add original page
             },
+            cellSetFlag (state, payload) {
+                // payload has:
+                //   p: page
+                //   n: cell num
+                //   flag: flag name  (in 'hidden', 'readonly')
+                //   value: true or false
+                Vue.set(state.cells[payload.p][payload.n].metadata, payload.flag, payload.value);
+            },
             cellType (state, payload) {
                 Vue.set(state.cells[payload.p][payload.n], 'cell_type', payload.type);
                 if (payload.subtype !== undefined) {
-                    if (state.cells[payload.p][payload.n].metadata === undefined) {
-                        Vue.set(state.cells[payload.p][payload.n], 'metadata', {});
-                    }
                     Vue.set(state.cells[payload.p][payload.n].metadata, 'subtype', payload.subtype);
                 }
             },
@@ -907,6 +911,10 @@ onready(function() {
             isHidden (p, n) {
                 const mdata = this.metadata(p, n);
                 return mdata && mdata.hidden === true;
+            },
+            isReadOnly (p, n) {
+                const mdata = this.metadata(p, n);
+                return mdata && mdata.readonly === true;
             },
             internalEval (p, n) {
                 this.clearOutput(p, n);
@@ -1181,6 +1189,22 @@ onready(function() {
                 const n = this.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('cellType', { p, n, type:'markdown', subtype:'view' });
+                }
+            },
+            toggleReadOnlyCell (event) {
+                const p = this.page;
+                const n = this.selectCell;
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    const readonly = this.isReadOnly(p, n);
+                    this.$store.commit('cellSetFlag', { p, n, flag:'readonly', value:!readonly });
+                }
+            },
+            toggleHiddenCell (event) {
+                const p = this.page;
+                const n = this.selectCell;
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    const hidden = this.isHidden(p, n);
+                    this.$store.commit('cellSetFlag', { p, n, flag:'hidden', value:!hidden });
                 }
             },
             debugDump (event) {
