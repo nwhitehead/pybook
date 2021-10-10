@@ -30,10 +30,15 @@ The `#%` tag for Python code includes the following options:
     * `auto` means to automatically evaluate on notebook load (default is to not eval on load)
     * `nooutput` means to hide any output (default is to show all output)
     * `noedit` means to make the contents not editable (default is editable)
-    * `noeval` means to make the contents not evaluatable (defualt is evaluatable)
+    * `noeval` means to make the contents not evaluatable (default is evaluatable)
     * `startup` is abbreviation for `hidden auto nooutput noedit`
 
 The tags can come in any order, but cannot be repeated.
+
+### Markdown options
+
+Default is to show the result of the markdown but no source. Here are the legal options for markdown sections:
+    * `edit` means to show the source markdown for editing
 
 ### Output
 

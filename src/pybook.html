@@ -142,6 +142,7 @@ div.output pre.stderr {
     v-on:keyup.a.exact='ifCommand(insertCellBefore)'
     v-on:keyup.b.exact='ifCommand(insertCellAfter)'
     v-on:keyup.d.exact='ifCommand(deleteCell)'
+    v-on:keyup.h.exact='ifCommand(hideCell)'
     v-on:keyup.y.exact='ifCommand(typeCellCode)'
     v-on:keyup.m.exact='ifCommand(typeCellMarkdownEdit)'
     v-on:keyup.m.shift.exact='ifCommand(typeCellMarkdownView)'
@@ -413,9 +414,9 @@ onready(function() {
     });
 
     Vue.component('cell', {
-        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command'],
+        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command', 'hidden'],
         template: String.raw`
-            <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick">
+            <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick" v-if="!hidden">
                 <div class="side-left handle" :class="leftClass">
                 </div>
                 <div class="side-right" :class="rightClass">
@@ -524,6 +525,7 @@ onready(function() {
                     v-bind:command="isSelected(index) && command"
                     v-bind:type="computeType(content)"
                     v-bind:state="content.state"
+                    v-bind:hidden="isHidden(content)"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     v-on:click="handleClick"
@@ -542,6 +544,12 @@ onready(function() {
             }
         },
         methods: {
+            isHidden (content) {
+                if (content.cell_type === 'code' && content.metadata !== undefined && content.metadata.hidden === true) {
+                    return true;
+                }
+                return false;
+            },
             computeType (content) {
                 if (content.cell_type === 'code') return 'code';
                 if (content.cell_type === 'markdown' && content.metadata !== undefined && content.metadata.subtype === 'view') return 'markdown-view';
@@ -580,8 +588,12 @@ onready(function() {
                 return this.$refs.cell[n].blur();
             },
             blurAll () {
-                for (let i = 0; i < this.values.length; i++) {
-                    this.blur(i);
+                // Check that this.values is defined
+                // It can be undefined when all pages are deleted before fresh empty page is added
+                if (this.values !== undefined) {
+                    for (let i = 0; i < this.values.length; i++) {
+                        this.blur(i);
+                    }
                 }
                 return true;
             }
@@ -1040,6 +1052,7 @@ onready(function() {
                 if (this.$store.state.cells.length === 0) {
                     // If user deleted last page, start with fresh notebook
                     this.$store.commit('newNotebook');
+                    this.page = 0;
                 }
                 this.updateFocus();
             },
