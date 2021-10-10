@@ -199,7 +199,9 @@ div.output pre.stderr {
                 <div class="dropdown-content">
                     <a class="dropdown-item" v-on:click.stop="debugDump">Console dump</a>
                     <a class="dropdown-item" v-on:click.stop="debugClear">Clear local files</a>
+                    <a class="dropdown-divider"></a>
                     <fileimport></fileimport>
+                    <a class="dropdown-divider"></a>
                 </div>
             </div>    
         </div>
@@ -270,7 +272,8 @@ onready(function() {
         props: [],
         template: String.raw`
             <div class="fileimport">
-                <input type="file" ref="select" @change="readFile()" />
+                <span>File import</span>
+                <input id="filebutton" type="file" ref="select" @change="readFile()" />
             </div>`,
         methods: {
             readFile() {

@@ -6,6 +6,10 @@
 
 //! Split a long text string into array of lines
 function splitByLines(txt) {
+    // Remove single trailing newline if exists
+    if (txt.length > 0 && txt.slice(-1) === '\n') {
+        txt = txt.slice(0, txt.length - 1);
+    }
     return txt.split("\n");
 }
 
@@ -35,16 +39,25 @@ export function parseSpecialDelimiterLine(txt) {
     const matches = {
         '#%': 'Code',
         '#%%': 'Markdown',
-        '#%page': 'Page',
-        '#%end': 'EndCode',
-        '#%%end': 'EndMarkdown',
-        '#%pageend': 'EndPage'
     };
     if (matches[delim] !== undefined) {
         type = matches[delim];
     } else {
         throw new Error('Unknown delimiter');
     }
+    // Now handle options changing the type
+    // This dictionary has key of option text that appears, value is what to make the type
+    const types = {
+        'md': 'Markdown',
+        'page': 'Page',
+        'end': 'End',
+    };
+    Object.entries(types).forEach(([k, v]) => {
+        if (options.includes(k)) {
+            options.splice(options.indexOf(k), 1); // remove key from options
+            type = v;
+        }
+    });
     return { type, options };
 }
 
@@ -64,9 +77,10 @@ export function parse(text) {
             return;
         }
         if (currentType === '') {
+            item = [];
             return; // No item to finish
         }
-        const itemStr = item.join('\n');
+        const itemStr = item.join('\n') + '\n';
         page.push({ type:currentType, options:currentOptions, data:itemStr });
         item = [];
         currentType = '';
@@ -99,15 +113,9 @@ export function parse(text) {
                 'Page': () => {
                     finishPage();
                 },
-                'EndMarkdown': () => {
+                'End': () => {
                     finishItem();
                 },
-                'EndCode': () => {
-                    finishItem();
-                },
-                'EndPage': () => {
-                    finishPage();
-                }
             };
             if (matches[delim.type] !== undefined) {
                 matches[delim.type]();

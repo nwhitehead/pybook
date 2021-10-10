@@ -14,11 +14,10 @@ The final filename ends with `.pbnb` which stands for PyBook Note Book, somewhat
 
 Notebooks have at least one cell. Each cell starts with one of the following tags:
     * `#%` for Python code
-    * `#%%` for Markdown text
+    * `#%%` or `#% md` for Markdown text
 
 You can explicitly end a cell with:
-    * `#%end` to end Python code block
-    * `#%%end` to end Markdown text
+    * `#% end`
 
 Beginning a new cell automatically closes the previous cell. Text outside of cells is ignored.
 
@@ -29,9 +28,10 @@ Tags may also include options, separated by spaces.
 The `#%` tag for Python code includes the following options:
     * `hidden` means the code is not shown in the interface (default is to show code)
     * `auto` means to automatically evaluate on notebook load (default is to not eval on load)
-    * `hideoutput` means to hide any output (default is to show all output)
+    * `nooutput` means to hide any output (default is to show all output)
     * `noedit` means to make the contents not editable (default is editable)
     * `noeval` means to make the contents not evaluatable (defualt is evaluatable)
+    * `startup` is abbreviation for `hidden auto nooutput noedit`
 
 The tags can come in any order, but cannot be repeated.
 
@@ -53,6 +53,10 @@ Markdown is normal markdown, within triple quotes. So first line of `'''` and la
 ## Pages
 
 One notebook file can have several pages. Each page is separated with:
-    * `#%page` followed by optional space and page name on line
+    * `#% page` followed by optional space and page name on line
 
 If there is just one page, this tag can be ommitted. If this tag appears first thing in the file, it is assumed to start the first page. This means it is impossible to have a multipage notebook with an entirely blank first page.
+
+## Testing
+
+Should be a way to run the entire notebook as a test. Make sure every cell works, answers work.
