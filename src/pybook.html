@@ -721,7 +721,13 @@ onready(function() {
         },
         computed: {
             notebook() {
-                return this.$store.state;
+                let result = this.$store.state;
+                result.opts = this.opts;
+                // Do not include status
+                result.mode = this.mode;
+                result.selectCell = this.selectCell;
+                result.page = this.page;
+                return result;
             },
             pagination() {
                 const pages = this.countPages();
@@ -1009,7 +1015,7 @@ onready(function() {
             },
             deleteCell (event) {
                 const p = this.page;
-                const n = this.$store.state.selectCell;
+                const n = this.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('deleteCell', { p, n });
                     if (n === this.$store.state.cells[p].length) {
@@ -1049,7 +1055,7 @@ onready(function() {
             },
             insertCellBefore (event) {
                 const p = this.page;
-                const n = this.$store.state.selectCell;
+                const n = this.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellBefore', { p, n });
                     this.selectCell = n;
@@ -1058,7 +1064,7 @@ onready(function() {
             },
             insertCellAfter (event) {
                 const p = this.page;
-                const n = this.$store.state.selectCell;
+                const n = this.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('insertCellAfter', { p, n });
                     this.selectCell = n + 1;
@@ -1083,21 +1089,21 @@ onready(function() {
             },
             typeCellCode (event) {
                 const p = this.page;
-                const n = this.$store.state.selectCell;
+                const n = this.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('cellType', { p, n, type:'code' });
                 }
             },
             typeCellMarkdownEdit (event) {
                 const p = this.page;
-                const n = this.$store.state.selectCell;
+                const n = this.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('cellType', { p, n, type:'markdown', subtype:'edit' });
                 }
             },
             typeCellMarkdownView (event) {
                 const p = this.page;
-                const n = this.$store.state.selectCell;
+                const n = this.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('cellType', { p, n, type:'markdown', subtype:'view' });
                 }
@@ -1113,7 +1119,7 @@ onready(function() {
             },
             moveCellBefore (event) {
                 const p = this.page;
-                const n = this.$store.state.selectCell;
+                const n = this.selectCell;
                 if (this.pageValid(p) && n > 0) {
                     this.$store.commit('moveCell', { p, n, position:n - 1 });
                     this.selectCell = n - 1;
@@ -1122,7 +1128,7 @@ onready(function() {
             },
             moveCellAfter (event) {
                 const p = this.page;
-                const n = this.$store.state.selectCell;
+                const n = this.selectCell;
                 if (this.pageValid(p) && n < this.$store.state.cells[p].length - 1) {
                     this.$store.commit('moveCell', { p, n, position:n + 1 });
                     this.selectCell = n + 1;
