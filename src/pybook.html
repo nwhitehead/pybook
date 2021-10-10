@@ -50,6 +50,11 @@ div.status p {
     border-left-width: 5px;
     border-right-width: 5px;
 }
+.readonly-inner {
+    border: 15px solid;
+    border-image: repeating-linear-gradient(44deg, #888,#888 7px,#ff0 7px, #ff0 15px, #888 15px) 0 15 0 0;
+    border-width: 0px 15px 0px 0px;
+}
 .side-left.working {
     background: #edf;
 }
@@ -426,28 +431,29 @@ onready(function() {
     });
 
     Vue.component('cell', {
-        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command', 'hidden', 'editable'],
+        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command', 'hidden', 'readonly'],
         template: String.raw`
             <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick" v-if="!hidden">
                 <div class="side-left handle" :class="leftClass">
                 </div>
                 <div class="side-right" :class="rightClass">
-                    <codemirror
-                        v-bind:value="value"
-                        v-bind:id="id"
-                        v-bind:editable="editable"
-                        v-bind:options="cmOptions"
-                        v-on:update:value="handleInput"
-                        v-on:action="handleAction"
-                        v-if="showEdit"
-                        ref="codemirror"
+                    <div :class="readonlyClass">
+                        <codemirror
+                            v-bind:value="value"
+                            v-bind:id="id"
+                            v-bind:options="cmOptions"
+                            v-on:update:value="handleInput"
+                            v-on:action="handleAction"
+                            v-if="showEdit"
+                            ref="codemirror"
+                            >
+                        </codemirror>
+                        <celloutput
+                            v-bind:values="filteredOutput"
+                            v-if="showResults"
                         >
-                    </codemirror>
-                    <celloutput
-                        v-bind:values="filteredOutput"
-                        v-if="showResults"
-                    >
-                    </celloutput>
+                        </celloutput>
+                    </div>
                 </div>
             </div>`,
         computed: {
@@ -459,7 +465,7 @@ onready(function() {
                 if (this.type === 'markdown-edit' || this.type === 'markdown-view') {
                     options.mode = 'markdown';
                 }
-                if (this.editable === false) {
+                if (this.readonly) {
                     options.readOnly = true;
                 }
                 return options;
@@ -470,11 +476,17 @@ onready(function() {
             showResults () {
                 return this.type === 'code' || this.type === 'markdown-view' || this.type === 'markdown-edit';
             },
+            readonlyClass: function () {
+                return {
+                    'readonly-inner': this.readonly,
+                };
+            },
             classObject: function () {
                 return {
                     selected: this.selected,
                     command: this.command,
                     working: this.state === 'working',
+                    readonly: this.readonly,
                 }
             },
             filteredOutput () {
@@ -553,6 +565,7 @@ onready(function() {
                     v-bind:type="computeType(content)"
                     v-bind:state="content.state"
                     v-bind:hidden="isHidden(content)"
+                    v-bind:readonly="isReadOnly(content)"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     v-on:click="handleClick"
@@ -573,6 +586,12 @@ onready(function() {
         methods: {
             isHidden (content) {
                 if (content.cell_type === 'code' && content.metadata !== undefined && content.metadata.hidden === true) {
+                    return true;
+                }
+                return false;
+            },
+            isReadOnly (content) {
+                if (content.metadata !== undefined && content.metadata.readonly === true) {
                     return true;
                 }
                 return false;
