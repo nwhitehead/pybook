@@ -150,6 +150,7 @@ div.output pre.stderr {
     v-on:keyup.d.exact='ifCommand(deleteCell)'
     v-on:keyup.h.exact='ifCommand(toggleHiddenCell)'
     v-on:keyup.r.exact='ifCommand(toggleReadOnlyCell)'
+    v-on:keyup.s.exact='ifCommand(toggleSubmitCell)'
     v-on:keyup.y.exact='ifCommand(typeCellCode)'
     v-on:keyup.m.exact='ifCommand(typeCellMarkdownEdit)'
     v-on:keyup.m.shift.exact='ifCommand(typeCellMarkdownView)'
@@ -432,7 +433,7 @@ onready(function() {
     });
 
     Vue.component('cell', {
-        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command', 'hidden', 'readonly'],
+        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command', 'hidden', 'readonly', 'submit'],
         template: String.raw`
             <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick" v-if="!hidden">
                 <div class="side-left handle" :class="leftClass">
@@ -450,6 +451,9 @@ onready(function() {
                             >
                         </codemirror>
                     </div>
+                    <button class="button is-primary" v-if="submit">
+                        Submit
+                    </button>
                     <celloutput
                         v-bind:values="filteredOutput"
                         v-if="showResults"
@@ -565,6 +569,7 @@ onready(function() {
                     v-bind:state="content.state"
                     v-bind:hidden="isHidden(content)"
                     v-bind:readonly="isReadOnly(content)"
+                    v-bind:submit="isSubmit(content)"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     v-on:click="handleClick"
@@ -583,6 +588,12 @@ onready(function() {
             }
         },
         methods: {
+            isSubmit (content) {
+                if (content.cell_type === 'code' && content.metadata !== undefined && content.metadata.submit === true) {
+                    return true;
+                }
+                return false;
+            },
             isHidden (content) {
                 if (content.cell_type === 'code' && content.metadata !== undefined && content.metadata.hidden === true) {
                     return true;
@@ -627,6 +638,7 @@ onready(function() {
                 this.$emit('click', event);
             },
             focus (n) {
+                console.log('focus', this.$refs.cell[n]);
                 return this.$refs.cell[n].focus();
             },
             blur (n) {
@@ -888,7 +900,7 @@ onready(function() {
                     this.$el.focus();
                     if (this.mode === 'edit') {
                         if (n !== undefined) {
-                           this.$refs.cells.focus(n);
+                            this.$refs.cells.focus(n);
                         }
                     }
                 });
@@ -907,6 +919,10 @@ onready(function() {
             },
             metadata (p, n) {
                 return this.$store.state.cells[p][n].metadata;
+            },
+            isSubmit (p, n) {
+                const mdata = this.metadata(p, n);
+                return mdata && mdata.submit === true;
             },
             isHidden (p, n) {
                 const mdata = this.metadata(p, n);
@@ -1189,6 +1205,14 @@ onready(function() {
                 const n = this.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('cellType', { p, n, type:'markdown', subtype:'view' });
+                }
+            },
+            toggleSubmitCell (event) {
+                const p = this.page;
+                const n = this.selectCell;
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    const submit = this.isSubmit(p, n);
+                    this.$store.commit('cellSetFlag', { p, n, flag:'submit', value:!submit });
                 }
             },
             toggleReadOnlyCell (event) {
