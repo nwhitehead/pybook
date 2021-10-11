@@ -147,6 +147,7 @@ div.output pre.stderr {
     v-on:keyup.down.exact='ifCommand(cellNext)'
     v-on:keyup.a.exact='ifCommand(insertCellBefore)'
     v-on:keyup.b.exact='ifCommand(insertCellAfter)'
+    v-on:keyup.c.exact='ifCommand(clearCellOutput)'
     v-on:keyup.d.exact='ifCommand(deleteCell)'
     v-on:keyup.h.exact='ifCommand(toggleHiddenCell)'
     v-on:keyup.r.exact='ifCommand(toggleReadOnlyCell)'
@@ -237,6 +238,7 @@ div.output pre.stderr {
         v-on:update:values="handleDrag"
         v-on:action="handleAction"
         v-on:click="handleClick"
+        v-on:submit="handleSubmit"
         v-bind:values="cells"
         v-bind:select="selectCell"
         v-bind:command="isCommandMode"
@@ -451,7 +453,7 @@ onready(function() {
                             >
                         </codemirror>
                     </div>
-                    <button class="button is-primary" v-if="submit">
+                    <button class="button is-primary" v-if="submit" v-on:click.stop="handleSubmit">
                         Submit
                     </button>
                     <celloutput
@@ -527,6 +529,9 @@ onready(function() {
             handleClick (event) {
                 this.$emit('click', { id:this.id });
             },
+            handleSubmit (event) {
+                this.$emit('submit', { id:this.id });
+            },
             focus () {
                 if (this.$refs.codemirror) {
                     return this.$refs.codemirror.focus();
@@ -573,6 +578,7 @@ onready(function() {
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     v-on:click="handleClick"
+                    v-on:submit="handleSubmit"
                     ref="cell"
                 >
                 </cell>
@@ -637,8 +643,10 @@ onready(function() {
             handleClick (event) {
                 this.$emit('click', event);
             },
+            handleSubmit (event) {
+                this.$emit('submit', event);
+            },
             focus (n) {
-                console.log('focus', this.$refs.cell[n]);
                 return this.$refs.cell[n].focus();
             },
             blur (n) {
@@ -1065,6 +1073,17 @@ onready(function() {
             handleOuterClick (event) {
                 // This is getting triggered by clicking page buttons, so ignore for now
             },
+            handleSubmit (event) {
+                console.log('app handling submit');
+                const p = this.page;
+                const n = event.id;
+                if (!isBusy() && !isStarting()) {
+                    clearInterrupt();
+                    this.internalEval(p, n);
+                } else {
+                    beep();
+                }
+            },
             cellPrevious (event) {
                 let c = this.selectCell - 1;
                 // Skip hidden cells (but don't go off page)
@@ -1151,6 +1170,13 @@ onready(function() {
                 inputPut(10);
                 // Signal no more input
                 inputPut(0);
+            },
+            clearCellOutput (event) {
+                const p = this.page;
+                const n = this.selectCell;
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    this.clearOutput(p, n);
+                }
             },
             insertCellBefore (event) {
                 const p = this.page;
@@ -1289,9 +1315,6 @@ onready(function() {
                     this.selectCell = 0;
                     this.updateFocus();
                 }
-            },
-            handleKeyup (event) {
-                console.log('Keyup', event);
             },
         }
     });

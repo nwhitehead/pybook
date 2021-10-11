@@ -79,9 +79,9 @@ export function newPythonWorker(opts) {
                 };
                 pyodide.setInterruptBuffer(sharedArray);
                 pyodide.registerJsModule('pybook', pybook); // synchronous
-                pyodide.loadPackage('exec').then( () => {
+                pyodide.loadPackage('pbexec').then( () => {
                     pyodide.runPython('import sys; sys.setrecursionlimit(120)');
-                    pyodide.runPython('import exec');
+                    pyodide.runPython('import pbexec');
                     // Clear starting flag
                     Atomics.store(sharedArray, signalMap['starting'], 0);
                     // Clear busy flag
@@ -126,7 +126,7 @@ export function newPythonWorker(opts) {
             // Version of pyodide.runPythonAsync that goes through exec.wrapped_run_cell
             async function runCellAsync(code, messageCallback, errorCallback) {
                 await loadPackagesFromImports(code);
-                const exec_module = pyodide.globals.get('exec');
+                const exec_module = pyodide.globals.get('pbexec');
                 const eval_func = exec_module.wrapped_run_cell;
                 Atomics.store(sharedArray, signalMap['busy'], 1);
                 eval_func(code);
