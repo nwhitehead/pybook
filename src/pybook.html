@@ -940,7 +940,7 @@ onready(function() {
                 const mdata = this.metadata(p, n);
                 return mdata && mdata.readonly === true;
             },
-            internalEval (p, n) {
+            internalEval (p, n, submit) {
                 this.clearOutput(p, n);
                 if (this.cellType(p, n) !== 'code') {
                     beep();
@@ -949,7 +949,7 @@ onready(function() {
                 this.setCellState(p, n, 'working');
                 EventBus.$emit('update:status', 'Working');
                 const self = this;
-                python.evaluate(this.$store.state.cells[p][n].source, {
+                const callbacks = {
                     onStdout: function(msg) {
                         self.addOutput(p, n, { 
                             output_type: 'stream',
@@ -999,8 +999,12 @@ onready(function() {
                             console.log('Unknown content_type ' + content_type);
                         }
                     },
-                });
-
+                };
+                if (submit) {
+                    python.submit(this.$store.state.cells[p][n].source, callbacks);
+                } else {
+                    python.evaluate(this.$store.state.cells[p][n].source, callbacks);
+                }
             },
             eval () {
                 const p = this.page;
@@ -1079,7 +1083,7 @@ onready(function() {
                 const n = event.id;
                 if (!isBusy() && !isStarting()) {
                     clearInterrupt();
-                    this.internalEval(p, n);
+                    this.internalEval(p, n, true);
                 } else {
                     beep();
                 }

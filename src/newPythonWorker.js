@@ -133,14 +133,30 @@ export function newPythonWorker(opts) {
                 Atomics.store(sharedArray, signalMap['busy'], 0);
             };
 
-            if (input.type === 'execute') {
+            async function submitCellAsync(code, messageCallback, errorCallback) {
+                const submit_func = pyodide.globals.submit;
+                console.log('submit_func is ', submit_func);
+                Atomics.store(sharedArray, signalMap['busy'], 1);
+                submit_func(code); // let the submit function decide whether to use pbexec or not (needed to get real output)
+                Atomics.store(sharedArray, signalMap['busy'], 0);
+            };
+
+            if (input.type === 'execute' || input.type === 'submit') {
                 if (!loaded) {
                     done({ type:'notready' });
                 } else {
-                    // Now run the code
-                    runCellAsync(input.data).then( (resp) => {
-                        done({ type: 'response' });
-                    });
+                    if (input.type === 'execute') {
+                        // Now run the code
+                        runCellAsync(input.data).then( (resp) => {
+                            done({ type: 'response' });
+                        });
+                    }
+                    if (input.type === 'submit') {
+                        submitCellAsync(input.data).then( (resp) => {
+                            done({ type: 'response' });
+                        });
+
+                    }
                 }
             } else {
                 throw 'Unknown message type in webworker onmessage';

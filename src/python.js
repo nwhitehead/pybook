@@ -94,6 +94,10 @@ export function newPythonKernel(opts) {
             callbacks = callback;
             worker.send({ type:'execute', data:expr });
         },
+        submit: function(expr, callback) {
+            callbacks = callback;
+            worker.send({ type:'submit', data:expr });
+        },
         reset: function() {
             worker.send({ type:'reset' });
         },
