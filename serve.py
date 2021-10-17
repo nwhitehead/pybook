@@ -1,3 +1,4 @@
+import argparse
 import sys
 import socketserver
 from http.server import SimpleHTTPRequestHandler
@@ -26,7 +27,10 @@ if sys.version_info < (3, 7, 5):
 
 
 if __name__ == '__main__':
-    port = 8001
+    parser = argparse.ArgumentParser(description="Test local server for PyBook")
+    parser.add_argument('--port', type=int, default=8001)
+    args = parser.parse_args()
+    port = args.port
     with socketserver.TCPServer(("", port), Handler) as httpd:
         print("Serving at: http://127.0.0.1:{}".format(port))
         httpd.serve_forever()

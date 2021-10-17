@@ -1,0 +1,20 @@
+#%%
+# Introduction to PyBook
+
+Welcome to *PyBook*!
+
+This is a PyBook notebook. Notebooks can contain a mix of Python and Markdown
+content, organized into cells and pages. PyBook is inspired by _Mathematica_
+and _Jupyter_ (formerly named _IPython_).
+
+This notebook shows you some of the features of PyBook and walks you through
+how to do some common tasks.
+
+#%
+
+# This is a cell that contains Python code.
+# Click this cell to focus, then evaluate it by pressing Ctrl-Enter
+# (You can also use the menu to choose Cell - Evaluate)
+
+print('Hello from PyBook')
+
