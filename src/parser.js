@@ -81,7 +81,7 @@ export function parse(text) {
             return; // No item to finish
         }
         const itemStr = item.join('\n') + '\n';
-        page.push({ type:currentType, options:currentOptions, data:itemStr });
+        page.push({ cell_type:currentType, options:currentOptions, data:itemStr });
         item = [];
         currentType = '';
         currentOptions = [];
@@ -120,7 +120,7 @@ export function parse(text) {
             if (matches[delim.type] !== undefined) {
                 matches[delim.type]();
             } else {
-                throw new Error('Unexpected delimiter');
+                throw new Error('Unexpected delimiter: ' + delim.type);
             }
         } else {
             item.push(line);

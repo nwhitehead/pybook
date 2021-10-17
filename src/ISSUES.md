@@ -1,14 +1,42 @@
 # Issues
 
-* Focus with hidden cells
+## Focus with hidden cells
 
 When coming out of command mode (green), pressing Enter, if there are hidden cells it focuses the wrong editor.
 I think the issue is that hidden cells don't have a codemirror element, selectCell is numeric. Might also be related
 to drag and drop, that seems to make problem worse.
 
-* Package dependencies in submit
+## Package dependencies in submit
 
 When doing submit, my idea was to pass text of editor into "submit" function in python. That function can do all
 the unit testing, output to output area, needed. Can run the code, or examine it. Problem is that in Pyodide you
 need to scan code before executing, and preload packages so they are available to import. Need to call this
 explicitly in the submit code, kind of annoying.
+
+## Submit
+
+Renamed `exec` package to `pbexec` since there is a builtin `exec` function that submit might need. Had some issues
+with evaluation breaking entirely when I tried to do the following cell:
+
+    # hello
+    # this is `tt` text
+
+    def main():
+    ''' Docstring '''
+    print("42")
+    print('what')
+
+    main()
+    print(exec)
+    import pbexec
+    print(pbexec)
+    print(pbexec.wrapped_run_cell)
+    pbexec.wrapped_run_cell('print("42")')
+
+    import sys
+    print(sys.version)
+
+    def submit(txt):
+    print('submit from python')
+
+    x = 5
