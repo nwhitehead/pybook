@@ -81,7 +81,11 @@ export function parse(text) {
             return; // No item to finish
         }
         const itemStr = item.join('\n') + '\n';
-        page.push({ cell_type:currentType, options:currentOptions, data:itemStr });
+        let metadata = {};
+        for (let j = 0; j < currentOptions.length; j++) {
+            metadata[currentOptions[j]] = true;
+        }
+        page.push({ cell_type:currentType, metadata, source:itemStr });
         item = [];
         currentType = '';
         currentOptions = [];

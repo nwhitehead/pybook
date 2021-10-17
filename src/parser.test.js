@@ -26,11 +26,11 @@ print(42)
     expect(res.length).toBe(1);
     expect(res[0].length).toBe(2);
     expect(res[0][0].cell_type).toBe('Markdown');
-    expect(res[0][0].options).toStrictEqual(['hidden']);
-    expect(res[0][0].data).toBe('# Headline\n');
+    expect(res[0][0].metadata).toStrictEqual({hidden:true});
+    expect(res[0][0].source).toBe('# Headline\n');
     expect(res[0][1].cell_type).toBe('Code');
-    expect(res[0][1].options).toStrictEqual([]);
-    expect(res[0][1].data).toBe('print(42)\n');
+    expect(res[0][1].metadata).toStrictEqual({});
+    expect(res[0][1].source).toBe('print(42)\n');
 });
 
 test('parser2', () => {
@@ -55,16 +55,16 @@ hello
     expect(res.length).toBe(2);
     expect(res[0].length).toBe(2);
     expect(res[0][0].cell_type).toBe('Markdown');
-    expect(res[0][0].options).toStrictEqual([]);
-    expect(res[0][0].data).toBe('# Title\nmore\n');
+    expect(res[0][0].metadata).toStrictEqual({});
+    expect(res[0][0].source).toBe('# Title\nmore\n');
     expect(res[0][1].cell_type).toBe('Code');
-    expect(res[0][1].options).toStrictEqual(['startup']);
-    expect(res[0][1].data).toBe('print(42)\n');
+    expect(res[0][1].metadata).toStrictEqual({startup:true});
+    expect(res[0][1].source).toBe('print(42)\n');
     expect(res[1].length).toBe(2);
     expect(res[1][0].cell_type).toBe('Markdown');
-    expect(res[1][0].options).toStrictEqual([]);
-    expect(res[1][0].data).toBe('hello\n');
+    expect(res[1][0].metadata).toStrictEqual({});
+    expect(res[1][0].source).toBe('hello\n');
     expect(res[1][1].cell_type).toBe('Code');
-    expect(res[1][1].options).toStrictEqual(['submit']);
-    expect(res[1][1].data).toBe('# hi\n');
+    expect(res[1][1].metadata).toStrictEqual({submit:true});
+    expect(res[1][1].source).toBe('# hi\n');
 });
