@@ -208,10 +208,14 @@ div.output pre.stderr {
                 <div class="dropdown-content">
                     <a class="dropdown-item" v-on:click.stop="debugDump">Console dump</a>
                     <a class="dropdown-item" v-on:click.stop="debugClear">Clear local files</a>
+                    <a class="dropdown-item" v-on:click.stop="debugSave">Save notebook</a>
                     <a class="dropdown-divider"></a>
                     <fileimport v-on:load='handleLoad'>
                     </fileimport>
                     <a class="dropdown-divider"></a>
+                    <filesave
+                        v-bind:value="this.$store.state">
+                    </filesave>
                 </div>
             </div>    
         </div>
@@ -257,7 +261,8 @@ import { signalMap,
          inputPut
        } from './signal.js';
 import { newPythonKernel } from './python.js';
-import { parse } from './parser.js';
+import { parse,
+         unparse } from './parser.js';
 
 // The event bus is for application events that bypass the component hierarchy.
 // It is currently used to pass focus clicks from deep children back to toplevel.
@@ -279,6 +284,25 @@ onready(function() {
         }
     });
 
+    Vue.component('filesave', {
+        props: ['value'],
+        template: String.raw`
+            <div class="filesave">
+                <a class="dropdown-item" v-on:click.stop="action">Save</a>
+            </div>`,
+        methods: {
+            action() {
+                let a = document.createElement('a');
+                const data = unparse(this.value.cells);
+                const blob = new Blob([data], {type:"text/plain"});
+                const url = window.URL.createObjectURL(blob);
+                a.download = 'intro.pbnb';
+                a.href = url;
+                a.click();
+            }
+
+        }
+    });
     Vue.component('fileimport', {
         props: [],
         template: String.raw`
@@ -1133,12 +1157,6 @@ onready(function() {
                 this.selectCell = 0;
                 this.updateFocus();
             },
-            fileSave (event) {
-                const data = JSON.stringify(this.$store.state);
-                const blob = new Blob([data], {type:"application/json"});
-                const url = window.URL.createObjectURL(blob);
-                console.log("saving", url);
-            },
             selectionValid (n) {
                 if (n === undefined) {
                     return false;
@@ -1286,6 +1304,14 @@ onready(function() {
                 localStorage.clear();
                 this.fileNew();
                 this.initializeStore();
+            },
+            debugSave (event) {
+                console.log('Notebook save to file');
+                // const txt = '<a href="data:application/xml;charset=utf-8," download="filename.html">Save</a>';
+                // const data = JSON.stringify(this.$store.state);
+                // const blob = new Blob([data], {type:"application/json"});
+                // const url = window.URL.createObjectURL(blob);
+                // console.log("saving", url);
             },
             moveCellBefore (event) {
                 const p = this.page;

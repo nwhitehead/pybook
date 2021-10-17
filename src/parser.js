@@ -62,6 +62,7 @@ export function parseSpecialDelimiterLine(txt) {
 }
 
 export function parse(text) {
+    //! Given PyBook format text described in FileSpec.md, return JS Notebook object
     // Strategy is to accumulate lines into latest item, and items into latest page, etc.
     let pages = []; // Array of pages
     let page = []; // Array of items
@@ -136,4 +137,40 @@ export function parse(text) {
     }
     finishPage();
     return pages;
+}
+
+function unparseCell(cell) {
+    let open = '#%%';
+    let options = [];
+    if (cell.cell_type === 'code') {
+        open = '#%';
+    }
+    if (cell.metadata.hidden) {
+        options.push('hidden');
+    }
+    if (cell.metadata.startup) {
+        options.push('startup');
+    }
+    if (cell.metadata.submit) {
+        options.push('submit');
+    }
+    for (let i = 0; i < options.length; i++) {
+        open += ' ' + options[i];
+    }
+    const contents = cell.source;
+    return open + '\n' + contents;
+}
+
+function unparsePage(page) {
+    const cells = page;
+    const cellsTxt = cells.map(unparseCell);
+    return cellsTxt.join('')
+}
+
+export function unparse(data) {
+    //! Given PyBook notebook object, return string in FileSpec.md format
+    // Currently ignores output
+    const pages = data;
+    const pagesTxt = pages.map(unparsePage);
+    return pagesTxt.join('#% page\n')
 }

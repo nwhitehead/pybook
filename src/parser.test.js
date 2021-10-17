@@ -1,5 +1,6 @@
 import { parseSpecialDelimiterLine,
-         parse } from './parser.js';
+         parse,
+         unparse } from './parser.js';
 
 test('parseSpecialDelimiterLine1', () => {
     expect(parseSpecialDelimiterLine('#%%')).toStrictEqual(
@@ -16,8 +17,7 @@ test('parseSpecialDelimiterLine1', () => {
 });
 
 test('parser1', () => {
-    const tst = `
-#%% hidden
+    const tst = `#%% hidden
 # Headline
 #%
 print(42)
@@ -31,6 +31,8 @@ print(42)
     expect(res[0][1].cell_type).toBe('code');
     expect(res[0][1].metadata).toStrictEqual({});
     expect(res[0][1].source).toBe('print(42)\n');
+    expect(unparse(parse(tst))).toBe(tst);
+    expect(parse(unparse(parse(tst)))).toStrictEqual(parse(tst));
 });
 
 test('parser2', () => {
@@ -67,4 +69,5 @@ hello
     expect(res[1][1].cell_type).toBe('code');
     expect(res[1][1].metadata).toStrictEqual({submit:true});
     expect(res[1][1].source).toBe('# hi\n');
+    expect(parse(unparse(parse(tst)))).toStrictEqual(parse(tst));
 });

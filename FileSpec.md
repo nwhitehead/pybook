@@ -29,9 +29,8 @@ The `#%` tag for Python code includes the following options:
     * `hidden` means the code is not shown in the interface (default is to show code)
     * `auto` means to automatically evaluate on notebook load (default is to not eval on load)
     * `nooutput` means to hide any output (default is to show all output)
-    * `noedit` means to make the contents not editable (default is editable)
-    * `noeval` means to make the contents not evaluatable (default is evaluatable)
-    * `startup` is abbreviation for `hidden auto nooutput noedit`
+    * `readonly` means to make the contents not editable (default is editable)
+    * `startup` is abbreviation for `hidden auto nooutput readonly`
 
 The tags can come in any order, but cannot be repeated.
 
