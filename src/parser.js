@@ -37,8 +37,8 @@ export function parseSpecialDelimiterLine(txt) {
     let type = '';
     // Match delim against fixed set of allowed possibilities
     const matches = {
-        '#%': 'Code',
-        '#%%': 'Markdown',
+        '#%': 'code',
+        '#%%': 'markdown',
     };
     if (matches[delim] !== undefined) {
         type = matches[delim];
@@ -48,9 +48,9 @@ export function parseSpecialDelimiterLine(txt) {
     // Now handle options changing the type
     // This dictionary has key of option text that appears, value is what to make the type
     const types = {
-        'md': 'Markdown',
-        'page': 'Page',
-        'end': 'End',
+        'md': 'markdown',
+        'page': 'page',
+        'end': 'end',
     };
     Object.entries(types).forEach(([k, v]) => {
         if (options.includes(k)) {
@@ -85,7 +85,7 @@ export function parse(text) {
         for (let j = 0; j < currentOptions.length; j++) {
             metadata[currentOptions[j]] = true;
         }
-        page.push({ cell_type:currentType, metadata, source:itemStr });
+        page.push({ cell_type:currentType, metadata, source:itemStr, outputs:[] });
         item = [];
         currentType = '';
         currentOptions = [];
@@ -104,20 +104,20 @@ export function parse(text) {
         if (isSpecialDelimiter(line)) {
             const delim = parseSpecialDelimiterLine(line);
             const matches = {
-                'Markdown': () => {
+                'markdown': () => {
                     finishItem();
                     currentType = delim.type;
                     currentOptions = delim.options;
                 },
-                'Code': () => {
+                'code': () => {
                     finishItem();
                     currentType = delim.type;
                     currentOptions = delim.options;
                 },
-                'Page': () => {
+                'page': () => {
                     finishPage();
                 },
-                'End': () => {
+                'end': () => {
                     finishItem();
                 },
             };

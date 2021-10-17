@@ -291,9 +291,14 @@ onready(function() {
                 this.file = this.$refs.select.files[0];
                 const reader = new FileReader();
                 reader.onload = (res) => {
+                    console.log('-----------BEGIN NOTEBOOK TEXT---------------');
                     console.log(res.target.result);
+                    console.log('-----------END NOTEBOOK TEXT-----------------');
                     const parsed = parse(res.target.result);
+                    console.log('-----------BEGIN NOTEBOOK---------------');
                     console.log(parsed);
+                    console.log('-----------END NOTEBOOK-----------------');
+                    self.$emit('load:value', parsed);
                 };
                 reader.onerror = (err) => console.log(err);
                 reader.readAsText(this.file);
@@ -749,12 +754,15 @@ onready(function() {
                     Vue.set(state.cells[payload.p][payload.n].metadata, 'subtype', payload.subtype);
                 }
             },
-            initializeStore(state, payload) {
+            initializeString (state, payload) {
+                this.replaceState(
+                        Object.assign(state, JSON.parse(payload))
+                );
+            },
+            initializeStore (state, payload) {
                 const stored = localStorage.getItem(payload);
                 if (stored) {
-                    this.replaceState(
-                        Object.assign(state, JSON.parse(stored))
-                    );
+                    this.commit('initializeString', stored);
                 }
             }
         }
@@ -1268,6 +1276,10 @@ onready(function() {
                 localStorage.clear();
                 this.fileNew();
                 this.initializeStore();
+            },
+            debugLoad (event) {
+                localStorage.clear();
+                this.$store.commit('initializeString', event.contents);
             },
             moveCellBefore (event) {
                 const p = this.page;
