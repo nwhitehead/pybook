@@ -85,7 +85,11 @@ export function parse(text) {
         for (let j = 0; j < currentOptions.length; j++) {
             metadata[currentOptions[j]] = true;
         }
-        page.push({ cell_type:currentType, metadata, source:itemStr, outputs:[] });
+        let cell = { cell_type:currentType, metadata, source:itemStr, outputs:[] };
+        if (currentType === 'markdown') {
+            cell.metadata.subtype = 'view';
+        }
+        page.push(cell);
         item = [];
         currentType = '';
         currentOptions = [];

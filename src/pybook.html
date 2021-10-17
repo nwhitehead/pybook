@@ -209,7 +209,8 @@ div.output pre.stderr {
                     <a class="dropdown-item" v-on:click.stop="debugDump">Console dump</a>
                     <a class="dropdown-item" v-on:click.stop="debugClear">Clear local files</a>
                     <a class="dropdown-divider"></a>
-                    <fileimport></fileimport>
+                    <fileimport v-on:load='handleLoad'>
+                    </fileimport>
                     <a class="dropdown-divider"></a>
                 </div>
             </div>    
@@ -287,7 +288,7 @@ onready(function() {
             </div>`,
         methods: {
             readFile() {
-                console.log('readFile()');
+                const self = this;
                 this.file = this.$refs.select.files[0];
                 const reader = new FileReader();
                 reader.onload = (res) => {
@@ -298,7 +299,7 @@ onready(function() {
                     console.log('-----------BEGIN NOTEBOOK---------------');
                     console.log(parsed);
                     console.log('-----------END NOTEBOOK-----------------');
-                    self.$emit('load:value', parsed);
+                    self.$emit('load', parsed);
                 };
                 reader.onerror = (err) => console.log(err);
                 reader.readAsText(this.file);
@@ -754,16 +755,19 @@ onready(function() {
                     Vue.set(state.cells[payload.p][payload.n].metadata, 'subtype', payload.subtype);
                 }
             },
+            initializeObject (state, payload) {
+                this.replaceState(Object.assign(state, payload));
+            },
             initializeString (state, payload) {
-                this.replaceState(
-                        Object.assign(state, JSON.parse(payload))
-                );
+                const parsed = JSON.parse(payload);
+                this.commit('initializeObject', parsed);
             },
             initializeStore (state, payload) {
                 const stored = localStorage.getItem(payload);
                 if (stored) {
                     this.commit('initializeString', stored);
                 }
+                // Otherwise do nothing if no localStorage result
             }
         }
     });
@@ -922,6 +926,12 @@ onready(function() {
             },
             handleInput (event) {
                 this.$store.commit('setSource', {p:this.page, n:event.id, source:event.value});
+            },
+            handleLoad (event) {
+                // We get parsed object that represents cells, but not other editor state
+                // Fill in other editor state with sensible values.
+                const state = { cells:event, mode:"edit", page:0, selectCell:0 };
+                this.$store.commit('initializeObject', state);
             },
             clearOutput (p, n) {
                 this.$store.commit('clearOutput', {p, n});
@@ -1276,10 +1286,6 @@ onready(function() {
                 localStorage.clear();
                 this.fileNew();
                 this.initializeStore();
-            },
-            debugLoad (event) {
-                localStorage.clear();
-                this.$store.commit('initializeString', event.contents);
             },
             moveCellBefore (event) {
                 const p = this.page;
