@@ -6,7 +6,7 @@ export function newPythonWorker(opts) {
         opts = {}
     }
     var spawn_data = {
-        setup: function() {
+        setup: async function() {
             absurl = config.absurl;
             signalMap = config.signalMap;
             sharedArray = config.sharedArray;
@@ -14,6 +14,7 @@ export function newPythonWorker(opts) {
             INPUT_BUFFER_SIZE = config.INPUT_BUFFER_SIZE;
 
             importScripts(absurl + '/lib/pyodide/pyodide.js');
+            //importScripts('https://cdn.jsdelivr.net/pyodide/v0.18.0/full/pyodide.js'); // Use CDN
 
             function inputGet() {
                 var p = Atomics.load(sharedArray, signalMap['input_start']);
@@ -45,10 +46,11 @@ export function newPythonWorker(opts) {
             }
 
             loaded = false;
-            loadPyodide({indexURL : absurl + '/lib/pyodide'}).then( function() {
-                let version = pyodide.runPython("import sys; sys.version");
-                let pybook = {
-                  sleep: function(sec) {
+            let pyodide = await loadPyodide({indexURL : absurl + '/lib/pyodide'});
+//            let pyodide = await loadPyodide({indexURL : "https://cdn.jsdelivr.net/pyodide/v0.18.0/full/"});
+            let version = pyodide.runPython("import sys; sys.version");
+            let pybook = {
+                sleep: function(sec) {
                     // Sleep, break immediately on interrupt
                     Atomics.wait(sharedArray, signalMap['interrupt'], 0, sec * 1000.0);
                     if (Atomics.load(sharedArray, signalMap['interrupt']) !== 0) {
@@ -57,38 +59,37 @@ export function newPythonWorker(opts) {
                         // Throw exception (will be wrapped in JsException)
                         pyodide.runPython('raise KeyboardInterrupt');
                     }
-                  },
-                  output_stdout: function(data) {
+                },
+                output_stdout: function(data) {
                     send({ type:'stdout', data:data });
-                  },
-                  output_stderr: function(data) {
+                },
+                output_stderr: function(data) {
                     send({ type:'stderr', data:data });
-                  },
-                  output_text_content: function(content_type, content_data) {
+                },
+                output_text_content: function(content_type, content_data) {
                     send({ type:'output', subtype:'text', content_type:content_type, data:content_data });
-                  },
-                  output_binary_content: function(content_type, content_data) {
+                },
+                output_binary_content: function(content_type, content_data) {
                     // Caller in Python needs to do:
                     //     import pyodide
                     //     output_binary_content('image/png', pyodide.to_js(b'...'))
                     send({ type:'output', subtype:'binary', content_type:content_type, data:content_data });
-                  },
-                  input_stdin: function() {
-                      return inputGet();
-                  }
-                };
-                pyodide.setInterruptBuffer(sharedArray);
-                pyodide.registerJsModule('pybook', pybook); // synchronous
-                pyodide.loadPackage('pbexec').then( () => {
-                    pyodide.runPython('import sys; sys.setrecursionlimit(120)');
-                    pyodide.runPython('import pbexec');
-                    // Clear starting flag
-                    Atomics.store(sharedArray, signalMap['starting'], 0);
-                    // Clear busy flag
-                    Atomics.store(sharedArray, signalMap['busy'], 0);
-                    loaded = true;
-                    send({ type:'ready', data:version });
-                });
+                },
+                input_stdin: function() {
+                    return inputGet();
+                }
+            };
+            pyodide.setInterruptBuffer(sharedArray);
+            pyodide.registerJsModule('pybook', pybook); // synchronous
+            pyodide.loadPackage('pbexec').then( () => {
+                pyodide.runPython('import sys; sys.setrecursionlimit(120)');
+                pyodide.runPython('import pbexec');
+                // Clear starting flag
+                Atomics.store(sharedArray, signalMap['starting'], 0);
+                // Clear busy flag
+                Atomics.store(sharedArray, signalMap['busy'], 0);
+                loaded = true;
+                send({ type:'ready', data:version });
             });
         },
         fn: function(input, done) {
