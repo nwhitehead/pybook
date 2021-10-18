@@ -1,5 +1,10 @@
 # Issues
 
+## Pyodide CDN setInterruptBuffer missing
+
+When I try to use the Pyodide CDN at: https://cdn.jsdelivr.net/pyodide/v0.18.1 I can't get `setInterruptBuffer` to work.
+Seems to affect v0.18.0, v0.18.1, v0.18.2.
+
 ## Focus with hidden cells
 
 When coming out of command mode (green), pressing Enter, if there are hidden cells it focuses the wrong editor.
