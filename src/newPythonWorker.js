@@ -14,7 +14,6 @@ export function newPythonWorker(opts) {
             INPUT_BUFFER_SIZE = config.INPUT_BUFFER_SIZE;
 
             importScripts(absurl + '/lib/pyodide/pyodide.js');
-            //importScripts('https://cdn.jsdelivr.net/pyodide/v0.18.0/full/pyodide.js'); // Use CDN
 
             function inputGet() {
                 var p = Atomics.load(sharedArray, signalMap['input_start']);
@@ -47,7 +46,6 @@ export function newPythonWorker(opts) {
 
             loaded = false;
             let pyodide = await loadPyodide({indexURL : absurl + '/lib/pyodide'});
-//            let pyodide = await loadPyodide({indexURL : "https://cdn.jsdelivr.net/pyodide/v0.18.0/full/"});
             let version = pyodide.runPython("import sys; sys.version");
             let pybook = {
                 sleep: function(sec) {
