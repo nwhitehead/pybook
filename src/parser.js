@@ -81,7 +81,7 @@ export function parse(text) {
             item = [];
             return; // No item to finish
         }
-        const itemStr = item.join('\n') + '\n';
+        const itemStr = item.join('\n');
         let metadata = {};
         for (let j = 0; j < currentOptions.length; j++) {
             metadata[currentOptions[j]] = true;
@@ -158,7 +158,7 @@ function unparseCell(cell) {
         open += ' ' + options[i];
     }
     const contents = cell.source;
-    return open + '\n' + contents;
+    return open + '\n' + contents + '\n';
 }
 
 function unparsePage(page) {
