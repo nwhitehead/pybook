@@ -16,6 +16,37 @@
 
 <style>
 
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Material Icons'),
+    local('MaterialIcons-Regular'),
+    url(../lib/MaterialIcons-Regular.ttf) format('truetype');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
 div.status {
     display: inline-flex;
     width: auto;
@@ -350,6 +381,10 @@ onready(function() {
         props: ['value'],
         template: String.raw`
             <div class="status">
+                <span class="material-icons" v-if="value=='Initializing'">cloud</span>
+                <span class="material-icons" v-if="value=='Ready'">done</span>
+                <span class="material-icons" v-if="value=='Working'">cloud</span>
+                <span class="material-icons" v-if="value=='Interrupt'">report</span>
                 <p>{{ value }}</p>
             </div>`,
     });
@@ -1022,7 +1057,6 @@ onready(function() {
                     },
                     onResponse: function(content_type, msg) {
                         // Adding -> things is handled by run_cell and exec
-                        // This could change styling to show eval is done TODO
                         self.setCellState(p, n, '');
                         EventBus.$emit('update:status', 'Ready');
                     },
