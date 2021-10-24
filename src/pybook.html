@@ -126,7 +126,7 @@ div.output pre.stderr {
 <body>
 
 
-
+<div class="box">
 
 <div id="app" tabindex="0"
     v-on:click.stop="handleOuterClick"
@@ -158,67 +158,38 @@ div.output pre.stderr {
 >
 
     <div id="menu">
-        <div class="dropdown is-hoverable">
-            <div class="dropdown-trigger">
-                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-cell">
-                    <span>Cell</span>
-                </button>
-            </div>
-            <div class="dropdown-menu" id="dropdown-menu-cell" role="menu">
-                <div class="dropdown-content">
-                    <a class="dropdown-item" v-on:click.stop="insertCellBefore">Insert new cell before</a>
-                    <a class="dropdown-item" v-on:click.stop="insertCellAfter">Insert new cell after</a>
-                    <a class="dropdown-item" v-on:click.stop="deleteCell">Delete cell</a>
-                    <a class="dropdown-divider"></a>
-                    <a class="dropdown-item" v-on:click.stop="moveCellBefore">Move cell before</a>
-                    <a class="dropdown-item" v-on:click.stop="moveCellAfter">Move cell after</a>
-                    <a class="dropdown-divider"></a>
-                    <a class="dropdown-item" v-on:click.stop="typeCellCode">Type - code</a>
-                    <a class="dropdown-item" v-on:click.stop="typeCellMarkdownEdit">Type - Markdown - Edit</a>
-                    <a class="dropdown-item" v-on:click.stop="typeCellMarkdownView">Type - Markdown - View</a>
-                    <a class="dropdown-divider"></a>
-                    <a class="dropdown-item" v-on:click.stop="typeSomething">Send stdin input</a>
-                </div>
-            </div>
-        </div>
-        <div class="dropdown is-hoverable">
-            <div class="dropdown-trigger">
-                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-page">
-                    <span>Page</span>
-                </button>
-            </div>
-            <div class="dropdown-menu" id="dropdown-menu-page" role="menu">
-                <div class="dropdown-content">
-                    <a class="dropdown-item" v-on:click.stop="insertPageBefore">Insert new page before</a>
-                    <a class="dropdown-item" v-on:click.stop="insertPageAfter">Insert new page after</a>
-                    <a class="dropdown-item" v-on:click.stop="deletePage">Delete page</a>
-                    <a class="dropdown-divider"></a>
-                    <a class="dropdown-item" v-on:click.stop="movePageBefore">Move page before</a>
-                    <a class="dropdown-item" v-on:click.stop="movePageAfter">Move page after</a>
-                </div>
-            </div>
-        </div>
-        <div class="dropdown is-hoverable">
-            <div class="dropdown-trigger">
-                <button class="button" aria-haspopups="true" aria-controls="dropdown-menu-debug">
-                    <span>Debug</span>
-                </button>
-            </div>
-            <div class="dropdown-menu" id="dropdown-menu-debug" role="menu">
-                <div class="dropdown-content">
-                    <a class="dropdown-item" v-on:click.stop="debugDump">Console dump</a>
-                    <a class="dropdown-item" v-on:click.stop="debugClear">Clear local files</a>
-                    <a class="dropdown-item" v-on:click.stop="debugSave">Save notebook</a>
-                    <a class="dropdown-divider"></a>
-                    <fileimport v-on:load='handleLoad'>
-                    </fileimport>
-                    <a class="dropdown-divider"></a>
-                    <filesave
-                        v-bind:value="this.$store.state">
-                    </filesave>
-                </div>
-            </div>    
-        </div>
+        <dropdown name="Cell" :values="[
+            { text:'Insert new cell before', action:insertCellBefore },
+            { text:'Insert new cell after', action:insertCellAfter },
+            { text:'Delete cell', action:deleteCell },
+            { divider:true },
+            { text:'Move cell up', action:moveCellBefore },
+            { text:'Move cell down', action:moveCellAfter },
+            { divider:true },
+            { text:'Type - Code', action:typeCellCode },
+            { text:'Type - MarkDown - Edit', action:typeCellMarkdownEdit },
+            { text:'Type - MarkDown - View', action:typeCellMarkdownView },
+            { divider:true },
+            { text:'Send stdin input', action:typeSomething },
+        ]">
+        </dropdown>
+        <dropdown name="Page" :values="[
+            { text:'Insert new page before', action:insertPageBefore },
+            { text:'Insert new page after', action:insertPageAfter },
+            { text:'Delete page', action:deletePage },
+            { divider:true },
+            { text:'Move page earlier', action:movePageBefore },
+            { text:'Move page later', action:movePageAfter },
+        ]">
+        </dropdown>
+        <dropdown name="Debug" :values="[
+            { text:'Console dump', action:debugDump },
+            { text:'Clear local files', action:debugClear },
+            { text:'Save notebook', action:debugSave },
+            { divider:true },
+            { text:'Save', filesave:true },
+        ]">
+        </dropdown>
         <status
             v-bind:value="status"
         ></status>
@@ -251,6 +222,8 @@ div.output pre.stderr {
     </cells>
 </div>
 
+</div>
+
 <script type='module'>
 
 import { onready } from './onready.js'
@@ -270,6 +243,48 @@ import { parse,
 const EventBus = new Vue();
 
 onready(function() {
+
+    Vue.component('dropdown', {
+        props: ['name', 'values'],
+        // Race condition on clicking items and blurring main dropdown - resolve by preventing default of mousedown
+        // Mousedown happens before blur, the preventdefault stops the blur, then the click action happens which can hide the dropdown.
+        template: String.raw`
+            <div :class="dropdownClasses">
+                <div class="dropdown-trigger">
+                    <button class="button" aria-haspopups="true" :aria-controls="name" @click="toggleDropdown()" v-on:blur="hideDropdown">
+                        <span>{{ name }}</span>
+                    </button>
+                </div>
+                <div class="dropdown-menu" :id="name" role="menu">
+                    <div class="dropdown-content">
+                        <template v-for="value in values">
+                            <a class="dropdown-item" v-if="!value.divider" v-on:mousedown.prevent="" v-on:click="function() { value.action(); hideDropdown(); }">{{ value.text }}</a>
+                            <a class="dropdown-divider" v-if="value.divider"></a>
+                            <filesave v-if="value.filesave" v-bind:value="{}"></filesave>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        `,
+        data: function() {
+            return {
+                isActive: false,
+            }
+        },
+        computed: {
+            dropdownClasses: function() {
+                return this.isActive ? "dropdown is-active" : "dropdown";
+            },
+        },
+        methods: {
+            toggleDropdown: function() {
+                this.isActive = !this.isActive;
+            },
+            hideDropdown: function() {
+                this.isActive = false;
+            },
+        },
+    });
 
     Vue.component('notebooks', {
         props: ['values'],
