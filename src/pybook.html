@@ -106,7 +106,7 @@ div.cellinput.CodeMirror {
     border: 1px solid #f0f4ff;
     border-radius: 4px;
     height: auto;
-    z-index: 10;
+    z-index: 0;
     width: 100%;
 }
 div.code div.cellinput.CodeMirror {
@@ -152,12 +152,16 @@ div.output pre.stderr {
 .led.on {
     background-position: 0px -144px;
 }
+.uibox {
+    position: sticky;
+    top: 0px;
+    padding: 10px;
+    background: #fff;
+    z-index: 2;
+}
 </style>
 </head>
 <body>
-
-
-<div class="box">
 
 <div id="app" tabindex="0"
     v-on:click.stop="handleOuterClick"
@@ -188,69 +192,73 @@ div.output pre.stderr {
     v-on:keyup.a.alt.exact='switchDocId'
 >
 
-    <div id="menu">
-        <dropdown name="Cell" :values="[
-            { text:'Insert new cell before', action:insertCellBefore },
-            { text:'Insert new cell after', action:insertCellAfter },
-            { text:'Delete cell', action:deleteCell },
-            { divider:true },
-            { text:'Move cell up', action:moveCellBefore },
-            { text:'Move cell down', action:moveCellAfter },
-            { divider:true },
-            { text:'Type - Code', action:typeCellCode },
-            { text:'Type - MarkDown - Edit', action:typeCellMarkdownEdit },
-            { text:'Type - MarkDown - View', action:typeCellMarkdownView },
-            { divider:true },
-            { text:'Send stdin input', action:typeSomething },
-        ]">
-        </dropdown>
-        <dropdown name="Page" :values="[
-            { text:'Insert new page before', action:insertPageBefore },
-            { text:'Insert new page after', action:insertPageAfter },
-            { text:'Delete page', action:deletePage },
-            { divider:true },
-            { text:'Move page earlier', action:movePageBefore },
-            { text:'Move page later', action:movePageAfter },
-        ]">
-        </dropdown>
-        <dropdown name="Debug" :values="[
-            { text:'Console dump', action:debugDump },
-            { text:'Clear local files', action:debugClear },
-            { text:'Save notebook', action:debugSave },
-            { divider:true },
-            { text:'Save', filesave:true },
-        ]">
-        </dropdown>
-        <status
-            v-bind:value="status"
-        ></status>
+        <div class="uibox">
+            <div id="menu">
+                <dropdown name="Cell" :values="[
+                    { text:'Insert new cell before', action:insertCellBefore },
+                    { text:'Insert new cell after', action:insertCellAfter },
+                    { text:'Delete cell', action:deleteCell },
+                    { divider:true },
+                    { text:'Move cell up', action:moveCellBefore },
+                    { text:'Move cell down', action:moveCellAfter },
+                    { divider:true },
+                    { text:'Type - Code', action:typeCellCode },
+                    { text:'Type - MarkDown - Edit', action:typeCellMarkdownEdit },
+                    { text:'Type - MarkDown - View', action:typeCellMarkdownView },
+                    { divider:true },
+                    { text:'Send stdin input', action:typeSomething },
+                ]">
+                </dropdown>
+                <dropdown name="Page" :values="[
+                    { text:'Insert new page before', action:insertPageBefore },
+                    { text:'Insert new page after', action:insertPageAfter },
+                    { text:'Delete page', action:deletePage },
+                    { divider:true },
+                    { text:'Move page earlier', action:movePageBefore },
+                    { text:'Move page later', action:movePageAfter },
+                ]">
+                </dropdown>
+                <dropdown name="Debug" :values="[
+                    { text:'Console dump', action:debugDump },
+                    { text:'Clear local files', action:debugClear },
+                    { text:'Save notebook', action:debugSave },
+                    { divider:true },
+                    { text:'Save', filesave:true },
+                ]">
+                </dropdown>
+                <status
+                    v-bind:value="status"
+                ></status>
+            </div>
 
+            <pagination
+                v-bind:pages="countPages()"
+                v-bind:current="page"
+                v-on:page="handlePage"
+                v-on:page-previous="pagePrevious"
+                v-on:page-next="pageNext"
+            >
+            </pagination>
+        </div>
+
+            <cells
+                v-on:update:value="handleInput"
+                v-on:update:values="handleDrag"
+                v-on:action="handleAction"
+                v-on:click="handleClick"
+                v-on:submit="handleSubmit"
+                v-bind:values="cells"
+                v-bind:select="selectCell"
+                v-bind:command="isCommandMode"
+                ref="cells"
+            >
+            </cells>
+</div>
+
+<footer class="footer">
+    <div class="content has-text-centered">
     </div>
-
-    <pagination
-        v-bind:pages="countPages()"
-        v-bind:current="page"
-        v-on:page="handlePage"
-        v-on:page-previous="pagePrevious"
-        v-on:page-next="pageNext"
-    >
-    </pagination>
-
-    <cells
-        v-on:update:value="handleInput"
-        v-on:update:values="handleDrag"
-        v-on:action="handleAction"
-        v-on:click="handleClick"
-        v-on:submit="handleSubmit"
-        v-bind:values="cells"
-        v-bind:select="selectCell"
-        v-bind:command="isCommandMode"
-        ref="cells"
-    >
-    </cells>
-</div>
-
-</div>
+</footer>
 
 <script type='module'>
 
