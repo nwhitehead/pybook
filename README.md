@@ -2,7 +2,7 @@
 
 To test:
 
-    python serve.py
+    python server/serve.py
 
 Then go to http://localhost:8001/src/pybook.html
 
