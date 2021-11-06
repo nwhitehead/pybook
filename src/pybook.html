@@ -831,10 +831,17 @@ onready(function() {
         }
     });
 
+    var normalstate = null;
+
     const opts = {
         onReady: function (version) {
             EventBus.$emit('update:status', 'Ready');
             console.log(version);
+            python.createstate({
+                onResponse: function(data) {
+                    normalstate = data;
+                },
+            });
         },
     };
     var python = newPythonKernel(opts);
@@ -1130,9 +1137,9 @@ onready(function() {
                     },
                 };
                 if (submit) {
-                    python.submit(this.$store.state.cells[p][n].source, callbacks);
+                    python.submit(this.$store.state.cells[p][n].source, normalstate, callbacks);
                 } else {
-                    python.evaluate(this.$store.state.cells[p][n].source, callbacks);
+                    python.evaluate(this.$store.state.cells[p][n].source, normalstate, callbacks);
                 }
             },
             eval () {

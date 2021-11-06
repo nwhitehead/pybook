@@ -78,7 +78,7 @@ export function newPythonKernel(opts) {
             } else if (msg.type === 'filesystem') {
                 findHandler('onFilesystem', callback, opts, defaultHandler)();
             } else if (msg.type === 'response') {
-                findHandler('onResponse', callback, opts, defaultHandler)(msg.content_type, msg.data);
+                findHandler('onResponse', callback, opts, defaultHandler)(msg.data);
             } else {
                 console.log('Unknown message type in main thread onmessage', msg);
                 throw 'Unknown message type in main thread onmessage';
@@ -90,9 +90,9 @@ export function newPythonKernel(opts) {
     var worker = startup();
 
     return {
-        evaluate: function(expr, callback) {
+        evaluate: function(expr, state, callback) {
             callbacks = callback;
-            worker.send({ type:'execute', data:expr });
+            worker.send({ type:'execute', data:expr, state:state });
         },
         submit: function(expr, callback) {
             callbacks = callback;

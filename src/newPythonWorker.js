@@ -122,9 +122,18 @@ export function newPythonWorker(opts) {
                 }
             }
 
+            // Start with blank state as base
+            var states = [pyodide.globals.get('pbexec').fresh_state()];
+            function getState(state) {
+                if (state === undefined) {
+                    state = 0;
+                }
+                return states[state];
+            }
             // Synchronous generation of blank fresh state
+            // Returns index into states variable (actual state cannot be communicated across message channel)
             function freshState() {
-                return pyodide.globals.get('pbexec').fresh_state();
+                return states.push(pyodide.globals.get('pbexec').fresh_state()) - 1;
             }
 
             // Duplicate a state
@@ -135,9 +144,7 @@ export function newPythonWorker(opts) {
             // Version of pyodide.runPythonAsync that goes through exec.wrapped_run_cell
             async function runCellAsync(code, state) {
                 const exec_module = pyodide.globals.get('pbexec');
-                if (state === undefined) {
-                    state = exec_module.fresh_state();
-                }
+                state = getState(state);
                 await loadPackagesFromImports(code);
                 const eval_func = exec_module.wrapped_run_cell;
                 Atomics.store(sharedArray, signalMap['busy'], 1);
@@ -159,7 +166,7 @@ export function newPythonWorker(opts) {
                 } else {
                     if (input.type === 'execute') {
                         // Now run the code
-                        runCellAsync(input.data);
+                        runCellAsync(input.data, input.state);
                         done({ type: 'response' });
                     }
                     if (input.type === 'submit') {
@@ -168,7 +175,7 @@ export function newPythonWorker(opts) {
                     }
                     if (input.type === 'freshstate') {
                         const state = freshState();
-                        done({ type: 'response', data: state });
+                        done({ type: 'response', data: state});
                     }
                     if (input.type === 'duplicatestate') {
                         const state = duplicateState(input.data);
