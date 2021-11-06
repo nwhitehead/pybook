@@ -98,6 +98,16 @@ state using pretty printer.
 
 ## Implementation Notes
 
+### General
+
+The interpreter is Pyodide. It runs in a web worker thread, so it can block and do all kinds of Pythonic stuff without interfering with
+the browser UI. I had some issues with large module loading, so I hacked dependent module loading and also set the recursion limit
+appropriately to make the demos work that I want to work (e.g. numpy and matplotlib import needs deep recursion to work).
+
+The UI is built using VueJS. This is my first VueJS project so organization is ongoing. I tried to split out components in a logical way.
+
+### Checkpoints
+
 Playing around with states. A global state is just a dict. Can duplicate state with `copy.deepcopy`. This seems to work ok.
 
 One fun thing is that you can create your own classes with a `__deepcopy__` method. If that method doesn't actually do the deep copy,

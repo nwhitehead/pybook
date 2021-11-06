@@ -179,6 +179,13 @@ class redirect_stdin(contextlib._RedirectStream):
     _stream = "stdin"
 
 def wrapped_run_cell(*args, **kwargs):
+    """
+    Same interface as run_cell but wrap stdout, stdin, and stderr with pybook interface.
+
+    Writing lines to stdout will call pybook.output_stdout, writing lines to stderr
+    will call pybook.output_stderr. Input is not currently working...
+    
+    """
     import pybook
     out = WriteBuffer(pybook.output_stdout)
     err = WriteBuffer(pybook.output_stderr)

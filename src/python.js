@@ -98,6 +98,14 @@ export function newPythonKernel(opts) {
             callbacks = callback;
             worker.send({ type:'submit', data:expr });
         },
+        createstate: function(callback) {
+            callbacks = callback;
+            worker.send({ type:'freshstate' });
+        },
+        duplicatestate: function(state, callback) {
+            callbacks = callback;
+            worker.send({ type:'duplicatestate', data:state });
+        },
         reset: function() {
             worker.send({ type:'reset' });
         },

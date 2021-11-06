@@ -122,17 +122,30 @@ export function newPythonWorker(opts) {
                 }
             }
 
+            // Synchronous generation of blank fresh state
+            function freshState() {
+                return pyodide.globals.get('pbexec').fresh_state();
+            }
+
+            // Duplicate a state
+            function duplicateState(state) {
+                return pyodide.globals.get('pbexec').duplicate_state(state);
+            }
+
             // Version of pyodide.runPythonAsync that goes through exec.wrapped_run_cell
-            async function runCellAsync(code, messageCallback, errorCallback) {
-                await loadPackagesFromImports(code);
+            async function runCellAsync(code, state) {
                 const exec_module = pyodide.globals.get('pbexec');
+                if (state === undefined) {
+                    state = exec_module.fresh_state();
+                }
+                await loadPackagesFromImports(code);
                 const eval_func = exec_module.wrapped_run_cell;
                 Atomics.store(sharedArray, signalMap['busy'], 1);
-                eval_func(code);
+                eval_func(code, globals_=state);
                 Atomics.store(sharedArray, signalMap['busy'], 0);
             };
 
-            async function submitCellAsync(code, messageCallback, errorCallback) {
+            async function submitCellAsync(code) {
                 const submit_func = pyodide.globals.submit;
                 console.log('submit_func is ', submit_func);
                 Atomics.store(sharedArray, signalMap['busy'], 1);
@@ -140,21 +153,26 @@ export function newPythonWorker(opts) {
                 Atomics.store(sharedArray, signalMap['busy'], 0);
             };
 
-            if (input.type === 'execute' || input.type === 'submit') {
+            if (input.type === 'execute' || input.type === 'submit' || input.type === 'freshstate' || input.type === 'duplicatestate') {
                 if (!loaded) {
                     done({ type:'notready' });
                 } else {
                     if (input.type === 'execute') {
                         // Now run the code
-                        runCellAsync(input.data).then( (resp) => {
-                            done({ type: 'response' });
-                        });
+                        runCellAsync(input.data);
+                        done({ type: 'response' });
                     }
                     if (input.type === 'submit') {
-                        submitCellAsync(input.data).then( (resp) => {
-                            done({ type: 'response' });
-                        });
-
+                        submitCellAsync(input.data);
+                        done({ type: 'response' });
+                    }
+                    if (input.type === 'freshstate') {
+                        const state = freshState();
+                        done({ type: 'response', data: state });
+                    }
+                    if (input.type === 'duplicatestate') {
+                        const state = duplicateState(input.data);
+                        done({ type: 'response', data: state });
                     }
                 }
             } else {

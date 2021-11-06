@@ -88,6 +88,9 @@ div.status p {
 .side-left.working {
     background: #edf;
 }
+.side-left.evaluated {
+    background: #0a0;
+}
 
 div .side-left {
     min-height: 40px;
@@ -652,6 +655,7 @@ onready(function() {
                     selected: this.selected,
                     command: this.command,
                     working: this.state === 'working',
+                    evaluated: this.state === 'evaluated',
                     readonly: this.readonly,
                 }
             },
@@ -671,6 +675,7 @@ onready(function() {
             leftClass: function() {
                 return {
                     working: this.state === 'working',
+                    evaluated: this.state === 'evaluated',
                 }
             },
             rightClass: function () {
@@ -1091,7 +1096,7 @@ onready(function() {
                     },
                     onResponse: function(content_type, msg) {
                         // Adding -> things is handled by run_cell and exec
-                        self.setCellState(p, n, '');
+                        self.setCellState(p, n, 'evaluated');
                         EventBus.$emit('update:status', 'Ready');
                     },
                     onOutput: function(content_type, msg) {
