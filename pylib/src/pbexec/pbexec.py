@@ -8,27 +8,69 @@ Overwrites some system modules with notebook functionality.
 """
 
 import ast
+import copy
 import contextlib
 import io
 import sys
 import traceback
 
+def fresh_state():
+    """
+    Generate fresh dictionary to be used for globals
+
+    """
+    return {}
+
+def duplicate_state(state):
+    """
+    Duplicate state so we can have divergence between states
+    
+    Note that this requires all values in the state to be copyable by copy.deepcopy.
+    If a class needs special handling to handle deep copying, then it needs to implement the
+    __deepcopy__ method as specified in copy.deepcopy.
+
+    If the state contains values that are not pickleable then the deep copy will fail.
+    This could be things like open files, locks, and other values that are designed
+    to not be copyable. In this case duplicate_state will raise a KeyError for the
+    key in the state that produced the exception.
+
+    """
+    res = {}
+    for key, value in state.items():
+        try:
+            res[key] = copy.deepcopy(state[key])
+        except Exception as err:
+            raise KeyError(key)
+    return res
+
 def default_func(value):
+    """
+    Default function to call on evaluated values
+
+    Default behavior is to totally ignore None values, and to print arrow then repr of other values.
+    Could be improved to detect when values 
+
+    """
     if value is not None:
         print(f'→ {repr(value)}')
 
-def run_cell(script, globals_=None, locals_=None, func=default_func):
+def run_cell(script, globals_=None, locals_=None, func=default_func, history=True):
     """
     Run script with given globals and locals environment
     
-    Call func on each expression to do something with value (otherwise return values ignored)
+    Call func on each expression to do something with value (otherwise return values ignored).
+    If history is True, append script to __history in global state.
     
     """
     if globals_ is None:
         globals_ = globals()
     if locals_ is None:
         locals_ = globals_
-    globals_['__expr_callback'] = func
+    # Store func in global scope so we can reliably refer to it anywhere in the script
+    if func is not None:
+        globals_['__expr_callback'] = func
+    # Append actual text passed to history (even if parsing etc. fails it is part of history)
+    globals_.setdefault('__history', []).append(script)
     cell = script
     try:
         node = ast.parse(cell)
@@ -48,13 +90,7 @@ def run_cell(script, globals_=None, locals_=None, func=default_func):
     # Compile wrapped script, run wrapper definition
     try:
         exec(compile(node, filename='<eval>', mode='exec'), globals_, locals_)
-    except SyntaxError as err:
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
-    except Exception as err:
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
-    except KeyboardInterrupt as err:
+    except BaseException as err:
         exc_type, exc_value, exc_tb = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
     sys.stdout.flush()

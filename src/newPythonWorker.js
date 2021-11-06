@@ -25,7 +25,7 @@ export function newPythonWorker(opts) {
                     // Check for keyboard interrupt to avoid infinite wait for input
                     if (Atomics.load(sharedArray, signalMap['interrupt']) !== 0) {
                         // Clear interrupt
-                        Atomics.store(sharedArray, signalMap['interrup'], 0);
+                        Atomics.store(sharedArray, signalMap['interrupt'], 0);
                         // Throw exception (will be wrapped in JsException)
                         pyodide.runPython('raise KeyboardInterrupt');
                         return null;
@@ -53,7 +53,7 @@ export function newPythonWorker(opts) {
                     Atomics.wait(sharedArray, signalMap['interrupt'], 0, sec * 1000.0);
                     if (Atomics.load(sharedArray, signalMap['interrupt']) !== 0) {
                         // Clear interrupt
-                        Atomics.store(sharedArray, signalMap['interrup'], 0);
+                        Atomics.store(sharedArray, signalMap['interrupt'], 0);
                         // Throw exception (will be wrapped in JsException)
                         pyodide.runPython('raise KeyboardInterrupt');
                     }
