@@ -1103,7 +1103,6 @@ onready(function() {
                     },
                     onResponse: function() {
                         // Adding -> things is handled by run_cell and exec
-                        console.log('got eval response');
                         self.setCellState(p, n, ''); // evaluated once we get linear history line working
                         EventBus.$emit('update:status', 'Ready');
                     },

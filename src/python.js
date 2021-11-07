@@ -60,10 +60,7 @@ export function newPythonKernel(opts) {
 
     var callbacks = [];
     function startup() {
-
-        const workerOpts = {
-        };
-        var worker = newPythonWorker(workerOpts);
+        var worker = newPythonWorker();
         worker.on('message', function(msg) {
             const defaultHandler = function() { console.log('default handler'); };
             const callback = callbacks;
