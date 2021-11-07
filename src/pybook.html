@@ -1101,9 +1101,10 @@ onready(function() {
                             text: msg
                         });
                     },
-                    onResponse: function(content_type, msg) {
+                    onResponse: function() {
                         // Adding -> things is handled by run_cell and exec
-                        self.setCellState(p, n, 'evaluated');
+                        console.log('got eval response');
+                        self.setCellState(p, n, ''); // evaluated once we get linear history line working
                         EventBus.$emit('update:status', 'Ready');
                     },
                     onOutput: function(content_type, msg) {
@@ -1136,10 +1137,18 @@ onready(function() {
                         }
                     },
                 };
+                // To duplicate:
+                // python.duplicatestate(normalstate, {
+                //     onResponse: function(data) {
+                //         console.log('Duplicated to', data);
+                //         normalstate = data;
+                //     },
+                // });
+                const code = this.$store.state.cells[p][n].source;
                 if (submit) {
-                    python.submit(this.$store.state.cells[p][n].source, normalstate, callbacks);
+                    python.submit(code, normalstate, callbacks);
                 } else {
-                    python.evaluate(this.$store.state.cells[p][n].source, normalstate, callbacks);
+                    python.evaluate(code, normalstate, callbacks);
                 }
             },
             eval () {

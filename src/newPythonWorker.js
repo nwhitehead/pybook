@@ -45,6 +45,7 @@ export function newPythonWorker(opts) {
             }
 
             loaded = false;
+            states = [];
             let pyodide = await loadPyodide({indexURL : absurl + '/lib/pyodide'});
             let version = pyodide.runPython("import sys; sys.version");
             let pybook = {
@@ -82,6 +83,9 @@ export function newPythonWorker(opts) {
             pyodide.loadPackage('pbexec').then( () => {
                 pyodide.runPython('import sys; sys.setrecursionlimit(120)');
                 pyodide.runPython('import pbexec');
+                // Start with blank state as base
+                states = [pyodide.globals.get('pbexec').fresh_state()];
+                console.log('worker setup setting states len', states.length);
                 // Clear starting flag
                 Atomics.store(sharedArray, signalMap['starting'], 0);
                 // Clear busy flag
@@ -122,9 +126,8 @@ export function newPythonWorker(opts) {
                 }
             }
 
-            // Start with blank state as base
-            var states = [pyodide.globals.get('pbexec').fresh_state()];
             function getState(state) {
+                console.log('getState states.length', states.length);
                 if (state === undefined) {
                     state = 0;
                 }
@@ -133,12 +136,20 @@ export function newPythonWorker(opts) {
             // Synchronous generation of blank fresh state
             // Returns index into states variable (actual state cannot be communicated across message channel)
             function freshState() {
-                return states.push(pyodide.globals.get('pbexec').fresh_state()) - 1;
+                console.log('freshState before', states);
+                const res = states.push(pyodide.globals.get('pbexec').fresh_state()) - 1;
+                console.log('freshState after', states);
+                return res;
             }
 
             // Duplicate a state
             function duplicateState(state) {
-                return pyodide.globals.get('pbexec').duplicate_state(state);
+                console.log('worker', state);
+                let oldState = getState(state);
+                console.log('worker', 'states', states);
+                console.log('worker', 'oldState', oldState);
+                let newState = pyodide.globals.get('pbexec').duplicate_state(oldState);
+                return states.push(newState) - 1;
             }
 
             // Version of pyodide.runPythonAsync that goes through exec.wrapped_run_cell
@@ -175,11 +186,11 @@ export function newPythonWorker(opts) {
                     }
                     if (input.type === 'freshstate') {
                         const state = freshState();
-                        done({ type: 'response', data: state});
+                        done({ type: 'response', state: state});
                     }
                     if (input.type === 'duplicatestate') {
-                        const state = duplicateState(input.data);
-                        done({ type: 'response', data: state });
+                        const state = duplicateState(input.state);
+                        done({ type: 'response', state: state });
                     }
                 }
             } else {
