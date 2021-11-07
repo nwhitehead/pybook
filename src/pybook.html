@@ -112,6 +112,16 @@ div.cellinput.CodeMirror {
     z-index: 0;
     width: 100%;
 }
+div.checkpoint-save {
+    /* background: #535;
+    color: #fff;
+    border: 1px solid #f0f4ff;
+    border-radius: 10px;
+    height: auto;
+    z-index: 0;
+    width: 100%;
+    padding: 10px 8px 10px 10px; */
+}
 div.code div.cellinput.CodeMirror {
     background-color: #f6faff;
 }   
@@ -192,6 +202,8 @@ div.output pre.stderr {
     v-on:keyup.y.exact='ifCommand(typeCellCode)'
     v-on:keyup.m.exact='ifCommand(typeCellMarkdownEdit)'
     v-on:keyup.m.shift.exact='ifCommand(typeCellMarkdownView)'
+    v-on:keyup.k.exact='ifCommand(typeCellCheckpointSave)'
+    v-on:keyup.k.shift.exact='ifCommand(typeCellCheckpointUse)'
     v-on:keyup.a.alt.exact='switchDocId'
 >
 
@@ -598,8 +610,33 @@ onready(function() {
         }
     });
 
+    Vue.component('checkpoint', {
+        props: ['value', 'type'],
+        template: String.raw`
+            <div class="tags has-addons">
+                <span :class="checkpointClass">{{ checkpointText() }}</span>
+                <span class="tag">{{ value }}</span>
+            </div>`,
+        computed: {
+            checkpointClass () {
+                return {
+                    'tag': true,
+                    'is-primary': this.type === 'save',
+                    'is-link': this.type === 'use',
+                }
+            },
+        },
+        methods: {
+            checkpointText: function() {
+                if (this.type === 'save') return 'Checkpoint';
+                if (this.type === 'use') return 'From Checkpoint';
+                throw "Illegal checkpoint type";
+            },
+        }
+    });
+
     Vue.component('cell', {
-        props: ['value', 'output', 'id', 'selected', 'type', 'state', 'command', 'hidden', 'readonly', 'submit'],
+        props: ['value', 'output', 'id', 'selected', 'type', 'subtype', 'state', 'command', 'hidden', 'readonly', 'submit'],
         template: String.raw`
             <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick" v-if="!hidden">
                 <div class="side-left handle" :class="leftClass">
@@ -614,9 +651,15 @@ onready(function() {
                             v-on:action="handleAction"
                             v-if="showEdit"
                             ref="codemirror"
-                            >
+                        >
                         </codemirror>
                     </div>
+                    <checkpoint
+                        v-bind:value="value"
+                        v-bind:type="subtype"
+                        v-if="showCheckpoint"
+                    >
+                    </checkpoint>
                     <button class="button is-primary" v-if="submit" v-on:click.stop="handleSubmit">
                         Submit
                     </button>
@@ -633,17 +676,20 @@ onready(function() {
                 if (this.type === 'code') {
                     options.mode = 'python';
                 }
-                if (this.type === 'markdown-edit' || this.type === 'markdown-view') {
+                if (this.type === 'markdown') {
                     options.mode = 'markdown';
                 }
                 options.readOnly = this.readonly;
                 return options;
             },
             showEdit () {
-                return this.type === 'code' || this.type === 'markdown-edit';
+                return this.type === 'code' || (this.type === 'markdown' && this.subtype === 'edit');
             },
             showResults () {
-                return this.type === 'code' || this.type === 'markdown-view' || this.type === 'markdown-edit';
+                return this.type === 'code' || this.type === 'markdown';
+            },
+            showCheckpoint () {
+                return this.type === 'checkpoint';
             },
             readonlyClass: function () {
                 return {
@@ -663,7 +709,7 @@ onready(function() {
                 if (this.type === 'code') {
                     return this.output;
                 }
-                if (this.type === 'markdown-edit' || this.type === 'markdown-view') {
+                if (this.type === 'markdown') {
                     return [ {
                         output_type:'display_data',
                         data: {
@@ -681,7 +727,7 @@ onready(function() {
             rightClass: function () {
                 return {
                     code: this.type === 'code',
-                    markdown: this.type === 'markdown-edit' || this.type === 'markdown-view',
+                    markdown: this.type === 'markdown',
                 }
             },
         },
@@ -737,6 +783,7 @@ onready(function() {
                     v-bind:selected="isSelected(index)"
                     v-bind:command="isSelected(index) && command"
                     v-bind:type="computeType(content)"
+                    v-bind:subtype="computeSubtype(content)"
                     v-bind:state="content.state"
                     v-bind:hidden="isHidden(content)"
                     v-bind:readonly="isReadOnly(content)"
@@ -780,9 +827,18 @@ onready(function() {
             },
             computeType (content) {
                 if (content.cell_type === 'code') return 'code';
-                if (content.cell_type === 'markdown' && content.metadata !== undefined && content.metadata.subtype === 'view') return 'markdown-view';
-                if (content.cell_type === 'markdown' && content.metadata !== undefined && content.metadata.subtype === 'edit') return 'markdown-edit';
+                if (content.cell_type === 'markdown') return 'markdown';
+                if (content.cell_type === 'checkpoint') return 'checkpoint';
                 throw "Illegal content type";
+            },
+            computeSubtype (content) {
+                if (content.cell_type === 'code') return '';
+                if (content.cell_type === 'markdown' && content.metadata !== undefined && content.metadata.subtype === 'view') return 'view';
+                if (content.cell_type === 'markdown' && content.metadata !== undefined && content.metadata.subtype === 'edit') return 'edit';
+                if (content.cell_type === 'checkpoint' && content.metadata !== undefined && content.metadata.subtype === 'save') return 'save';
+                if (content.cell_type === 'checkpoint' && content.metadata !== undefined && content.metadata.subtype === 'use') return 'use';
+                throw "Illegal content subtype";
+
             },
             isSelected (index) {
                 return index === this.select;
@@ -1141,16 +1197,12 @@ onready(function() {
                 if (submit) {
                     python.submit(code, normalstate, callbacks);
                 } else {
-                    console.log('internaleval duplicating');
                     python.duplicatestate(normalstate, {
                         onResponse: function(data) {
-                            console.log('internaleval duplicatestate onResponse');
                             let oldone = normalstate;
-                            console.log('Duplicated to', data);
                             normalstate = data;
                             python.deletestate(oldone, {
                                 onResponse: function() {
-                                    console.log('Deleted', oldone);
                                     python.evaluate(code, normalstate, callbacks);
                                 }
                             });
@@ -1381,6 +1433,20 @@ onready(function() {
                 const n = this.selectCell;
                 if (this.pageValid(p) && this.selectionValid(n)) {
                     this.$store.commit('cellType', { p, n, type:'markdown', subtype:'view' });
+                }
+            },
+            typeCellCheckpointSave (event) {
+                const p = this.page;
+                const n = this.selectCell;
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    this.$store.commit('cellType', { p, n, type:'checkpoint', subtype:'save' });
+                }
+            },
+            typeCellCheckpointUse (event) {
+                const p = this.page;
+                const n = this.selectCell;
+                if (this.pageValid(p) && this.selectionValid(n)) {
+                    this.$store.commit('cellType', { p, n, type:'checkpoint', subtype:'use' });
                 }
             },
             toggleSubmitCell (event) {

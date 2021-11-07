@@ -94,7 +94,6 @@ export function newPythonKernel(opts) {
     function startup() {
         var worker = newPythonWorker();
         worker.on('message', function(msg) {
-            console.log('Got message from worker', msg);
             const defaultHandler = function() { console.log('default handler'); };
             const callback = callbacks;
             if (msg.type === 'ready') {
@@ -110,7 +109,6 @@ export function newPythonKernel(opts) {
             } else if (msg.type === 'response') {
                 findHandler('onResponse', callback, opts, defaultHandler)(msg.state);
             } else {
-                console.log('Unknown message type in main thread onmessage', msg);
                 throw 'Unknown message type in main thread onmessage';
             }
         });
@@ -134,7 +132,6 @@ export function newPythonKernel(opts) {
         },
         duplicatestate: function(state, callback) {
             callbacks = callback;
-            console.log('duplicatestate python', callback);
             worker.postMessage({ type:'duplicatestate', state:state });
         },
         deletestate: function(state, callback) {

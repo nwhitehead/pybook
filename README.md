@@ -120,3 +120,32 @@ is that the `run_cell` doesn't take a state as input and return a new state (fun
 does the action using that state. Might modify the state, or use it, produce output over time. If the JS part wants to keep around
 the original state, needs to duplicate it beforehand and not forget it.
 
+### Invalidation
+
+How does evaluation work with consistent state display?
+
+Notebook is array of cells, subdivided into pages. Cells can optionally be "checkpoints" with a name. A checkpoint is either a "Save"
+or a "Use" point. The "Use" points must refer to the name of a previous "Save" point.
+
+Does encountering an error stop evaluation? I can see good arguments for yes and no. I personally would like it to continue, since I often
+demonstrate exceptions as functionality. But often any problem would indicate to stop. `KeyboardInterrupt` should stop evaluation of the particular
+cell, and stop all cells evaluating that come after.
+
+Some actions to consider:
+* Add save checkpoint before this cell
+* Add save checkpoint after this cell
+* Flip checkpoint between "Save" to "Use"
+* Select checkpoint to "Use"
+* Rename "Save" checkpoint
+* Evaluate through current cell and keep cursor on current cell
+* Evaluate through current cell and advance cursor to next cell
+* Modify text of cell that has not been evaluated
+* Modify text of cell that has been previously evaluated
+* Perform movement operation / reordering of cells that have been evaluated
+
+We can check consistent of a state with current displayed notebook by looking at evaluated / non-evaluated tags and match against history
+in the state. Not sure what to do if there are inconsistencies, I guess show an internal error (more useful for debugging pybook).
+Another function can check state consistency, if it doesn't match then invalidate cells until we have a state that matches, perhaps
+back to the beginning.
+
+Always assume first cell has a "Save start" checkpoint at the start.
