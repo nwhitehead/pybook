@@ -7,8 +7,8 @@
 //!
 export function onready(f) {
     if (window.onload) {
-        var curronload = window.onload;
-        var newonload = function(evt) {
+        let curronload = window.onload;
+        let newonload = function(evt) {
             curronload(evt);
             f(evt);
         };

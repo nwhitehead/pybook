@@ -15,10 +15,6 @@ function newPythonWorker() {
     let worker = new Worker('worker.js');
     worker.postMessage(config);
 
-    worker.send = function(msg) {
-        worker.postMessage(msg);
-        return worker;
-    };
     worker.on = function(type, handler) {
         if (type === 'message') {
             worker.onmessage = function(e) {
@@ -125,22 +121,22 @@ export function newPythonKernel(opts) {
     return {
         evaluate: function(expr, state, callback) {
             callbacks = callback;
-            worker.send({ type:'execute', data:expr, state:state });
+            worker.postMessage({ type:'execute', data:expr, state:state });
         },
         submit: function(expr, callback) {
             callbacks = callback;
-            worker.send({ type:'submit', data:expr });
+            worker.postMessage({ type:'submit', data:expr });
         },
         createstate: function(callback) {
             callbacks = callback;
-            worker.send({ type:'freshstate' });
+            worker.postMessage({ type:'freshstate' });
         },
         duplicatestate: function(state, callback) {
             callbacks = callback;
-            worker.send({ type:'duplicatestate', state:state });
+            worker.postMessage({ type:'duplicatestate', state:state });
         },
         reset: function() {
-            worker.send({ type:'reset' });
+            worker.postMessage({ type:'reset' });
         },
         terminate: function() {
             worker.terminate();

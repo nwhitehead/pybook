@@ -4,6 +4,7 @@
 
 When I try to use the Pyodide CDN at: https://cdn.jsdelivr.net/pyodide/v0.18.1 I can't get `setInterruptBuffer` to work.
 Seems to affect v0.18.0, v0.18.1, v0.18.2.
+UPDATE: Fixed in v0.19, but this one is not yet tagged with versions on the CDN.
 
 ## Focus with hidden cells
 

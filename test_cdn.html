@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-      <script src="https://cdn.jsdelivr.net/pyodide/v0.18.1/full/pyodide.js"></script>
+      <script src="https://cdn.jsdelivr.net/pyodide/dev/full/pyodide.js"></script>
   </head>
   <body>
     Pyodide test page <br>
@@ -9,7 +9,7 @@
     <script type="text/javascript">
       async function main(){
         let pyodide = await loadPyodide({
-          indexURL : "https://cdn.jsdelivr.net/pyodide/v0.18.1/full/"
+          indexURL : "https://cdn.jsdelivr.net/pyodide/dev/full/"
         });
         window.pyodide = pyodide;
         console.log(pyodide.runPython(`
@@ -17,6 +17,7 @@
             sys.version
         `));
       }
+      console.log('Starting main');
       main();
     </script>
   </body>
