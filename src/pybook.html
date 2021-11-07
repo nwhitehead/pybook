@@ -1137,17 +1137,25 @@ onready(function() {
                     },
                 };
                 // To duplicate:
-                // python.duplicatestate(normalstate, {
-                //     onResponse: function(data) {
-                //         console.log('Duplicated to', data);
-                //         normalstate = data;
-                //     },
-                // });
                 const code = this.$store.state.cells[p][n].source;
                 if (submit) {
                     python.submit(code, normalstate, callbacks);
                 } else {
-                    python.evaluate(code, normalstate, callbacks);
+                    console.log('internaleval duplicating');
+                    python.duplicatestate(normalstate, {
+                        onResponse: function(data) {
+                            console.log('internaleval duplicatestate onResponse');
+                            let oldone = normalstate;
+                            console.log('Duplicated to', data);
+                            normalstate = data;
+                            python.deletestate(oldone, {
+                                onResponse: function() {
+                                    console.log('Deleted', oldone);
+                                    python.evaluate(code, normalstate, callbacks);
+                                }
+                            });
+                        },
+                    });
                 }
             },
             eval () {

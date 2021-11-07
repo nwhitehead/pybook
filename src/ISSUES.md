@@ -1,5 +1,11 @@
 # Issues
 
+## Checkpoint (states)
+
+Big problem with duplicating existing states with deepcopy is that it doesn't work for imported modules. So if you
+do any `import ...` at all it will fail. It makes some sense to fail if there are open files or other objects that
+don't support deepcopy, but there has to be a way to make it work with modules. Looking at `dill` for inspiration.
+
 ## Pyodide CDN setInterruptBuffer missing
 
 When I try to use the Pyodide CDN at: https://cdn.jsdelivr.net/pyodide/v0.18.1 I can't get `setInterruptBuffer` to work.

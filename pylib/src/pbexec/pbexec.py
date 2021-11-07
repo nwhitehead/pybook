@@ -201,9 +201,45 @@ def redefine_builtins():
     import time
     time.sleep = pybook.sleep
 
+def register_pickle():
+    '''
+    Register pickle and unpickle functions for data structures not normally supported by pickle.
+
+    This is needed for duplicating state for doing checkpoints and other things.
+    Types such as `<class 'module'>` are not supported in pickle, means that if you do:
+
+        import sys
+
+    or similar then the symbol `sys` in the state has trouble being copied.
+
+    '''
+    import copyreg
+
+    def __pickler(m):
+        # Record name of module, e.g. "copyreg" or "sys"
+        return m.__name__
+
+    def __unpickler(data):
+        # Just look in available modules for the name
+        # The state duplication of dictionary happens in context of fixed interpreter.
+        # The module we get here will match the original exactly.
+        return sys.modules[data]
+
+    copyreg.pickle(type(copyreg), __pickler, __unpickler)
+
+def test_deepcopy():
+    a = { 'os':sys.modules['os'], 'x':[1, 2, sys.modules['copy']] }
+    b = copy.deepcopy(a)
+    a['os'] = 'changed'
+    assert(b['x'][0] == 1)
+    assert(b['os'] == sys.modules['os'])
+    assert(b['x'][2] == sys.modules['copy'])
+
 if __name__ == '__main__':
     # Do simple tests if run at command line
     dotest()
+    register_pickle()
+    test_deepcopy()
 else:
     # Used in notebook
     try:

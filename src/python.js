@@ -94,6 +94,7 @@ export function newPythonKernel(opts) {
     function startup() {
         var worker = newPythonWorker();
         worker.on('message', function(msg) {
+            console.log('Got message from worker', msg);
             const defaultHandler = function() { console.log('default handler'); };
             const callback = callbacks;
             if (msg.type === 'ready') {
@@ -133,7 +134,12 @@ export function newPythonKernel(opts) {
         },
         duplicatestate: function(state, callback) {
             callbacks = callback;
+            console.log('duplicatestate python', callback);
             worker.postMessage({ type:'duplicatestate', state:state });
+        },
+        deletestate: function(state, callback) {
+            callbacks = callback;
+            worker.postMessage({ type:'deletestate', state:state });
         },
         reset: function() {
             worker.postMessage({ type:'reset' });
