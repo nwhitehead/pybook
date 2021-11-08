@@ -212,8 +212,18 @@ def register_pickle():
 
     or similar then the symbol `sys` in the state has trouble being copied.
 
+    This is also a problem for files, even if the files are already closed. For pybook all the
+    file operations are just in memory, file corruption is not a big deal so we just record
+    some basic info related to the file object and recreate it during deserialization with
+    an `open` and `seek()`.
+
+    Another annoyance is the module pybook (which is a JsProxy). That also doesn't pickle
+    by default.
+
     '''
     import copyreg
+    import io
+    import pybook
 
     def __pickler(m):
         # Record name of module, e.g. "copyreg" or "sys"
@@ -226,6 +236,30 @@ def register_pickle():
         return sys.modules[data]
 
     copyreg.pickle(type(copyreg), __pickler, __unpickler)
+    # Special handling for JsProxy type (hard to get type unless we have a module)
+    copyreg.pickle(type(pybook), __pickler, __unpickler)
+
+    def __file_pickler(f):
+        pos = 0
+        if not f.closed:
+            f.flush()
+            pos = f.tell()
+        return __file_unpickler, (f.closed, f.name, f.mode, pos)
+
+    def __file_unpickler(closed, name, mode, pos):
+        f = open(name, mode)
+        if closed:
+            f.close()
+        else:
+            f.seek(pos)
+        return f
+
+    # Need to cover all the cases for different modes
+    copyreg.pickle(io.TextIOWrapper, __file_pickler)
+    copyreg.pickle(io.BufferedReader, __file_pickler)
+    copyreg.pickle(io.BufferedWriter, __file_pickler)
+    copyreg.pickle(io.BufferedRandom, __file_pickler)
+    copyreg.pickle(io.FileIO, __file_pickler)
 
 def test_deepcopy():
     a = { 'os':sys.modules['os'], 'x':[1, 2, sys.modules['copy']] }
@@ -234,6 +268,31 @@ def test_deepcopy():
     assert(b['x'][0] == 1)
     assert(b['os'] == sys.modules['os'])
     assert(b['x'][2] == sys.modules['copy'])
+
+    for mode, pos, closed, write, read, buffering in [
+        ('w', 0, True, True, False, -1),
+        ('w', 0, False, True, False, -1),
+        ('rb', 0, False, False, True, -1),
+        ('r', 5, False, False, True, -1),
+        ('w+', 5, False, True, True, -1),
+        ('wb', 5, False, False, False, -1),
+        ('w+b', 5, False, False, True, -1),
+        ('w+b', 5, False, False, True, 0),
+    ]:
+        with open('blah.txt', mode, buffering=buffering) as f:
+            if write:
+                f.write('hello world')
+            if read:
+                f.read()
+            f.seek(pos)
+            if closed:
+                f.close()
+            g = copy.deepcopy(f)
+            assert(f.name == g.name)
+            assert(f.mode == g.mode)
+            assert(f.closed == g.closed)
+            if not f.closed:
+                assert(f.tell() == g.tell())
 
 if __name__ == '__main__':
     # Do simple tests if run at command line
