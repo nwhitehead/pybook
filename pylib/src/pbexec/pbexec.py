@@ -247,6 +247,11 @@ def register_pickle():
         return __file_unpickler, (f.closed, f.name, f.mode, pos)
 
     def __file_unpickler(closed, name, mode, pos):
+        # Need to be careful about truncating files here
+        # Change any 'w' character in mode to 'a'
+        mode = mode.replace('w', 'a')
+        # Remove any x (exclusive file creation)
+        mode = mode.replace('x', '')
         f = open(name, mode)
         if closed:
             f.close()
