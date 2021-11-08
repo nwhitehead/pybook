@@ -112,15 +112,8 @@ div.cellinput.CodeMirror {
     z-index: 0;
     width: 100%;
 }
-div.checkpoint-save {
-    /* background: #535;
-    color: #fff;
-    border: 1px solid #f0f4ff;
-    border-radius: 10px;
-    height: auto;
-    z-index: 0;
-    width: 100%;
-    padding: 10px 8px 10px 10px; */
+div.checkpoint {
+    padding: 10px 8px 10px 10px;
 }
 div.code div.cellinput.CodeMirror {
     background-color: #f6faff;
@@ -153,6 +146,10 @@ div.output pre.stderr {
 .output pre {
     white-space: pre-wrap;
     word-break: break-all;
+    margin: 0;
+    padding: 1px 24px 1px 24px;
+}
+.output div.html {
     margin: 0;
     padding: 1px 24px 1px 24px;
 }
@@ -558,14 +555,16 @@ onready(function() {
     Vue.component('dataoutput', {
         props: ['value', 'isResult'],
         template: String.raw`
-            <div>
-                <pre v-if="isPre(value)" :class="getClass(value)"><img v-if="isResult" src="../gfx/right2.svg" width=10 height=10></img> {{ value['text/plain'] }}</pre>
+            <div class="dataoutput">
+                <pre v-if="isPre(value)" :class="getClass(value)"><img v-if="isResult" src="../gfx/right2.svg" width=10 height=10></img>{{ value['text/plain'] }}</pre>
                 <div v-if="isHtml(value)" :class="getClass(value)"><img v-if="isResult" src="../gfx/right2.svg" width=10 height=10></img><div class="content" v-html="value['text/html']"></div></div>
                 <img v-if="isSVG(value)" :src="dataURI(value['image/svg+xml'])" />
             </div>
         `,
         methods: {
             getClass (value) {
+                if (this.isPre(value)) return 'stdout';
+                if (this.isHtml(value)) return 'html';
                 return "stdout";
             },
             isPre (value) {
@@ -613,23 +612,28 @@ onready(function() {
     Vue.component('checkpoint', {
         props: ['value', 'type'],
         template: String.raw`
-            <div class="tags has-addons">
-                <span :class="checkpointClass">{{ checkpointText() }}</span>
-                <span class="tag">{{ value }}</span>
+            <div class="tags are-medium has-addons">
+                <span :class="checkpointClassLeft">{{ checkpointText() }}</span>
+                <span :class="checkpointClassMiddle">{{ value }}</span>
             </div>`,
         computed: {
-            checkpointClass () {
+            checkpointClassLeft () {
                 return {
                     'tag': true,
                     'is-primary': this.type === 'save',
                     'is-link': this.type === 'use',
                 }
             },
+            checkpointClassMiddle () {
+                return {
+                    'tag': true,
+                }
+            },
         },
         methods: {
             checkpointText: function() {
-                if (this.type === 'save') return 'Checkpoint';
-                if (this.type === 'use') return 'From Checkpoint';
+                if (this.type === 'save') return 'Save';
+                if (this.type === 'use') return 'From';
                 throw "Illegal checkpoint type";
             },
         }
@@ -642,14 +646,13 @@ onready(function() {
                 <div class="side-left handle" :class="leftClass">
                 </div>
                 <div class="side-right" :class="rightClass">
-                    <div :class="readonlyClass">
+                    <div :class="readonlyClass" v-if="showEdit">
                         <codemirror
                             v-bind:value="value"
                             v-bind:id="id"
                             v-bind:options="cmOptions"
                             v-on:update:value="handleInput"
                             v-on:action="handleAction"
-                            v-if="showEdit"
                             ref="codemirror"
                         >
                         </codemirror>
