@@ -890,15 +890,22 @@ onready(function() {
         }
     });
 
-    var normalstate = null;
+    let globalId = 0;
+    function freshName() {
+        const name = 'State ' + globalId;
+        globalId++;
+        return name;
+    }
+
+    let normalstate = null;
 
     const opts = {
         onReady: function (version) {
             EventBus.$emit('update:status', 'Ready');
             console.log(version);
-            python.createstate({
-                onResponse: function(data) {
-                    normalstate = data;
+            python.freshstate('base', {
+                onResponse: function() {
+                    normalstate = 'base';
                 },
             });
         },
@@ -1200,10 +1207,11 @@ onready(function() {
                 if (submit) {
                     python.submit(code, normalstate, callbacks);
                 } else {
-                    python.duplicatestate(normalstate, {
-                        onResponse: function(data) {
+                    let newName = freshName();
+                    python.duplicatestate(normalstate, newName, {
+                        onResponse: function() {
                             let oldone = normalstate;
-                            normalstate = data;
+                            normalstate = newName;
                             python.deletestate(oldone, {
                                 onResponse: function() {
                                     python.evaluate(code, normalstate, callbacks);

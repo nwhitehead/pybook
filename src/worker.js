@@ -122,38 +122,29 @@ async function configure(config) {
         }
     }
 
-    function getState(state) {
-        if (state === undefined) {
-            state = 'base';
+    function getState(name) {
+        if (name === undefined) {
+            name = 'base';
         }
-        return states[state];
+        return states[name];
     }
-    let globalId = 0;
-    function freshName() {
-        const name = 'state' + globalId;
-        globalId++;
-        return name;
-    }
+
     // Synchronous generation of blank fresh state
     // Returns index into states variable (actual state cannot be communicated across message channel)
-    function freshState() {
-        const name = freshName();
+    function freshState(name) {
         states[name] = pyodide.globals.get('pbexec').fresh_state();
-        return name;
     }
 
     // Duplicate a state
-    function duplicateState(state) {
-        let oldState = getState(state);
+    function duplicateState(oldName, newName) {
+        let oldState = states[oldName];
         let newState = pyodide.globals.get('pbexec').duplicate_state(oldState);
-        const name = freshName();
-        states[name] = newState;
-        return name;
+        states[newName] = newState;
     }
 
     // Delete a state
-    function deleteState(state) {
-        delete states[state];
+    function deleteState(name) {
+        delete states[name];
     }
 
     // Version of pyodide.runPythonAsync that goes through exec.wrapped_run_cell
@@ -184,23 +175,23 @@ async function configure(config) {
             } else {
                 if (input.type === 'execute') {
                     // Now run the code (only send response once code finishes)
-                    await runCellAsync(input.data, input.state);
+                    await runCellAsync(input.expr, input.name);
                     postMessage({ type: 'response' });
                 }
                 if (input.type === 'submit') {
-                    submitCellAsync(input.data);
+                    submitCellAsync(input.expr, input.name);
                     postMessage({ type: 'response' });
                 }
                 if (input.type === 'freshstate') {
-                    const state = freshState();
-                    postMessage({ type: 'response', state: state});
+                    freshState(input.name);
+                    postMessage({ type: 'response' });
                 }
                 if (input.type === 'duplicatestate') {
-                    const state = duplicateState(input.state);
-                    postMessage({ type: 'response', state: state });
+                    duplicateState(input.oldName, input.newName);
+                    postMessage({ type: 'response' });
                 }
                 if (input.type === 'deletestate') {
-                    deleteState(input.state);
+                    deleteState(input.name);
                     postMessage({ type: 'response' });
                 }
             }

@@ -118,25 +118,25 @@ export function newPythonKernel(opts) {
     var worker = startup();
 
     return {
-        evaluate: function(expr, state, callback) {
+        evaluate: function(expr, name, callback) {
             callbacks = callback;
-            worker.postMessage({ type:'execute', data:expr, state:state });
+            worker.postMessage({ type:'execute', expr:expr, name:name });
         },
-        submit: function(expr, callback) {
+        submit: function(expr, name, callback) {
             callbacks = callback;
-            worker.postMessage({ type:'submit', data:expr });
+            worker.postMessage({ type:'submit', expr:expr, name:name });
         },
-        createstate: function(callback) {
+        freshstate: function(name, callback) {
             callbacks = callback;
-            worker.postMessage({ type:'freshstate' });
+            worker.postMessage({ type:'freshstate', name:name });
         },
-        duplicatestate: function(state, callback) {
+        duplicatestate: function(oldName, newName, callback) {
             callbacks = callback;
-            worker.postMessage({ type:'duplicatestate', state:state });
+            worker.postMessage({ type:'duplicatestate', oldName:oldName, newName:newName });
         },
-        deletestate: function(state, callback) {
+        deletestate: function(name, callback) {
             callbacks = callback;
-            worker.postMessage({ type:'deletestate', state:state });
+            worker.postMessage({ type:'deletestate', name:name });
         },
         reset: function() {
             worker.postMessage({ type:'reset' });
