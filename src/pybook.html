@@ -903,9 +903,9 @@ onready(function() {
         onReady: function (version) {
             EventBus.$emit('update:status', 'Ready');
             console.log(version);
-            python.freshstate('base', {
+            normalstate = 'Initial state';
+            python.freshstate(normalstate, {
                 onResponse: function() {
-                    normalstate = 'base';
                 },
             });
         },
