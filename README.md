@@ -55,7 +55,7 @@ the state at that point (between cells) in memory. If you invalidate a green bar
 back to the checkpoint but no further back. This lets you try alternatives after doing annoying load / preprocess steps.
 
 For implementation, need to expand Pyodide functionality a bit. Normally there is just one interpreter state. That is ok
-with checkpoints, need to work on pyexec.run_cell function to allow arbitrary state as input and output.
+with checkpoints, need to work on pyexec.run_cell function to allow arbitrary state as input.
 
 ### Choice point
 
@@ -95,6 +95,8 @@ have a "query" that is a custom command that user can set to show values of inte
 but the results of the query function do not affect the state (original state is unmodified). Default query function dumps local
 state using pretty printer.
 
+Can also just show list of names of checkpoint states, that would be useful in itself. Make it easy to start a new page based on
+an existing saved state.
 
 ## Implementation Notes
 
@@ -118,7 +120,8 @@ I think the way to approach multiple states is to keep track of Python global di
 interpreter state, and the JS part keeps track of states. The state is passed into the `pbexec.run_cell` function. One interesting thing
 is that the `run_cell` doesn't take a state as input and return a new state (functional style), it takes an optional state and then
 does the action using that state. Might modify the state, or use it, produce output over time. If the JS part wants to keep around
-the original state, needs to duplicate it beforehand and not forget it.
+the original state, needs to duplicate it beforehand and not forget it. Duplicating state has some quirks but seems to work after
+patching up corner cases like modules types, file objects, and JS proxy objects.
 
 ### Invalidation
 
@@ -149,3 +152,27 @@ Another function can check state consistency, if it doesn't match then invalidat
 back to the beginning.
 
 Always assume first cell has a "Save start" checkpoint at the start.
+
+To evaluate random cell: can always insert "From start" before it and then do full eval on the cell. To do that for "current" state, maybe
+keep inserting new cell at position of last eval? But with checkpoints there might be many "last positions" on the same page even.
+
+New pages could start with default "From start" at the top (can be changed). That might make reasoning about the code you are looking at easier.
+
+### Eval
+
+Every cell has the "evaluated" mark, but internally we also need to keep track of which state was used. Evaluating a "Use State 1" checkpoint
+duplicates "State 1" into a fresh name "fresh". The fresh name is then memoed in the checkpoint cell. The next cell that is unevaluated but wants to
+eval, looks as the previous cell and sees that it was evaluated and has a state name "fresh". Using that state we can eval the cell and memo it
+as evaluated by "fresh".
+
+Then when we hit a "Save State 1" we can duplicate "fresh" into "State 1" directly. We then mark the "Save State 1" cell as being evaluated by "fresh".
+This leaves "State 1" as something we can duplicate later in a "Use State 1" without messing it up. We keep going to the next cell, evaluating with "fresh".
+
+Conclusion: we need rules for invalidating cells based on edits. Need to keep track of which state evaluated the cell. Can do a sanity pass to go through
+all cells and track which ones were marked as being evaluated by X, then look at history in X to see it matches the code in all the cells.
+
+Also need to be careful about deleting unused states after edits.
+
+Maybe also need to store in state some type of hash of the cell that was last evaluated. Then we can look at the state we are about to use, and look
+at the previous cell that supposedly was evaluated most recently, and verify that the hash of that cell is indeed the one in the state. Hash could
+include source and cell position in notebook.
