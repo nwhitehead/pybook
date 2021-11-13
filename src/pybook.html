@@ -916,6 +916,7 @@ onready(function() {
         return {
             cell_type: 'code',
             source: '',
+            evalstate: '',
             outputs: [],
             metadata: {}
         };
@@ -942,6 +943,9 @@ onready(function() {
             },
             setCellState (state, payload) {
                 Vue.set(state.cells[payload.p][payload.n], 'state', payload.state);
+            },
+            setCellEvalState (state, payload) {
+                Vue.set(state.cells[payload.p][payload.n], 'evalstate', payload.evalstate);
             },
             insertCellBefore (state, payload) {
                 state.cells[payload.p].splice(payload.n, 0, newCell());
@@ -1123,10 +1127,28 @@ onready(function() {
                 this.$store.commit('clearOutput', {p, n});
             },
             setCellState (p, n, state) {
+                // The cell state is a string indicating:
+                //   working        Currently being evaluated, has evalState (but it's not done)
+                //   evaluated      Previously evaluated, shown as evaluated, has evalState
+                //   ""             Not evaluated (no evalState)
                 this.$store.commit('setCellState', {p, n, state});
+            },
+            setCellEvalState (p, n, evalstate) {
+                // Set the tag indicating which python state was used to evaluate this cell (undefined if invalid)
+                this.$store.commit('setCellEvalState', {p, n, evalstate});
             },
             cellType (p, n) {
                 return this.$store.state.cells[p][n].cell_type;
+            },
+            cellSubtype (p, n) {
+                const metadata = this.$store.state.cells[p][n].metadata;
+                if (metadata === undefined) {
+                    return metadata;
+                }
+                return metadata.subtype;
+            },
+            cellEvalState (p, n) {
+                return this.$store.state.cells[p][n].evalState;
             },
             metadata (p, n) {
                 return this.$store.state.cells[p][n].metadata;
@@ -1144,6 +1166,7 @@ onready(function() {
                 return mdata && mdata.readonly === true;
             },
             internalEval (p, n, submit) {
+                // Evaluate a single cell (no cursor movement)
                 this.clearOutput(p, n);
                 if (this.cellType(p, n) !== 'code') {
                     beep();
@@ -1151,6 +1174,42 @@ onready(function() {
                 }
                 this.setCellState(p, n, 'working');
                 EventBus.$emit('update:status', 'Working');
+                const self = this;
+                function done() {
+                    // Adding -> things is handled by run_cell and exec
+                    self.setCellState(p, n, ''); // evaluated once we get linear history line working
+                    EventBus.$emit('update:status', 'Ready');
+                }
+                const code = this.$store.state.cells[p][n].source;
+                this.baseCodeEval(p, n, code, false, normalstate, done);
+            },
+            linearEval (p, n) {
+                // Evaluate a single cell (no cursor movement)
+                this.clearOutput(p, n);
+                const cellType = this.cellType(p, n);
+                const subType = this.cellSubtype(p, n);
+                if (cellType === 'checkpoint' && subType === 'save') {
+
+                }
+                if (this.cellType(p, n) !== 'code') {
+                    beep();
+                    return;
+                }
+                this.setCellState(p, n, 'working');
+                EventBus.$emit('update:status', 'Working');
+                const self = this;
+                function done() {
+                    // Adding -> things is handled by run_cell and exec
+                    self.setCellState(p, n, ''); // evaluated once we get linear history line working
+                    EventBus.$emit('update:status', 'Ready');
+                }
+                const code = this.$store.state.cells[p][n].source;
+                this.baseCodeEval(p, n, code, false, state, done);
+            },
+            baseCodeEval (p, n, code, submit, state, done) {
+                // This function does not do any UI, just evaluates one cell
+                // Needs position of cell for writing output
+                // Calls done callback when eval is finished
                 const self = this;
                 const callbacks = {
                     onStdout: function(msg) {
@@ -1168,9 +1227,7 @@ onready(function() {
                         });
                     },
                     onResponse: function() {
-                        // Adding -> things is handled by run_cell and exec
-                        self.setCellState(p, n, ''); // evaluated once we get linear history line working
-                        EventBus.$emit('update:status', 'Ready');
+                        return done();
                     },
                     onOutput: function(content_type, msg) {
                         if (content_type === 'text/html') {
@@ -1202,23 +1259,10 @@ onready(function() {
                         }
                     },
                 };
-                // To duplicate:
-                const code = this.$store.state.cells[p][n].source;
                 if (submit) {
-                    python.submit(code, normalstate, callbacks);
+                    python.submit(code, state, callbacks);
                 } else {
-                    let newName = freshName();
-                    python.duplicatestate(normalstate, newName, {
-                        onResponse: function() {
-                            let oldone = normalstate;
-                            normalstate = newName;
-                            python.deletestate(oldone, {
-                                onResponse: function() {
-                                    python.evaluate(code, normalstate, callbacks);
-                                }
-                            });
-                        },
-                    });
+                    python.evaluate(code, state, callbacks);
                 }
             },
             eval () {
