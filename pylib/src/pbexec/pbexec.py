@@ -48,7 +48,7 @@ def default_func(value):
     Default function to call on evaluated values
 
     Default behavior is to totally ignore None values, and to print arrow then repr of other values.
-    Could be improved to detect when values 
+    Could be improved to detect when values have IPython style rich repr
 
     """
     if value is not None:
