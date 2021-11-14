@@ -1074,6 +1074,69 @@ onready(function() {
             initializeStore () {
                 // Initialize store to localstorage value if it exists
                 this.$store.commit('initializeStore', this.docId);
+                // Clear evaluations, rename bad checkpoints and things
+                this.sanitize();
+            },
+            freshNameNotebook () {
+                // Find a fresh name that is never used for any state
+                let names = {};
+                const numPages = this.$store.state.cells.length;
+                for (let p = 0; p < numPages; p++) {
+                    const numCells = this.$store.state.cells[p].length;
+                    for (let n = 0; n < numCells; n++) {
+                        const cellType = this.cellType(p, n);
+                        const code = this.$store.state.cells[p][n].source;
+                        const state = this.cellEvalState(p, n);
+                        if (cellType === 'checkpoint') {
+                            names[code] = true;
+                        } else if (cellType === 'code' && state) {
+                            names[state] = true;
+                        }
+                    }
+                }
+                let i = 0;
+                while (true) {
+                    const name = 'State ' + i;
+                    if (!names[name]) {
+                        break;
+                    }
+                }
+                return name;
+            },
+            sanitize () {
+                // Clear evaluates on load
+                // Make sure checkpoint-use come after checkpoint-save
+                let checkpoints = {}; // set of checkpoints seen
+                const numPages = this.$store.state.cells.length;
+                for (let p = 0; p < numPages; p++) {
+                    const numCells = this.$store.state.cells[p].length;
+                    for (let n = 0; n < numCells; n++) {
+                        const cellType = this.cellType(p, n);
+                        const subType = this.cellSubtype(p, n);
+                        const code = this.$store.state.cells[p][n].source;
+                        // Clear the eval state information (when loaded we have no active states)
+                        this.setCellEvalState(p, n, undefined);
+                        this.setCellState(p, n, '');
+                        // If we hit a "checkpoint-use" verify it was defined previously
+                        if (cellType === 'checkpoint' && subType === 'use') {
+                            if (!checkpoints[code]) {
+                                console.log("Notebook has checkpoint use before save for: [" + code + "]");
+                                console.log("Setting checkpoint to [Initial state]");
+                            }
+                            this.$store.commit('setSource', {p, n, source:'Initial state'});
+                        }
+                        if (cellType === 'checkpoint' && subType === 'save') {
+                            if (checkpoints[code]) {
+                                console.log("Notebook already has checkpoint saved for: [" + code + "]");
+                                const newState = this.freshNameNotebook();
+                                console.log("Setting checkpoing to [" + newState + "]");
+
+                            }
+                            // Remember the name of this checkpoint
+                            checkpoints[code] = true;
+                        }
+                    }
+                }
             },
             switchDocId () {
                 this.docId = 'pb002';
@@ -1189,6 +1252,55 @@ onready(function() {
                 const code = this.$store.state.cells[p][n].source;
                 this.baseCodeEval(p, n, code, false, normalstate, done);
             },
+            invalidateCell (p, n) {
+                // Just set the given state to invalid evaluation and erase state
+                // (No logic in invalidating other parts of notebook)
+                this.setCellState(p, n, '');
+                this.setCellEvalState(p, n, undefined);
+            },
+            invalidateStateUse (state) {
+                // Invalidate all cells that depend on using a state
+                const numPages = this.$store.state.cells.length;
+                for (let p = 0; p < numPages; p++) {
+                    const numCells = this.$store.state.cells[p].length;
+                    for (let n = 0; n < numCells; n++) {
+                        const cellType = this.cellType(p, n);
+                        const subType = this.cellSubtype(p, n);
+                        const code = this.$store.state.cells[p][n].source;
+                        // If we hit a "checkpoint-use" that matches then invalidate
+                        if (cellType === 'checkpoint' && subType === 'use' && code === state) {
+                            this.invalidateCell(p, n);
+                            // Also do linear invalidation from cells after the use
+                            // They also depend on the checkpoint-use results
+                            this.invalidateAfter(p, n);
+                            continue;
+                        }
+                    }
+                }
+                
+            },
+            invalidateAfter (p, n) {
+                // Invalidate linear state after position p, n
+                // Note that each page restarts state, so this only affects current page
+                const numCells = this.$store.state.cells[p].length;
+                for (let i = n + 1; i < numCells; i++) {
+                    const cellType = this.cellType(p, i);
+                    const subType = this.cellSubtype(p, i);
+                    // If we hit a "checkpoint-use" then stop invalidating, we're done
+                    if (cellType === 'checkpoint' && subType === 'use') {
+                        break;
+                    }
+                    // If we hit a "checkpoint-save" then invalidate all uses of that state anywhere
+                    if (cellType === 'checkpoint' && subType === 'save') {
+                        this.invalidateCell(p, i);
+                        const code = this.$store.state.cells[p][i].source;
+                        this.invalidateStateUse(code);
+                        // Keep going after the save in our invalidation
+                        continue;
+                    }
+                    this.invalidateCell(p, i);
+                }
+            },
             linearEval (p, n) {
                 // Evaluate a single cell (no cursor movement)
                 this.clearOutput(p, n);
@@ -1200,11 +1312,13 @@ onready(function() {
                     const newState = freshName();
                     const that = this;
                     this.setCellState(p, n, 'working');
+                    this.invalidateAfter(p, n);
                     EventBus.$emit('update:status', 'Working');
                     python.duplicatestate(code, newState, {
                         onResponse: function () {
                             that.setCellState(p, n, 'evaluated');
                             that.setCellEvalState(p, n, newState);
+                            console.log('duplicated use state', code, newState);
                             EventBus.$emit('update:status', 'Ready');
                         },
                     });
