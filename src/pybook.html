@@ -897,15 +897,14 @@ onready(function() {
         return name;
     }
 
-    let normalstate = null;
+    const baseInitialState = 'Initial state';
 
     const opts = {
         onReady: function (version) {
-            EventBus.$emit('update:status', 'Ready');
             console.log(version);
-            normalstate = 'Initial state';
-            python.freshstate(normalstate, {
+            python.freshstate(baseInitialState, {
                 onResponse: function() {
+                    EventBus.$emit('update:status', 'Ready');
                 },
             });
         },
@@ -942,6 +941,10 @@ onready(function() {
                 state.cells[payload.p][payload.n].outputs.push(payload.out);
             },
             setCellState (state, payload) {
+                const value = payload.state;
+                if (value !== '' && value !== 'working' && value !== 'evaluated') {
+                    throw "Illegal cell state";
+                }
                 Vue.set(state.cells[payload.p][payload.n], 'state', payload.state);
             },
             setCellEvalState (state, payload) {
@@ -1147,6 +1150,9 @@ onready(function() {
                 }
                 return metadata.subtype;
             },
+            cellState (p, n) {
+                return this.$store.state.cells[p][n].state;
+            },
             cellEvalState (p, n) {
                 return this.$store.state.cells[p][n].evalState;
             },
@@ -1188,8 +1194,28 @@ onready(function() {
                 this.clearOutput(p, n);
                 const cellType = this.cellType(p, n);
                 const subType = this.cellSubtype(p, n);
-                if (cellType === 'checkpoint' && subType === 'save') {
-
+                const code = this.$store.state.cells[p][n].source;
+                if (cellType === 'checkpoint' && subType === 'use') {
+                    // Can always evaluate a use, don't need previous cell to be evaluated
+                    const newState = freshName();
+                    const that = this;
+                    this.setCellState(p, n, 'working');
+                    EventBus.$emit('update:status', 'Working');
+                    python.duplicatestate(code, newState, {
+                        onResponse: function () {
+                            that.setCellState(p, n, 'evaluated');
+                            that.setCellEvalState(p, n, newState);
+                            EventBus.$emit('update:status', 'Ready');
+                        },
+                    });
+                    return;
+                }
+                if (n > 0) {
+                    const previousState = this.cellState(p, n - 1);
+                    if (previousState !== 'evaluated') {
+                        console.log('Previous cell not evaluated');
+                        return;
+                    }
                 }
                 if (this.cellType(p, n) !== 'code') {
                     beep();
@@ -1203,7 +1229,6 @@ onready(function() {
                     self.setCellState(p, n, ''); // evaluated once we get linear history line working
                     EventBus.$emit('update:status', 'Ready');
                 }
-                const code = this.$store.state.cells[p][n].source;
                 this.baseCodeEval(p, n, code, false, state, done);
             },
             baseCodeEval (p, n, code, submit, state, done) {
@@ -1270,7 +1295,7 @@ onready(function() {
                 const n = this.selectCell;
                 if (!isBusy() && !isStarting()) {
                     clearInterrupt();
-                    this.internalEval(p, n);
+                    this.linearEval(p, n);
                 } else {
                     beep();
                 }
@@ -1280,7 +1305,7 @@ onready(function() {
                 const n = this.selectCell;
                 if (!isBusy() && !isStarting()) {
                     clearInterrupt();
-                    this.internalEval(p, n);
+                    this.linearEval(p, n);
                     this.cellNext();
                 } else {
                     beep();
@@ -1291,7 +1316,7 @@ onready(function() {
                 const n = this.selectCell;
                 if (!isBusy() && !isStarting()) {
                     clearInterrupt();
-                    this.internalEval(p, n);
+                    this.linearEval(p, n);
                     this.insertCellAfter();
                 } else {
                     beep();
