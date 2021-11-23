@@ -1252,7 +1252,7 @@ onready(function() {
                     EventBus.$emit('update:status', 'Ready');
                 }
                 const code = this.$store.state.cells[p][n].source;
-                this.baseCodeEval(p, n, code, false, normalstate, done);
+                this.baseCodeEval(p, n, code, false, baseInitialState, done);
             },
             invalidateCell (p, n) {
                 // Just set the given state to invalid evaluation and erase state
@@ -1317,6 +1317,7 @@ onready(function() {
                 }
             },
             linearEval (p, n) {
+                // NOT WORKING YET
                 // Evaluate a single cell (no cursor movement)
                 const cellType = this.cellType(p, n);
                 const subType = this.cellSubtype(p, n);
@@ -1462,7 +1463,7 @@ onready(function() {
                 const n = this.selectCell;
                 if (!isBusy() && !isStarting()) {
                     clearInterrupt();
-                    this.linearEval(p, n);
+                    this.internalEval(p, n);
                 } else {
                     beep();
                 }
@@ -1472,7 +1473,7 @@ onready(function() {
                 const n = this.selectCell;
                 if (!isBusy() && !isStarting()) {
                     clearInterrupt();
-                    this.linearEval(p, n);
+                    this.internalEval(p, n);
                     this.cellNext();
                 } else {
                     beep();
@@ -1483,7 +1484,7 @@ onready(function() {
                 const n = this.selectCell;
                 if (!isBusy() && !isStarting()) {
                     clearInterrupt();
-                    this.linearEval(p, n);
+                    this.internalEval(p, n);
                     this.insertCellAfter();
                 } else {
                     beep();
