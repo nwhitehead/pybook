@@ -1080,6 +1080,7 @@ onready(function() {
             freshNameNotebook () {
                 // Find a fresh name that is never used for any state
                 let names = {};
+                // Build up dictionary of all names used for checkpoint states
                 const numPages = this.$store.state.cells.length;
                 for (let p = 0; p < numPages; p++) {
                     const numCells = this.$store.state.cells[p].length;
@@ -1094,6 +1095,7 @@ onready(function() {
                         }
                     }
                 }
+                // Keep trying numbered states until we have one that is not used
                 let i = 0;
                 while (true) {
                     const name = 'State ' + i;
@@ -1258,6 +1260,19 @@ onready(function() {
                 this.setCellState(p, n, '');
                 this.setCellEvalState(p, n, undefined);
             },
+            invalidateAt (p, n) {
+                // Invalidate one cell, doing logic for consequences
+                this.invalidateCell(p, n);
+                const cellType = this.cellType(p, n);
+                const subType = this.cellSubtype(p, n);
+                if (cellType === 'checkpoint' && subType === 'save') {
+                    // If we invalidate a save, then do global invalidation of everywhere that uses it
+                    const code = this.$store.state.cells[p][i].source;
+                    this.invalidateStateUse(code);
+                }
+                // All types need to invalidate after the cell
+                this.invalidateAfter(p, n);
+            },
             invalidateStateUse (state) {
                 // Invalidate all cells that depend on using a state
                 const numPages = this.$store.state.cells.length;
@@ -1303,16 +1318,16 @@ onready(function() {
             },
             linearEval (p, n) {
                 // Evaluate a single cell (no cursor movement)
-                this.clearOutput(p, n);
                 const cellType = this.cellType(p, n);
                 const subType = this.cellSubtype(p, n);
                 const code = this.$store.state.cells[p][n].source;
                 if (cellType === 'checkpoint' && subType === 'use') {
-                    // Can always evaluate a use, don't need previous cell to be evaluated
+                    // Can always evaluate a checkpoint-use, don't need previous cell to be evaluated
+                    this.clearOutput(p, n);
+                    this.invalidateAt(p, n);
                     const newState = freshName();
                     const that = this;
                     this.setCellState(p, n, 'working');
-                    this.invalidateAfter(p, n);
                     EventBus.$emit('update:status', 'Working');
                     python.duplicatestate(code, newState, {
                         onResponse: function () {
@@ -1324,26 +1339,64 @@ onready(function() {
                     });
                     return;
                 }
+                if (cellType === 'checkpoint' && subType === 'save') {
+                    this.invalidateAt(p, n);
+                    // Can evaluate a save if the previous cell was evaluated
+                    if (n == 0) {
+                        console.log('Trying to save starting state??'); // TODO could make this work
+                        return;
+                    }
+                    const previousState = this.cellState(p, n - 1);
+                    if (previousState !== 'evaluated') {
+                        console.log('Previous cell not evaluated');
+                        return;
+                    }
+                    const state = this.cellEvalState(p, n - 1);
+                    // OK, can save it
+                    this.clearOutput(p, n);
+                    this.setCellState(p, n, 'working');
+                    EventBus.$emit('update:status', 'Working');
+                    const that = this;
+                    python.duplicatestate(state, code, {
+                        onResponse: function () {
+                            that.setCellState(p, n, 'evaluated');
+                            that.setCellEvalState(p, n, state);
+                            console.log('duplicated use state', state, code);
+                            EventBus.$emit('update:status', 'Ready');
+                        },
+                    });
+                    return;
+                }
+                    // Can always evaluate a checkpoint-use, don't need previous cell to be evaluated
+                if (this.cellType(p, n) !== 'code') {
+                    // Can always "evaluate" things that are not code
+                    return;
+                }
+                this.invalidateAt(p, n);
+///************************************************************
+                // Here is what we do once we have a concrete state to use
+                const self = this;
+                function doEval (state) {
+                    self.setCellState(p, n, 'working');
+                    EventBus.$emit('update:status', 'Working');
+                    function done() {
+                        self.setCellState(p, n, 'evaluated');
+                        EventBus.$emit('update:status', 'Ready');
+                    }
+                    self.baseCodeEval(p, n, code, false, state, done);
+                }
+                if (n === 0) {
+                    // First cell is like a checkpoint-use "Initial state"
+                    // Need to duplicate 'Initial state' then pass result to doEval continuation
+                }
                 if (n > 0) {
                     const previousState = this.cellState(p, n - 1);
                     if (previousState !== 'evaluated') {
                         console.log('Previous cell not evaluated');
                         return;
                     }
+                    state = this.cellEvalState(p, n - 1);
                 }
-                if (this.cellType(p, n) !== 'code') {
-                    beep();
-                    return;
-                }
-                this.setCellState(p, n, 'working');
-                EventBus.$emit('update:status', 'Working');
-                const self = this;
-                function done() {
-                    // Adding -> things is handled by run_cell and exec
-                    self.setCellState(p, n, ''); // evaluated once we get linear history line working
-                    EventBus.$emit('update:status', 'Ready');
-                }
-                this.baseCodeEval(p, n, code, false, state, done);
             },
             baseCodeEval (p, n, code, submit, state, done) {
                 // This function does not do any UI, just evaluates one cell
