@@ -238,9 +238,9 @@ div.output pre.stderr {
                     { text:'Save', filesave:true },
                 ]">
                 </dropdown>
-                <status
+                <Status
                     v-bind:value="status"
-                ></status>
+                ></Status>
             </div>
 
             <pagination
@@ -284,6 +284,8 @@ import { signalMap,
 import { newPythonKernel } from './python.js';
 import { parse,
          unparse } from './parser.js';
+
+import Status from './components/Status.vue';
 
 // The event bus is for application events that bypass the component hierarchy.
 // It is currently used to pass focus clicks from deep children back to toplevel.
@@ -469,18 +471,6 @@ onready(function() {
                 reader.readAsText(this.file);
             }
         }
-    });
-
-    Vue.component('status', {
-        props: ['value'],
-        template: String.raw`
-            <div class="status">
-                <span class="material-icons" v-if="value=='Initializing'">cloud</span>
-                <span class="material-icons" v-if="value=='Ready'">done</span>
-                <span class="material-icons" v-if="value=='Working'">cloud</span>
-                <span class="material-icons" v-if="value=='Interrupt'">report</span>
-                <p>{{ value }}</p>
-            </div>`,
     });
 
     // Global variable keeping list of all codemirror editors
