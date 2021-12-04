@@ -19,7 +19,7 @@ Then go to http://localhost:8001/src/build/
 
 ## Unit Testing
 
-Unit testing requires Jest. Using ES6 modules, so you need a recent node (I have v14.18).
+Unit testing requires Jest. Using ES6 modules, so you need a recent node.
 
 Do:
 

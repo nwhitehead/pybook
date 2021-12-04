@@ -1,6 +1,7 @@
 
 <template>
     <div class="status">
+        Status is:
         <span class="material-icons" v-if="value=='Initializing'">cloud</span>
         <span class="material-icons" v-if="value=='Ready'">done</span>
         <span class="material-icons" v-if="value=='Working'">cloud</span>
