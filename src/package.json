@@ -1,9 +1,0 @@
-{
-  "scripts": {
-    "test": "jest"
-  },
-  "jest": {
-    "transform": {}
-  },
-  "type": "module"
-}

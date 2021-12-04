@@ -6,6 +6,10 @@ To test:
 
 Then go to http://localhost:8001/src/pybook.html
 
+## Building
+
+There is a build phase... for JavaScript (sigh).
+
 ## Unit Testing
 
 Unit testing requires Jest. Using ES6 modules, so you need a recent node (I have v14.18).
@@ -17,6 +21,16 @@ Do:
 To run tests in `src/` do:
 
     NODE_OPTIONS='--experimental-vm-modules' jest
+
+## Rebuild pbexec
+
+There is a Python package `pbexec` that is needed inside Pyodide. To rebuild the module so it can be included, run:
+
+    ./generate_exec.sh
+
+This requires a working copy of EMSDK to be installed and the environment variable `EMSDK` to be pointing to the right location.
+The only tool required is the `file_packager.py` module. There are other ways to install pure Python in Pyodide, this just
+seemed to be easiest to be consistent with other Pyodide packages.
 
 ## Demo
 
