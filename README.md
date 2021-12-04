@@ -1,14 +1,21 @@
 # PyBook
 
-To test:
+## Building
+
+There is a build phase... for JavaScript (sigh). Need `node`, `npm`, and a bunch of packages in `package.json`. Once that is setups, you can build with:
+
+    cd src
+    node build.js
+
+Output files go into `src/build`.
+
+## Running
+
+To view, start server:
 
     python server/serve.py
 
-Then go to http://localhost:8001/src/pybook.html
-
-## Building
-
-There is a build phase... for JavaScript (sigh).
+Then go to http://localhost:8001/src/build/
 
 ## Unit Testing
 
