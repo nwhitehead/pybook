@@ -1,7 +1,7 @@
 <template>
     <div>
         Hello from the App
-        <status></status>
+        <Status v-bind:value="status"></Status>
     </div>
 </template>
 
@@ -9,6 +9,11 @@
 import Status from './Status.vue';
 
 export default {
+    data: function () {
+        return {
+            'status': 'Initializing',
+        }
+    },
     components: {
         Status
     }
