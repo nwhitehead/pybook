@@ -8,6 +8,19 @@
         <DataOutput v-bind:value="testout" v-bind:isResult="true"></DataOutput>
         <CellOutput v-bind:values="covalues"></CellOutput>
         <CheckPoint v-bind:value="'0'" v-bind:type="'use'"></CheckPoint>
+        <Cell
+            v-bind:value="cellValue"
+            v-bind:output="covalues"
+            v-bind:selected="false"
+            v-bind:id="'abc'"
+            v-bind:type="'markdown'"
+            v-bind:subtype="'display'"
+            v-bind:state="''"
+            v-bind:command="false"
+            v-bind:hidden="false"
+            v-bind:readonly="false"
+            v-bind:submit="false"
+        ></Cell>
     </div>
 </template>
 
@@ -21,6 +34,7 @@ import CodeMirrorComponent from './CodeMirrorComponent.vue';
 import DataOutput from './DataOutput.vue';
 import CellOutput from './CellOutput.vue';
 import CheckPoint from './CheckPoint.vue';
+import Cell from './Cell.vue';
 
 export default {
     data: function () {
@@ -36,6 +50,7 @@ export default {
                     text: 'Hello world',
                 },
             ],
+            cellValue: '# This is the title\nSome more text\n',
         }
     },
     components: {
@@ -46,6 +61,7 @@ export default {
         DataOutput,
         CellOutput,
         CheckPoint,
+        Cell,
     }
 }
 </script>

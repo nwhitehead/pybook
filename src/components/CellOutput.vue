@@ -2,17 +2,19 @@
     <div class="output">
         <template v-for="value in values">
             <pre v-if="isStream(value)" :class="value.name">{{ value.text }}</pre>
-            <dataoutput
+            <DataOutput
                 v-if="isExecuteResult(value) || isDisplayData(value)"
                 v-bind:value="value.data"
                 v-bind:isResult="isExecuteResult(value)"
             >
-            </dataoutput>
+            </DataOutput>
         </template>
     </div>
 </template>
 
 <script>
+
+import DataOutput from './DataOutput.vue';
 
 export default {
     props: ['values'],
@@ -26,7 +28,10 @@ export default {
         isDisplayData (value) {
             return value.output_type === 'display_data';
         },
-    }
+    },
+    components: {
+        DataOutput,
+    },
 }
 
 </script>
