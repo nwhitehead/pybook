@@ -181,40 +181,6 @@ onready(function() {
         }
     });
 
-    // Global variable keeping list of all codemirror editors
-    // Needed to quickly update dragdrop state (prevent dropping in editors)
-    Vue.prototype.$globalCMList = [];
-
-
-    Vue.component('dataoutput', {
-        props: ['value', 'isResult'],
-        template: String.raw`
-            <div class="dataoutput">
-                <pre v-if="isPre(value)" :class="getClass(value)"><img v-if="isResult" src="../gfx/right2.svg" width=10 height=10></img>{{ value['text/plain'] }}</pre>
-                <div v-if="isHtml(value)" :class="getClass(value)"><img v-if="isResult" src="../gfx/right2.svg" width=10 height=10></img><div class="content" v-html="value['text/html']"></div></div>
-                <img v-if="isSVG(value)" :src="dataURI(value['image/svg+xml'])" />
-            </div>
-        `,
-        methods: {
-            getClass (value) {
-                if (this.isPre(value)) return 'stdout';
-                if (this.isHtml(value)) return 'html';
-                return "stdout";
-            },
-            isPre (value) {
-                return value['text/plain'] !== undefined;
-            },
-            isHtml (value) {
-                return value['text/html'] !== undefined;
-            },
-            isSVG (value) {
-                return value['image/svg+xml'] !== undefined;
-            },
-            dataURI (value) {
-                return 'data:image/svg+xml;base64,' + btoa(value);
-            }
-        }
-    });
 
     Vue.component('celloutput', {
         props: ['values'],

@@ -9,15 +9,13 @@
 import CodeMirror from 'codemirror';
 import EventBus from './EventBus.js';
 
-console.log(EventBus);
-
 export default {
     props: ['options', 'value', 'id'],
     mounted: function() {
         var self = this;
         var elem = self.$el.querySelector('textarea');
         self.editor = CodeMirror.fromTextArea(elem, self.options);
-        // Vue global variable $globalCMList keeps track of all instances of CodeMirror (so they don't go away)
+        // Vue global variable $globalCMList keeps track of all instances of CodeMirror (so we can shuffle them easily on drag)
         if (self.$globalCMList === undefined) {
             self.$globalCMList = [];
         }
