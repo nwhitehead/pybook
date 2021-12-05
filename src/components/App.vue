@@ -41,6 +41,7 @@ import CellOutput from './CellOutput.vue';
 import CheckPoint from './CheckPoint.vue';
 import Cell from './Cell.vue';
 import Cells from './Cells.vue';
+import Store from './Store.js';
 
 export default {
     data: function () {
