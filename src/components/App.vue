@@ -6,6 +6,7 @@
         <Dropdown></Dropdown>
         <CodeMirrorComponent></CodeMirrorComponent>
         <DataOutput v-bind:value="testout" v-bind:isResult="true"></DataOutput>
+        <CellOutput v-bind:values="covalues"></CellOutput>
     </div>
 </template>
 
@@ -17,6 +18,7 @@ import Pagination from './Pagination.vue';
 import Dropdown from './Dropdown.vue';
 import CodeMirrorComponent from './CodeMirrorComponent.vue';
 import DataOutput from './DataOutput.vue';
+import CellOutput from './CellOutput.vue';
 
 export default {
     data: function () {
@@ -25,6 +27,13 @@ export default {
             'testout': {
                 'text/plain': 'This is some pre formatted output',
             },
+            'covalues': [
+                {
+                    output_type: 'stream',
+                    name: 'stdout',
+                    text: 'Hello world',
+                },
+            ],
         }
     },
     components: {
@@ -33,6 +42,7 @@ export default {
         Dropdown,
         CodeMirrorComponent,
         DataOutput,
+        CellOutput,
     }
 }
 </script>
