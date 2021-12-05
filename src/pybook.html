@@ -130,68 +130,9 @@ import { parse,
 import Status from './components/Status.vue';
 import Pagination from './components/Pagination.vue';
 
-// The event bus is for application events that bypass the component hierarchy.
-// It is currently used to pass focus clicks from deep children back to toplevel.
-// Tightly coupled events from child->parent are not put on the event bus.
-const EventBus = new Vue();
+
 
 onready(function() {
-
-
-    Vue.component('dropdown', {
-        props: ['name', 'values'],
-        // Race condition on clicking items and blurring main dropdown - resolve by preventing default of mousedown
-        // Mousedown happens before blur, the preventdefault stops the blur, then the click action happens which can hide the dropdown.
-        template: String.raw`
-            <div :class="dropdownClasses">
-                <div class="dropdown-trigger">
-                    <button class="button" aria-haspopups="true" :aria-controls="name" @click="toggleDropdown()" v-on:blur="hideDropdown">
-                        <span>{{ name }}</span>
-                    </button>
-                </div>
-                <div class="dropdown-menu" :id="name" role="menu">
-                    <div class="dropdown-content">
-                        <template v-for="value in values">
-                            <a class="dropdown-item" v-if="!value.divider" v-on:mousedown.prevent="" v-on:click="function() { value.action(); hideDropdown(); }">{{ value.text }}</a>
-                            <a class="dropdown-divider" v-if="value.divider"></a>
-                            <filesave v-if="value.filesave" v-bind:value="{}"></filesave>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        `,
-        data: function() {
-            return {
-                isActive: false,
-            }
-        },
-        computed: {
-            dropdownClasses: function() {
-                return this.isActive ? "dropdown is-active" : "dropdown";
-            },
-        },
-        methods: {
-            toggleDropdown: function() {
-                this.isActive = !this.isActive;
-            },
-            hideDropdown: function() {
-                this.isActive = false;
-            },
-        },
-    });
-
-    Vue.component('notebooks', {
-        props: ['values'],
-        template: String.raw`
-            <div class="notebooks">
-                <template v-for="value in values">
-                    <pre>{{ value.name }}</pre>
-                </template>
-            </div>
-        `,
-        methods: {
-        }
-    });
 
     Vue.component('filesave', {
         props: ['value'],
@@ -244,70 +185,6 @@ onready(function() {
     // Needed to quickly update dragdrop state (prevent dropping in editors)
     Vue.prototype.$globalCMList = [];
 
-    Vue.component('codemirror', {
-        props: ['options', 'value', 'id'],
-        template: String.raw`
-            <div class="cellinput">
-                <textarea></textarea>
-            </div>`,
-        mounted: function() {
-            var self = this;
-            var elem = self.$el.querySelector('textarea');
-            self.editor = CodeMirror.fromTextArea(elem, self.options);
-            self.$globalCMList.push(self.editor);
-            self.editor.getWrapperElement().classList.add('cellinput');
-            self.editor.setValue(self.value || '');
-            self.editor.on('change', function(cm) {
-                self.$emit('update:value', cm.getValue());
-            });
-            self.editor.on('focus', function(cm) {
-                EventBus.$emit('cmfocus', { id:self.id });
-            });
-            self.editor.setOption('extraKeys', {
-                // Remove default actions for commands handled at higher app level
-                'Ctrl-Up': function(cm) {},
-                'Ctrl-Down': function(cm) {},
-                'Ctrl-Left': function(cm) {},
-                'Ctrl-Right': function(cm) {},
-                'Esc': function(cm) {},
-                'Ctrl-Enter': function(cm) {},
-                'Shift-Enter': function(cm) {},
-                'Alt-Enter': function(cm) {},
-                'Ctrl-C': function(cm) {},
-                'Ctrl-K': function(cm) {},
-                'Ctrl-I': function(cm) {},
-                // Make pressing "tab" key insert spaces to correct indent level
-                'Tab': function(cm) {
-                    let spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
-                    cm.replaceSelection(spaces);
-                },
-            });
-        },
-        watch: {
-            value: function(v) {
-                var currentValue = this.editor.getValue();
-                if (currentValue !== v) {
-                    this.editor.setValue(v);
-                }
-            },
-            options: function(opts) {
-                // If options changes, need to set each one in editor
-                Object.entries(opts).forEach(([k, v]) => {
-                    this.editor.setOption(k, v);
-                });
-            }
-        },
-        methods: {
-            focus () {
-                this.editor.focus();
-                return true;
-            },
-            blur () {
-                this.editor.getInputField().blur();
-                return true;
-            }
-        }
-    });
 
     Vue.component('dataoutput', {
         props: ['value', 'isResult'],
