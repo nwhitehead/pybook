@@ -21,6 +21,11 @@
             v-bind:readonly="false"
             v-bind:submit="false"
         ></Cell>
+        <Cells
+            v-bind:values="cellsValues"
+            v-bind:select="0"
+            v-bind:command="false"
+        ></Cells>
     </div>
 </template>
 
@@ -35,6 +40,7 @@ import DataOutput from './DataOutput.vue';
 import CellOutput from './CellOutput.vue';
 import CheckPoint from './CheckPoint.vue';
 import Cell from './Cell.vue';
+import Cells from './Cells.vue';
 
 export default {
     data: function () {
@@ -51,6 +57,10 @@ export default {
                 },
             ],
             cellValue: '# This is the title\nSome more text\n',
+            cellsValues: [
+                { source:"# A title\nSome text\n", cell_type:'markdown', metadata: { subtype:'view' } },
+                { source:'print(2+2)\n', cell_type:'code' },
+            ],
         }
     },
     components: {
@@ -62,6 +72,7 @@ export default {
         CellOutput,
         CheckPoint,
         Cell,
+        Cells,
     }
 }
 </script>
