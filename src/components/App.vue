@@ -7,6 +7,7 @@
         <CodeMirrorComponent></CodeMirrorComponent>
         <DataOutput v-bind:value="testout" v-bind:isResult="true"></DataOutput>
         <CellOutput v-bind:values="covalues"></CellOutput>
+        <CheckPoint v-bind:value="'0'" v-bind:type="'use'"></CheckPoint>
     </div>
 </template>
 
@@ -19,6 +20,7 @@ import Dropdown from './Dropdown.vue';
 import CodeMirrorComponent from './CodeMirrorComponent.vue';
 import DataOutput from './DataOutput.vue';
 import CellOutput from './CellOutput.vue';
+import CheckPoint from './CheckPoint.vue';
 
 export default {
     data: function () {
@@ -43,6 +45,7 @@ export default {
         CodeMirrorComponent,
         DataOutput,
         CellOutput,
+        CheckPoint,
     }
 }
 </script>
