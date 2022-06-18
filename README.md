@@ -197,3 +197,16 @@ Also need to be careful about deleting unused states after edits.
 Maybe also need to store in state some type of hash of the cell that was last evaluated. Then we can look at the state we are about to use, and look
 at the previous cell that supposedly was evaluated most recently, and verify that the hash of that cell is indeed the one in the state. Hash could
 include source and cell position in notebook.
+
+## Student Thoughts
+
+Some features useful for interactive tutorials and quizzes:
+* Hidden cells with python code that runs before any commands to evaluate anything
+* Code cells with default starting text, that are expected to be run as "submitting answer". Clicking submit runs custom code (which may evaluate answer).
+* Pages of notebook can be individual "problems" with explanation and questions. Nice to have some sort of "scoring" between pages outside of eval state.
+* Nice to have notebook pages that are skipped by default, but can be shown if requested by clicking on button for help.
+
+
+# What I'm Working On
+
+Refactoring from one big HTML with JS in it, with Vue components defined inline, to actual separated out components in different files.
