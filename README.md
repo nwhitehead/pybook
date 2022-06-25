@@ -214,3 +214,6 @@ Some features useful for interactive tutorials and quizzes:
 # What I'm Working On
 
 Refactoring from one big HTML with JS in it, with Vue components defined inline, to actual separated out components in different files.
+
+Big HTML file is: src/pybook.html
+Components go in: src/components

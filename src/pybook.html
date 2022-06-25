@@ -134,25 +134,6 @@ import Pagination from './components/Pagination.vue';
 
 onready(function() {
 
-    Vue.component('filesave', {
-        props: ['value'],
-        template: String.raw`
-            <div class="filesave">
-                <a class="dropdown-item" v-on:click.stop="action">Save</a>
-            </div>`,
-        methods: {
-            action() {
-                let a = document.createElement('a');
-                const data = unparse(this.value.cells);
-                const blob = new Blob([data], {type:"text/plain"});
-                const url = window.URL.createObjectURL(blob);
-                a.download = 'intro.pbnb';
-                a.href = url;
-                a.click();
-            }
-
-        }
-    });
     Vue.component('fileimport', {
         props: [],
         template: String.raw`
