@@ -5,11 +5,8 @@
     <Dropdown></Dropdown>
     <CodeMirrorComponent></CodeMirrorComponent>
     <Cells v-bind:values="cellsValues" v-bind:select="1" v-bind:command="false"></Cells>
-    <FileSave
-      v-bind:value="'contents'"
-      v-bind:filename="'test.pbnb'"
-      v-bind:label="'Save'"
-    ></FileSave>
+    <FileSave v-bind:value="'contents'" v-bind:filename="'test.pbnb'">Save File</FileSave>
+    <FileImport>Import</FileImport>
   </div>
 </template>
 
@@ -26,6 +23,8 @@ import CheckPoint from "./CheckPoint.vue";
 import Cells from "./Cells.vue";
 import Cell from "./Cell.vue";
 import FileSave from "./FileSave.vue";
+import FileImport from "./FileImport.vue";
+
 import Store from "./Store.js";
 
 export default {
@@ -53,6 +52,7 @@ export default {
     Cell,
     Cells,
     FileSave,
+    FileImport,
   },
 };
 </script>

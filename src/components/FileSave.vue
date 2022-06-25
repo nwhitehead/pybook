@@ -1,12 +1,17 @@
 <template>
   <div class="filesave">
-    <a class="dropdown-item" v-on:click.stop="action">{{ label }}</a>
+    <a class="dropdown-item" v-on:click.stop="action">
+      <slot>
+        Save
+        <!-- Fallback label -->
+      </slot>
+    </a>
   </div>
 </template>
 
 <script>
 export default {
-  props: ["value", "filename", "label"],
+  props: ["value", "filename"],
   methods: {
     action() {
       let a = document.createElement("a");

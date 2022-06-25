@@ -20,7 +20,7 @@ export default {
         getClass (value) {
             if (this.isPre(value)) return 'stdout';
             if (this.isHtml(value)) return 'html';
-            return "stdout";
+            return 'stdout';
         },
         isPre (value) {
             return value['text/plain'] !== undefined;

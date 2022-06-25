@@ -134,33 +134,6 @@ import Pagination from './components/Pagination.vue';
 
 onready(function() {
 
-    Vue.component('fileimport', {
-        props: [],
-        template: String.raw`
-            <div class="fileimport">
-                <span>File import</span>
-                <input id="filebutton" type="file" ref="select" @change="readFile()" />
-            </div>`,
-        methods: {
-            readFile() {
-                const self = this;
-                this.file = this.$refs.select.files[0];
-                const reader = new FileReader();
-                reader.onload = (res) => {
-                    console.log('-----------BEGIN NOTEBOOK TEXT---------------');
-                    console.log(res.target.result);
-                    console.log('-----------END NOTEBOOK TEXT-----------------');
-                    const parsed = parse(res.target.result);
-                    console.log('-----------BEGIN NOTEBOOK---------------');
-                    console.log(parsed);
-                    console.log('-----------END NOTEBOOK-----------------');
-                    self.$emit('load', parsed);
-                };
-                reader.onerror = (err) => console.log(err);
-                reader.readAsText(this.file);
-            }
-        }
-    });
 
 
     Vue.component('draggable', vuedraggable);
