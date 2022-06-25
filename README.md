@@ -2,7 +2,7 @@
 
 ## Building
 
-There is a build phase... for JavaScript (sigh). Need `node`, `npm`, and a bunch of packages in `package.json`. Once that is setups, you can build with:
+There is a build phase... for JavaScript (sigh). Need `node`, `npm`, and a bunch of packages in `package.json`. Once that is setup, you can build with:
 
     cd src
     node build.js
@@ -53,6 +53,10 @@ seemed to be easiest to be consistent with other Pyodide packages.
     plt.savefig('test.svg')
     with open('test.svg') as f:
         pybook.output_text_content('image/svg+xml', f.read())
+
+## Versions
+
+Pyodide
 
 ## Ideas
 
