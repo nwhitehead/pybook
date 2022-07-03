@@ -19,7 +19,7 @@ export default {
       this.file = this.$refs.select.files[0];
       const reader = new FileReader();
       reader.onload = (res) => {
-        self.$emit("load", self.file.name, res.target.result);
+        self.$emit("load", { filename: self.file.name, value: res.target.result });
       };
       reader.onerror = (err) => console.log(err);
       reader.readAsText(this.file);
