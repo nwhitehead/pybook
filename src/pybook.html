@@ -120,26 +120,6 @@
 onready(function() {
 
 
-    let globalId = 0;
-    function freshName() {
-        const name = 'State ' + globalId;
-        globalId++;
-        return name;
-    }
-
-    const baseInitialState = 'Initial state';
-
-    const opts = {
-        onReady: function (version) {
-            console.log(version);
-            python.freshstate(baseInitialState, {
-                onResponse: function() {
-                    EventBus.$emit('update:status', 'Ready');
-                },
-            });
-        },
-    };
-    var python = newPythonKernel(opts);
 
 
     function beep() {

@@ -41,6 +41,20 @@ import FileImport from "./FileImport.vue";
 
 import Store from "./Store.js";
 
+const baseInitialState = "Initial state";
+
+const opts = {
+  onReady: function (version) {
+    console.log(version);
+    python.freshstate(baseInitialState, {
+      onResponse: function () {
+        EventBus.$emit("update:status", "Ready");
+      },
+    });
+  },
+};
+var python = newPythonKernel(opts);
+
 export default {
   data: function () {
     return {
