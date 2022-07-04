@@ -4,10 +4,9 @@
 
 There is a build phase... for JavaScript (sigh). Need `node`, `npm`, and a bunch of packages in `package.json`. Once that is setup, you can build with:
 
-    cd src
-    node build.js
+    npm run build
 
-Output files go into `src/build`.
+Output files go into `/build`.
 
 ## Running
 
@@ -19,7 +18,7 @@ Then go to http://localhost:8001/src/build/
 
 ## Unit Testing
 
-Unit testing requires Jest. Using ES6 modules, so you need a recent node.
+Unit testing requires Jest. The project uses ES6 modules, so you need a recent Node.
 
 Do:
 
@@ -27,7 +26,7 @@ Do:
 
 To run tests in `src/` do:
 
-    NODE_OPTIONS='--experimental-vm-modules' jest
+    npm run test
 
 ## Rebuild pbexec
 
@@ -217,3 +216,6 @@ Refactoring from one big HTML with JS in it, with Vue components defined inline,
 
 Big HTML file is: src/pybook.html
 Components go in: src/components
+JavaScript functions go in: src/
+
+Writing tests for everything.

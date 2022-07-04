@@ -2,7 +2,7 @@
 const vuePlugin = require('esbuild-vue');
 
 require('esbuild').build({
-    entryPoints: ['main.js'],
+    entryPoints: ['src/main.js'],
     bundle: true,
     outfile: 'build/out.js',
     plugins: [vuePlugin()],
