@@ -116,21 +116,6 @@
 
 <script type='module'>
 
-import { onready } from './onready.js'
-import { signalMap,
-         isBusy,
-         isStarting, setStarting,
-         setInterrupt, clearInterrupt,
-         inputPut
-       } from './signal.js';
-import { newPythonKernel } from './python.js';
-import { parse,
-         unparse } from './parser.js';
-
-import Status from './components/Status.vue';
-import Pagination from './components/Pagination.vue';
-
-
 
 onready(function() {
 

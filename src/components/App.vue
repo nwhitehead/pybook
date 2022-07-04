@@ -11,6 +11,20 @@
 </template>
 
 <script>
+import { onready } from "../onready.js";
+import {
+  signalMap,
+  isBusy,
+  isStarting,
+  setStarting,
+  setInterrupt,
+  clearInterrupt,
+  inputPut,
+} from "../signal.js";
+import { newPythonKernel } from "../python.js";
+import { parse, unparse } from "../parser.js";
+import { freshName } from "../fresh.js";
+
 import Vue from "vue";
 import EventBus from "./EventBus.js";
 import Status from "./Status.vue";

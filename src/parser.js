@@ -61,8 +61,8 @@ export function parseSpecialDelimiterLine(txt) {
     return { type, options };
 }
 
+//! Given PyBook format text described in FileSpec.md, return JS Notebook object
 export function parse(text) {
-    //! Given PyBook format text described in FileSpec.md, return JS Notebook object
     // Strategy is to accumulate lines into latest item, and items into latest page, etc.
     let pages = []; // Array of pages
     let page = []; // Array of items
@@ -167,8 +167,8 @@ function unparsePage(page) {
     return cellsTxt.join('')
 }
 
+//! Given PyBook notebook object, return string in FileSpec.md format
 export function unparse(data) {
-    //! Given PyBook notebook object, return string in FileSpec.md format
     // Currently ignores output
     const pages = data;
     const pagesTxt = pages.map(unparsePage);
