@@ -12,9 +12,9 @@ Output files go into `/build`.
 
 To view, start server:
 
-    python server/serve.py
+    npm run serve
 
-Then go to http://localhost:8001/src/build/
+Then go to http://localhost:8001/src/
 
 ## Unit Testing
 

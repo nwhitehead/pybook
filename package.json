@@ -18,6 +18,7 @@
   "type": "module",
   "scripts": {
     "build": "node src/build.cjs",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest"
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "serve": "python3 server/serve.py"
   }
 }
