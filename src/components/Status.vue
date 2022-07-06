@@ -1,3 +1,16 @@
+//!
+//! Status
+//!
+//! A Vue component for showing kernel status. Uses icons from material. State is kept as a string.
+//!
+//! Allowed status states are:
+//! - Initializing
+//! - Ready
+//! - Working
+//! - Interrupt
+//!
+//! Currently does not validate status values.
+//!
 
 <template>
     <div class="status">
