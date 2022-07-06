@@ -1,5 +1,5 @@
 
-const vuePlugin = require('esbuild-vue');
+const vuePlugin = require('esbuild-plugin-vue3');
 
 require('esbuild').build({
     entryPoints: ['src/main.js'],

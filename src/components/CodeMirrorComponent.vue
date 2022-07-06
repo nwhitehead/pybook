@@ -1,6 +1,6 @@
 <template>
   <div class="cellinput">
-    <textarea></textarea>
+    <textarea class="cellinput"></textarea>
   </div>
 </template>
 
@@ -17,13 +17,13 @@ export default {
   props: ["options", "value", "id"],
   mounted: function () {
     var self = this;
-    var elem = self.$el.querySelector("textarea");
+    var elem = self.$el;
     self.startState = EditorState.create({
-      doc: "",
+      doc: self.value || "",
       extensions: [keymap.of(defaultKeymap)],
     });
     self.editor = new EditorView({
-      state: startState,
+      state: self.startState,
       parent: elem,
     });
     // Vue global variable $globalCMList keeps track of all instances of CodeMirror (so we can shuffle them easily on drag)
@@ -31,8 +31,7 @@ export default {
       self.$globalCMList = [];
     }
     self.$globalCMList.push(self.editor);
-    self.editor.getWrapperElement().classList.add("cellinput");
-    self.editor.setValue(self.value || "");
+
     self.editor.on("change", function (cm) {
       self.$emit("update:value", cm.getValue());
     });

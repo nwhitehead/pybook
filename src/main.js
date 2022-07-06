@@ -1,8 +1,5 @@
 // main.js
 import Notebook from './components/Notebook.vue';
-import Vue from 'vue';
+import { createApp } from 'vue';
 
-new Vue({
-    el: '#notebook',
-    render: h => h(Notebook),
-});
+let app = createApp(Notebook).mount('#notebook');
