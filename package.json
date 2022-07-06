@@ -2,15 +2,21 @@
   "name": "pybook",
   "packageManager": "yarn@3.1.1",
   "dependencies": {
-    "codemirror": "^6.0.1",
-    "esbuild": "^0.14.48",
-    "esbuild-vue": "^1.2.1",
+    "@codemirror/state": "^6.1.0",
+    "@codemirror/view": "^6.0.2",
+    "@codemirror/commands": "^6.0.1",
+    "@codemirror/lang-python": "^6.0.0",
+    "@codemirror/lang-markdown": "^6.0.0",
     "marked": "^4.0.17",
     "sortable": "^2.0.0",
     "vue": "^2.7.2",
-    "vue-template-compiler": "^2.7.2",
     "vuedraggable": "^2.24.3",
     "vuex": "^3.6.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.48",
+    "esbuild-vue": "^1.2.1",
+    "vue-template-compiler": "^2.7.2"
   },
   "jest": {
     "transform": {}
