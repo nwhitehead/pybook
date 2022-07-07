@@ -1,36 +1,24 @@
 <template>
   <div>
     <p>Welcome to the Notebook</p>
-    <Status value="Working" />
+    <Status value="Init" />
     <DataOutput v-bind:value="output" />
     <DataOutput v-bind:value="output2" />
-    <codemirror
-      v-model="code"
-      :style="{ height: '400px' }"
-      :autofocus="true"
-      :indent-with-tab="true"
-      :tab-size="2"
-      :extensions="extensions"
-      @ready="log('ready', $event)"
-      @change="log('change', $event)"
-      @focus="log('focus', $event)"
-      @blur="log('blur', $event)"
-    />
+    <CellInput v-bind:value="code" id=0 options="{ type:'python' }" />
+    <CellInput v-bind:value="code2" id=1 />
   </div>
 </template>
 
 <script>
 import Status from "./Status.vue";
 import DataOutput from "./DataOutput.vue";
-
-// import EventBus from "./EventBus.js";
-import { ref } from "vue";
-import { Codemirror } from "vue-codemirror";
+import CellInput from "./CellInput.vue";
 
 export default {
   data() {
     return {
       code: "blah",
+      code2: "second one",
       output: {
         "text/plain": "This is some regular text.",
       },
@@ -42,12 +30,7 @@ export default {
   components: {
     Status,
     DataOutput,
-    Codemirror,
-  },
-  setup() {
-    const txt = ref(this.code);
-    const extensions = [];
-    return { txt, extensions, log: console.log };
+    CellInput,
   },
 };
 </script>
