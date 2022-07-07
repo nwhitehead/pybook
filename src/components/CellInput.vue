@@ -9,7 +9,7 @@
 //! - id - This is set by component creator, will be passed in emitted messages to keep cells easy to distinguish
 //! - options - This is a dict of options related to the editor
 //!     readonly - True if the editor should be readonly
-//!     type - Can be "python" or "markdown"
+//!     type - Can be "python" or "markdown" (undefined will be generic text editor)
 //!
 //! Events:
 //! - "update:value" - Emitted when value changes, payload is { id, value }
@@ -33,26 +33,27 @@
   </div>
 </template>
 
-<script>
-import { ref } from "vue";
+<script setup>
+
+import { computed, ref } from "vue";
 import { Codemirror } from "vue-codemirror";
 import { python } from "@codemirror/lang-python";
 import { markdown } from "@codemirror/lang-markdown";
 
 import EventBus from "./EventBus.js";
 
-export default {
-  props: [ "value", "id", "options" ],
-  components: {
-    Codemirror,
-  },
-  setup() {
-    const txt = ref(this.value);
-    let extensions = [];
-    if (this.options && this.options.type === 'python') {
-      extensions.push(python());
-    }
-    return { txt, extensions };
-  },
-};
+const props = defineProps([ 'value', 'id', 'options' ]);
+
+const extensions = computed(() => {
+  // Extensions are reactive to options, computed to avoid recomputing on every template render
+  let ext = [];
+  if (props.options && props.options.type === 'python') {
+    ext.push(python());
+  }
+  if (props.options && props.options.type === 'markdown') {
+    ext.push(markdown());
+  }
+  return ext;
+});
+
 </script>
