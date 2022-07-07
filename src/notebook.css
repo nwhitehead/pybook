@@ -57,7 +57,7 @@ div.cellinput {
     width: 100%;
     padding: 10px 8px 10px 10px;
 }
-div.cellinput.CodeMirror {
+div.cellinput.v-codemirror {
     border: 1px solid #f0f4ff;
     border-radius: 4px;
     height: auto;

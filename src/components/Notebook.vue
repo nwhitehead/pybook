@@ -18,7 +18,7 @@ import CellInput from "./CellInput.vue";
 export default {
   data() {
     return {
-      code: "blah",
+      code: "# Title\n\nThis is a *bold* move to _do_ it\n",
       code2: "second one",
       options: {
         type:'python',

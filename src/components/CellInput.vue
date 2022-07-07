@@ -20,11 +20,12 @@
   <div class="cellinput">
     <codemirror
       v-model="value"
-      :style="{ height: '200px' }"
-      :autofocus="true"
+      :style="{ maxHeight: '800px' }"
+      :autofocus="false"
       :indent-with-tab="true"
       :tab-size="4"
       :extensions="extensions"
+      :disabled="disabled"
       @change="$emit('update:value', { id, value:$event })"
       @focus="$emit('focus', { id })"
       @blur="$emit('blur', { id })"
@@ -39,6 +40,7 @@ import { computed, ref } from "vue";
 import { Codemirror } from "vue-codemirror";
 import { python } from "@codemirror/lang-python";
 import { markdown } from "@codemirror/lang-markdown";
+import { basicSetup } from 'codemirror';
 
 import EventBus from "./EventBus.js";
 
@@ -54,6 +56,10 @@ const extensions = computed(() => {
     ext.push(markdown());
   }
   return ext;
+});
+
+const disabled = computed(() => {
+  return props.options && props.options.readonly;
 });
 
 </script>
