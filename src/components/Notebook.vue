@@ -18,10 +18,16 @@ import CellInput from "./CellInput.vue";
 export default {
   data() {
     return {
-      code: "# Title\n\nThis is a *bold* move to _do_ it\n",
+      code: `# Title\n\nThis is a *bold* move to _do_ it\nfor i in range(10):\n  print(10 * "Hello")\n\nThis is a *bold* move to _do_ it`,
       code2: "second one",
       options: {
         type:'python',
+        indent: 2,
+        lineNumbers: false,
+        highlightLine: false,
+        folding: false,
+        matchBrackets: true,
+        closeBrackets: false,
       },
       output: {
         "text/plain": "This is some regular text.",
@@ -38,7 +44,6 @@ export default {
   },
   methods: {
     onClick() {
-      console.log('clicked');
       if (this.options.type === 'python') {
         this.options.type = 'markdown';
       } else {
