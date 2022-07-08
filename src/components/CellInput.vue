@@ -6,7 +6,7 @@
 //!
 //! Props:
 //! - value - This is the main text contents inside the cell input.
-//! - id - This is set by component creator, will be passed in emitted messages to keep cells easy to distinguish
+//! - id - This is set by creator, will be passed in emitted messages to keep cells easy to distinguish
 //! - options - This is a dict of options related to the editor
 //!     indent - Number of spaces per indent level (default 4)
 //!     readonly - True if the editor should be readonly (default false)
@@ -17,13 +17,14 @@
 //!     matchBrackets - Show matching brackets (default true)
 //!     closeBrackets - Add closing brackets automatically (default false)
 //!     highlightSelectionMatches - Show matching selections (default false)
-//!     autocomplete - Turn on autocomplete keys and functionality (default false)
-
 //!
 //! Events:
 //! - "update:value" - Emitted when value changes, payload is { id, value }
 //! - "focus" - Emitted when cell is focused, payload is { id }
 //! - "blur" - Emitted when cell loses focus, payload is { id }
+//!
+//! NOTE: This component requires clearing the VueCodemirror global extensions.
+//!
 
 <template>
   <div class="cellinput">
@@ -67,7 +68,6 @@ function nop(target) {
   return true;
 }
 
-console.log(defaultKeymap);
 const blankKeymap = [
   { key:'Ctrl-ArrowUp', run: nop },
   { key:'Ctrl-ArrowDown', run: nop },

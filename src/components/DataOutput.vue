@@ -11,6 +11,7 @@
 //!     - text/plain
 //!     - text/html
 //!     - image/svg+xml
+//!   Additionally value may have key "name" with value of "stdout" or "stderr" to distinguish different "text/plain" MIME outputs.
 //!
 //! If the value has more than one MIME type, they will be shown sequentially with simplest first.
 //!
@@ -30,7 +31,13 @@
 defineProps(['value']);
 
 function getClass (value) {
-    if (this.isPre(value)) return 'stdout';
+    if (this.isPre(value)) {
+        if (value.name === 'stderr') {
+            return 'stderr';
+        }
+        // Default to stdout if there is no name
+        return 'stdout';
+    }
     if (this.isHtml(value)) return 'html';
     if (this.isSVG(value)) return 'svg';
     return 'stdout';

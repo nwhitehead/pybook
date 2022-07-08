@@ -1,18 +1,37 @@
+//!
+//! Cell
+//!
+//! This is a Vue component representing one cell in a notebook.
+//!
+//!
+//! Props:
+//! - value
+//! - output
+//! - id - Unique identifier to keep track of this cell
+//! - selected - true when this cell should be drawn selected
+//! - type - 'code' or 'markdown'
+//! - subtype - For type markdown, either 'edit' or 'show'
+//! - state
+//! - command
+//! - hidden
+//! - readonly
+//! - submit
+//!
+
 <template>
     <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick" v-if="!hidden">
         <div class="side-left handle" :class="leftClass">
         </div>
         <div class="side-right" :class="rightClass">
             <div :class="readonlyClass" v-if="showEdit">
-                <CodeMirrorComponent
+                <CellInput
                     v-bind:value="value"
                     v-bind:id="id"
                     v-bind:options="cmOptions"
                     v-on:update:value="handleInput"
                     v-on:action="handleAction"
                     ref="codemirror"
-                >
-                </CodeMirrorComponent>
+                />
             </div>
             <CheckPoint
                 v-bind:value="value"
@@ -133,7 +152,7 @@ export default {
     },
     components: {
         CellOutput,
-        CodeMirrorComponent,
+        CellInput,
         CheckPoint,
     }
 }

@@ -1,37 +1,24 @@
+//!
+//! CellOutput
+//!
+//! A Vue component representing cell output. Output may consist of text or other MIME types.
+//!
+//! Props:
+//! - values - An array of outputs. Each element in the array has type suitable for DataOutput.
+//!
+
 <template>
-    <div class="output">
+    <div class="celloutput">
         <template v-for="value in values">
-            <pre v-if="isStream(value)" :class="value.name">{{ value.text }}</pre>
-            <DataOutput
-                v-if="isExecuteResult(value) || isDisplayData(value)"
-                v-bind:value="value.data"
-                v-bind:isResult="isExecuteResult(value)"
-            >
-            </DataOutput>
+            <DataOutput v-bind:value="value" />
         </template>
     </div>
 </template>
 
-<script>
+<script setup>
 
 import DataOutput from './DataOutput.vue';
 
-export default {
-    props: ['values'],
-    methods: {
-        isStream (value) {
-            return value.output_type === 'stream';
-        },
-        isExecuteResult (value) {
-            return value.output_type === 'execute_result';
-        },
-        isDisplayData (value) {
-            return value.output_type === 'display_data';
-        },
-    },
-    components: {
-        DataOutput,
-    },
-}
+defineProps(['values']);
 
 </script>

@@ -1,9 +1,9 @@
 <template>
   <div>
     <p>Welcome to the Notebook</p>
-    <Status value="Init" />
-    <DataOutput v-bind:value="output" />
-    <DataOutput v-bind:value="output2" />
+    <Status value="Initializing" />
+    <CellOutput v-bind:values="[output, output2, output3]" />
+    <CheckPoint value="State" type="save" />
     <CellInput v-bind:value="code" id=0 :options="options" />
     <CellInput v-bind:value="code2" id=1 />
     <button @click="onClick">Update</button>
@@ -12,7 +12,9 @@
 
 <script>
 import Status from "./Status.vue";
+import CheckPoint from "./CheckPoint.vue";
 import DataOutput from "./DataOutput.vue";
+import CellOutput from "./CellOutput.vue";
 import CellInput from "./CellInput.vue";
 
 export default {
@@ -30,15 +32,21 @@ export default {
         closeBrackets: false,
       },
       output: {
-        "text/plain": "This is some regular text.",
+        'text/plain': 'This is some regular text.',
       },
       output2: {
-        "text/html": "<b>Bold</b> move",
+        'text/plain': 'This is some stderr text.',
+        name: 'stderr',
+      },
+      output3: {
+        'text/html': '<b>Bold</b> move',
       },
     };
   },
   components: {
     Status,
+    CheckPoint,
+    CellOutput,
     DataOutput,
     CellInput,
   },

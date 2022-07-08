@@ -6,13 +6,13 @@ div.status {
     margin: 10px;
 }
 div.status p {
-    padding: 0;
+    padding: 0 0 0 5px;
     margin: 0;
     font-size: 10pt;
     font-family: monospace;
 }
 
-#app {
+body {
     outline: none !important;
 }
 .cell {
@@ -79,29 +79,25 @@ div.markdown div.cellinput.CodeMirror {
     width: auto;
 }
 
-.output {
+.celloutput {
     height: auto;
-}
-div.output pre {
-    background-color: transparent;
 }
 .evaloutput {
     height: auto;
 }
-div.output pre.stdout {
+div.dataoutput pre.stdout {
+    background-color: transparent;
 }
-div.output pre.stderr {
+div.dataoutput pre.stderr {
     background-color: #ff0;
 }
-.eval {
-}
-.output pre {
+.dataoutput pre {
     white-space: pre-wrap;
     word-break: break-all;
     margin: 0;
     padding: 1px 24px 1px 24px;
 }
-.output div.html {
+.dataoutput div.html {
     margin: 0;
     padding: 1px 24px 1px 24px;
 }
