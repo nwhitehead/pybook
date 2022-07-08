@@ -63,6 +63,25 @@ import EventBus from "./EventBus.js";
 
 const props = defineProps([ 'value', 'id', 'options' ]);
 
+function nop(target) {
+  return true;
+}
+
+console.log(defaultKeymap);
+const blankKeymap = [
+  { key:'Ctrl-ArrowUp', run: nop },
+  { key:'Ctrl-ArrowDown', run: nop },
+  { key:'Ctrl-ArrowLeft', run: nop },
+  { key:'Ctrl-ArrowRight', run: nop },
+  { key:'Ctrl-Enter', run: nop },
+  { key:'Shift-Enter', run: nop },
+  { key:'Alt-Enter', run: nop },
+  { key:'Ctrl-c', run: nop },
+  { key:'Ctrl-k', run: nop },
+  { key:'Ctrl-i', run: nop },
+  { key:'Escape', run: nop },
+];
+
 const defaultExtensions = (() => [
   // Highlight special characters
   highlightSpecialChars(),
@@ -82,6 +101,7 @@ const defaultExtensions = (() => [
   // Show crosshair on rectangular selection
   crosshairCursor(),
   keymap.of([
+    ...blankKeymap,
     ...closeBracketsKeymap,
     ...defaultKeymap,
     ...searchKeymap,
