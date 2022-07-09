@@ -5,7 +5,7 @@
 //! syntax highlighting for Python or Markdown.
 //!
 //! Props:
-//! - value - This is the main text contents inside the cell input.
+//! - modelValue - This is the main text contents inside the cell input.
 //! - id - This is set by creator, will be passed in emitted messages to keep cells easy to distinguish
 //! - options - This is a dict of options related to the editor
 //!     indent - Number of spaces per indent level (default 4)
@@ -19,7 +19,7 @@
 //!     highlightSelectionMatches - Show matching selections (default false)
 //!
 //! Events:
-//! - "update:value" - Emitted when value changes, payload is { id, value }
+//! - "update:modelValue" - Emitted when modelValue changes, payload is value
 //! - "focus" - Emitted when cell is focused, payload is { id }
 //! - "blur" - Emitted when cell loses focus, payload is { id }
 //!
@@ -29,17 +29,16 @@
 <template>
   <div class="cellinput">
     <codemirror
-      v-model="value"
+      v-model="modelValue"
       :style="{ maxHeight: '800px' }"
       :autofocus="false"
       :indent-with-tab="true"
       :tab-size="indent"
       :extensions="extensions"
       :disabled="disabled"
-      @change="$emit('update:value', { id, value:$event })"
+      @update:modelValue="newValue => { modelValue = newValue; $emit('update:modelValue', newValue); }"
       @focus="$emit('focus', { id })"
       @blur="$emit('blur', { id })"
-      class="cellinput"
     />
   </div>
 </template>
@@ -62,7 +61,7 @@ import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete"
 
 import EventBus from "./EventBus.js";
 
-const props = defineProps([ 'value', 'id', 'options' ]);
+const props = defineProps([ 'modelValue', 'id', 'options' ]);
 
 function nop(target) {
   return true;

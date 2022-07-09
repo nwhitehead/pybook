@@ -3,19 +3,19 @@
 //!
 //! This is a Vue component representing one cell in a notebook.
 //!
-//!
 //! Props:
-//! - value
-//! - output
+//! - modelValue - Input value for this cell, in CellInput format
+//! - output - Output value for this cell, in CellOutput format
 //! - id - Unique identifier to keep track of this cell
-//! - selected - true when this cell should be drawn selected
-//! - type - 'code' or 'markdown'
+//! - type - 'python', 'markdown', or 'checkpoint'
 //! - subtype - For type markdown, either 'edit' or 'show'
-//! - state
-//! - command
-//! - hidden
-//! - readonly
-//! - submit
+//!             For type 'checkpoint', either 'save' or 'use'
+//! - selected - true when this cell should be drawn selected
+//! - state - Evaluation state, either "working", "evaluated", or undefined
+//! - command - true to draw cell as in command mode
+//! - hidden - true if cell is hidden and should not be shown
+//! - readonly - true if cell is readonly and cannot be edited
+//! - submit - true if cell should include a "Submit" button
 //!
 
 <template>
@@ -23,138 +23,118 @@
         <div class="side-left handle" :class="leftClass">
         </div>
         <div class="side-right" :class="rightClass">
-            <div :class="readonlyClass" v-if="showEdit">
+            <div :class="readonlyClass" v-if="showEdit()">
                 <CellInput
-                    v-bind:value="value"
-                    v-bind:id="id"
-                    v-bind:options="cmOptions"
-                    v-on:update:value="handleInput"
+                    v-model="modelValue"
+                    :id="id"
+                    :options="cellInputOptions()"
                     v-on:action="handleAction"
-                    ref="codemirror"
+                    ref="cellinput"
+                    @update:modelValue="newValue => { modelValue = newValue; $emit('update:modelValue', newValue); }"
                 />
             </div>
             <CheckPoint
-                v-bind:value="value"
+                v-bind:value="modelValue"
                 v-bind:type="subtype"
-                v-if="showCheckpoint"
-            >
-            </CheckPoint>
+                v-if="showCheckpoint()"
+            />
             <button class="button is-primary" v-if="submit" v-on:click.stop="handleSubmit">
                 Submit
             </button>
             <CellOutput
-                v-bind:values="filteredOutput"
-                v-if="showResults"
-            >
-            </CellOutput>
+                v-bind:values="filteredOutput()"
+                v-if="showResults()"
+            />
         </div>
     </div>
 </template>
 
-<script>
+<script setup>
 
+import { ref } from 'vue';
 import { marked } from 'marked';
 import CellOutput from './CellOutput.vue';
-import CodeMirrorComponent from './CodeMirrorComponent.vue';
+import CellInput from './CellInput.vue';
 import CheckPoint from './CheckPoint.vue';
 
-export default {
-    props: ['value', 'output', 'id', 'selected', 'type', 'subtype', 'state', 'command', 'hidden', 'readonly', 'submit'],
-    computed: {
-        cmOptions () {
-            let options = { };
-            if (this.type === 'code') {
-                options.mode = 'python';
-            }
-            if (this.type === 'markdown') {
-                options.mode = 'markdown';
-            }
-            options.readOnly = this.readonly;
-            return options;
-        },
-        showEdit () {
-            return this.type === 'code' || (this.type === 'markdown' && this.subtype === 'edit');
-        },
-        showResults () {
-            return this.type === 'code' || this.type === 'markdown';
-        },
-        showCheckpoint () {
-            return this.type === 'checkpoint';
-        },
-        readonlyClass: function () {
-            return {
-                'readonly-inner': this.readonly,
-            };
-        },
-        classObject: function () {
-            return {
-                selected: this.selected,
-                command: this.command,
-                working: this.state === 'working',
-                evaluated: this.state === 'evaluated',
-                readonly: this.readonly,
-            }
-        },
-        filteredOutput () {
-            if (this.type === 'code') {
-                return this.output;
-            }
-            if (this.type === 'markdown') {
-                return [ {
-                    output_type:'display_data',
-                    data: {
-                        'text/html': marked(this.value),
-                    },
-                } ];
-            }
-        },
-        leftClass: function() {
-            return {
-                working: this.state === 'working',
-                evaluated: this.state === 'evaluated',
-            }
-        },
-        rightClass: function () {
-            return {
-                code: this.type === 'code',
-                markdown: this.type === 'markdown',
-            }
-        },
-    },
-    methods: {
-        handleInput (event) {
-            this.$emit('update:value', { id:this.id, value:event });
-        },
-        handleAction (event) {
-            this.$emit('action', { id:this.id, action:event.action });
-        },
-        handleClick (event) {
-            this.$emit('click', { id:this.id });
-        },
-        handleSubmit (event) {
-            this.$emit('submit', { id:this.id });
-        },
-        focus () {
-            if (this.$refs.codemirror) {
-                return this.$refs.codemirror.focus();
-            } else {
-                return false;
-            }
-        },
-        blur () {
-            if (this.$refs.codemirror) {
-                return this.$refs.codemirror.blur();
-            } else {
-                return false;
-            }
-        }
+const props = defineProps(['modelValue', 'output', 'id', 'type', 'subtype', 'selected', 'state', 'command', 'hidden', 'readonly', 'submit']);
 
-    },
-    components: {
-        CellOutput,
-        CellInput,
-        CheckPoint,
+const emit = defineEmits(['update:modelValue', 'action', 'click', 'submit']);
+
+// This ref holds the CellInput instance for focus/blur
+const cellinput = ref(null);
+
+function cellInputOptions () {
+    return { type:props.type, readonly:props.readonly };
+}
+
+function showEdit () {
+    return props.type === 'python' || (props.type === 'markdown' && props.subtype === 'edit');
+}
+
+function showResults () {
+    return props.type === 'python' || props.type === 'markdown';
+}
+
+function showCheckpoint () {
+    return props.type === 'checkpoint';
+}
+
+function readonlyClass () {
+    return {
+        'readonly-inner': props.readonly,
+    };
+}
+
+function classObject () {
+    return {
+        selected: props.selected,
+        command: props.command,
+        working: props.state === 'working',
+        evaluated: props.state === 'evaluated',
+        readonly: props.readonly,
     }
+}
+
+function filteredOutput () {
+    if (props.type === 'python') {
+        return props.output;
+    }
+    if (props.type === 'markdown') {
+        return [ {
+            'text/html': marked(props.modelValue),
+        } ];
+    }
+}
+
+function leftClass () {
+    return {
+        working: this.state === 'working',
+        evaluated: this.state === 'evaluated',
+    }
+}
+
+function rightClass () {
+    return {
+        python: this.type === 'python',
+        markdown: this.type === 'markdown',
+    }
+}
+
+function handleInput (event) {
+    emit('update:value', event);
+}
+
+function handleAction (event) {
+    emit('action', { id:props.id, action:event.action });
+}
+
+function handleClick (event) {
+    emit('click', { id:props.id });
+}
+
+function handleSubmit (event) {
+    emit('submit', { id:props.id });
 }
 
 </script>

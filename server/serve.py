@@ -25,12 +25,14 @@ if sys.version_info < (3, 7, 5):
     # Fix for WASM MIME type for older Python versions
     Handler.extensions_map['.wasm'] = 'application/wasm'
 
+class FastServer(socketserver.TCPServer):
+    allow_reuse_address = True
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Test local server for PyBook")
     parser.add_argument('--port', type=int, default=8001)
     args = parser.parse_args()
     port = args.port
-    with socketserver.TCPServer(("", port), Handler) as httpd:
+    with FastServer(("", port), Handler) as httpd:
         print("Serving at: http://127.0.0.1:{}".format(port))
         httpd.serve_forever()

@@ -67,7 +67,7 @@ div.cellinput.v-codemirror {
 div.checkpoint {
     padding: 10px 8px 10px 10px;
 }
-div.code div.cellinput.CodeMirror {
+div.python div.cellinput.CodeMirror {
     background-color: #f6faff;
 }   
 div.markdown div.cellinput.CodeMirror {
