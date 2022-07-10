@@ -17,6 +17,15 @@
 //! - readonly - true if cell is readonly and cannot be edited
 //! - submit - true if cell should include a "Submit" button
 //!
+//! Events:
+//! - update:modelValue - Emitted when modelValue changes, payload is value
+//! - action - Emitted when an action is requested (such as with keyboard shortcut or mouse UI, e.g. insert new cell)
+//!     Payload is { id, action }
+//! - click - Emitted when cell is clicked (usual response would be to select this cell, focus input)
+//!     Payload is { id }
+//! - submit - Emitted when submit button is pressed (if present)
+//!     Payload is { id }
+//!
 
 <template>
     <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick" v-if="!hidden">
@@ -119,10 +128,6 @@ function rightClass () {
         python: this.type === 'python',
         markdown: this.type === 'markdown',
     }
-}
-
-function handleInput (event) {
-    emit('update:value', event);
 }
 
 function handleAction (event) {

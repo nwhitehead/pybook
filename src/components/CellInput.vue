@@ -19,9 +19,9 @@
 //!     highlightSelectionMatches - Show matching selections (default false)
 //!
 //! Events:
-//! - "update:modelValue" - Emitted when modelValue changes, payload is value
-//! - "focus" - Emitted when cell is focused, payload is { id }
-//! - "blur" - Emitted when cell loses focus, payload is { id }
+//! - update:modelValue" - Emitted when modelValue changes, payload is value
+//! - focus - Emitted when cell is focused, payload is { id }
+//! - blur - Emitted when cell loses focus, payload is { id }
 //!
 //! NOTE: This component requires clearing the VueCodemirror global extensions.
 //!
