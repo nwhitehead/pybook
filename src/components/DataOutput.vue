@@ -26,6 +26,25 @@
     </div>
 </template>
 
+<style>
+div.dataoutput pre.stdout {
+    background-color: transparent;
+}
+div.dataoutput pre.stderr {
+    background-color: #ff0;
+}
+.dataoutput pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0;
+    padding: 1px 24px 1px 24px;
+}
+.dataoutput div.html {
+    margin: 0;
+    padding: 1px 24px 1px 24px;
+}
+</style>
+
 <script setup>
 
 defineProps(['value']);

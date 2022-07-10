@@ -27,10 +27,10 @@
 //!
 
 <template>
-  <div class="cellinput">
+  <div :class="{ cellinput:true, python:isPython, markdown:isMarkdown }">
     <codemirror
       v-model="modelValue"
-      :style="{ maxHeight: '800px' }"
+      :style="{ maxHeight: '600px' }"
       :autofocus="false"
       :indent-with-tab="true"
       :tab-size="indent"
@@ -42,6 +42,26 @@
     />
   </div>
 </template>
+
+<style>
+div.cellinput {
+    height: auto;
+    width: 100%;
+    background-color: #f6f6f6;
+    padding: 10px 8px 10px 10px;
+    border: 1px solid #f0f4ff;
+    border-radius: 4px;
+    height: auto;
+    z-index: 0;
+}
+div.cellinput.python {
+    background-color: #f6faff;
+}
+div.cellinput.markdown {
+    background-color: #fffaf6;
+}
+.cm-editor.cm-focused { outline: none !important }
+</style>
 
 <script setup>
 
@@ -141,6 +161,16 @@ const extensions = computed(() => {
     ext.push(markdown());
   }
   return ext;
+});
+
+const isPython = computed(() => {
+  const opts = props.options ? props.options : {};
+  return opts.type === 'python';
+});
+
+const isMarkdown = computed(() => {
+  const opts = props.options ? props.options : {};
+  return opts.type === 'markdown';
 });
 
 const disabled = computed(() => {

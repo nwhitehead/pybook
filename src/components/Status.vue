@@ -22,6 +22,21 @@
     </div>
 </template>
 
+<style>
+div.status {
+    display: inline-flex;
+    width: auto;
+    height: 32px;
+    margin: 10px;
+}
+div.status p {
+    padding: 0 0 0 5px;
+    margin: 0;
+    font-size: 10pt;
+    font-family: monospace;
+}
+</style>
+
 <script setup>
 defineProps(['value']);
 </script>

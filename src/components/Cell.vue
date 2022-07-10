@@ -28,16 +28,16 @@
 //!
 
 <template>
-    <div class="cell" v-bind:class="classObject" v-on:click.stop="handleClick" v-if="!hidden">
-        <div class="side-left handle" :class="leftClass">
+    <div class="cell" :class="classObject()" v-on:click.stop="handleClick" v-if="!hidden">
+        <div class="side-left handle" :class="leftClass()">
         </div>
-        <div class="side-right" :class="rightClass">
-            <div :class="readonlyClass" v-if="showEdit()">
+        <div class="side-right" :class="rightClass()">
+            <div :class="readonlyClass()" v-if="showEdit()">
                 <CellInput
                     v-model="modelValue"
                     :id="id"
                     :options="cellInputOptions()"
-                    v-on:action="handleAction"
+                    v-on:action="handleAction()"
                     ref="cellinput"
                     @update:modelValue="newValue => { modelValue = newValue; $emit('update:modelValue', newValue); }"
                 />
@@ -47,7 +47,7 @@
                 v-bind:type="subtype"
                 v-if="showCheckpoint()"
             />
-            <button class="button is-primary" v-if="submit" v-on:click.stop="handleSubmit">
+            <button class="button is-primary" v-if="submit" v-on:click.stop="handleSubmit()">
                 Submit
             </button>
             <CellOutput
@@ -57,6 +57,47 @@
         </div>
     </div>
 </template>
+
+<style>
+.cell {
+    position: relative;
+    border: 1px solid transparent;
+    border-left-width: 5px;
+    margin: 15px;
+    padding: 10px;
+    display: flex;
+}
+.cell.selected {
+    border: 1px solid #00f;
+    border-left-width: 5px;
+}
+.cell.command {
+    background: #ddd;
+    border: 1px solid #080;
+    border-left-width: 5px;
+    border-right-width: 5px;
+}
+.readonly-inner {
+    border: 15px solid;
+    border-image: repeating-linear-gradient(44deg, #888,#888 7px,#ff0 7px, #ff0 15px, #888 15px) 0 15 0 0;
+    border-width: 0px 15px 0px 0px;
+}
+.side-left.working {
+    background: #edf;
+}
+.side-left.evaluated {
+    background: #0a0;
+}
+
+div .side-left {
+    min-height: 40px;
+    flex: 0 0 40px;
+}
+div .side-right {
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+</style>
 
 <script setup>
 

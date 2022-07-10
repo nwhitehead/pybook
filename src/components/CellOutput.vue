@@ -15,6 +15,12 @@
     </div>
 </template>
 
+<style>
+.celloutput {
+    height: auto;
+}
+</style>
+
 <script setup>
 
 import DataOutput from './DataOutput.vue';

@@ -10,7 +10,8 @@
   </div> -->
   <div>
     <p>Welcome to the Notebook</p>
-    <Cell id="5" v-model="txt" :type="options.type" :subtype="'edit'" :output="[output, output2]"/>
+    <Status value="Initializing" />
+    <Cell id="5" v-model="txt" :type="options.type" :subtype="'edit'" :output="[output, output2]" selected="true" />
     <Cell id="3" v-model:value="code2" :type="'python'" :output="[output3]"/>
     <button @click="onClick">Switch</button>
   </div>

@@ -15,6 +15,12 @@
     </div>
 </template>
 
+<style>
+div.checkpoint {
+    padding: 10px 8px 10px 10px;
+}
+</style>
+
 <script setup>
 
 const props = defineProps(['value', 'type']);
