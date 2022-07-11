@@ -10,9 +10,25 @@
   </div> -->
   <div>
     <p>Welcome to the Notebook</p>
+    <dropdown name="Cell" :values="[
+        { text:'Insert new cell before', action:insertCellBefore },
+        { text:'Insert new cell after', action:insertCellAfter },
+        { text:'Delete cell', action:deleteCell },
+        { divider:true },
+        { text:'Move cell up', action:moveCellBefore },
+        { text:'Move cell down', action:moveCellAfter },
+    ]" />
+
     <Status value="Initializing" />
-    <Cell id="5" v-model="txt" :type="options.type" :subtype="'edit'" :output="[output, output2]" selected="true" />
-    <Cell id="3" v-model:value="code2" :type="'python'" :output="[output3]"/>
+    <Cell 
+      id="5"
+      v-model="arr[0]"
+      :type="options.type"
+      :subtype="'edit'"
+      :output="[output, output2]"
+      selected="true"
+    />
+    <Cell id="3" v-model="arr[1]" :type="'python'" :output="[output3]"/>
     <button @click="onClick">Switch</button>
   </div>
 </template>
@@ -20,12 +36,19 @@
 <script setup>
 
 import { reactive, ref } from "vue";
+import Dropdown from "./Dropdown.vue";
 import Status from "./Status.vue";
 import Cell from "./Cell.vue";
 import CheckPoint from "./CheckPoint.vue";
 import DataOutput from "./DataOutput.vue";
 import CellOutput from "./CellOutput.vue";
 import CellInput from "./CellInput.vue";
+
+const arr = ref([
+  'blah',
+  'foo',
+  'baz',
+]);
 
 const txt = ref("blah");
 const code = ref(`# Title\n\nThis is a *bold* move to _do_ it\nfor i in range(10):\n    print(10 * "Hello")\n\nThis is a *bold* move to _do_ it`);
@@ -59,4 +82,7 @@ function onClick() {
   }
 }
 
+function insertCellBefore () {
+  console.log('insertCellBefore');
+}
 </script>
