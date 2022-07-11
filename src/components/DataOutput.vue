@@ -37,11 +37,11 @@ div.dataoutput pre.stderr {
     white-space: pre-wrap;
     word-break: break-all;
     margin: 0;
-    padding: 1px 24px 1px 24px;
+    padding: 1px 15px 1px 15px;
 }
 .dataoutput div.html {
     margin: 0;
-    padding: 1px 24px 1px 24px;
+    padding: 1px 15px 1px 15px;
 }
 </style>
 
