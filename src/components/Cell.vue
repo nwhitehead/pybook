@@ -8,7 +8,7 @@
 //! - output - Output value for this cell, in CellOutput format
 //! - id - Unique identifier to keep track of this cell
 //! - type - 'python', 'markdown', or 'checkpoint'
-//! - subtype - For type markdown, either 'edit' or 'show'
+//! - subtype - For type 'markdown', either 'edit' or 'show'
 //!             For type 'checkpoint', either 'save' or 'use'
 //! - selected - true when this cell should be drawn selected
 //! - state - Evaluation state, either "working", "evaluated", or undefined
@@ -37,21 +37,21 @@
                     v-model="modelValue"
                     :id="id"
                     :options="cellInputOptions()"
-                    v-on:action="handleAction()"
+                    @action="handleAction()"
                     ref="cellinput"
                     @update:modelValue="newValue => { modelValue = newValue; $emit('update:modelValue', newValue); }"
                 />
             </div>
             <CheckPoint
-                v-bind:value="modelValue"
-                v-bind:type="subtype"
+                :value="modelValue"
+                :type="subtype"
                 v-if="showCheckpoint()"
             />
-            <button class="button is-primary" v-if="submit" v-on:click.stop="handleSubmit()">
+            <button class="button is-primary" v-if="submit" @click.stop="handleSubmit()">
                 Submit
             </button>
             <CellOutput
-                v-bind:values="filteredOutput()"
+                :values="filteredOutput()"
                 v-if="showResults()"
             />
         </div>
@@ -119,7 +119,7 @@ function cellInputOptions () {
 }
 
 function showEdit () {
-    return props.type === 'python' || (props.type === 'markdown' && props.subtype === 'edit');
+    return props.type === undefined || props.type === 'python' || (props.type === 'markdown' && props.subtype === 'edit');
 }
 
 function showResults () {
