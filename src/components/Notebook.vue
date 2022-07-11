@@ -3,7 +3,8 @@
     <p>Welcome to the Notebook</p>
     <Cells
       v-model="arr"
-      :select="0"
+      :select="1"
+      :command="false"
     />
   </div>
 </template>
@@ -27,11 +28,15 @@ const cell0 = {
     { 'text/plain': 'This is some stderr text.', name: 'stderr' },
   ],
   id:0,
+  cell_type:'code',
+  language:'python',
 };
 const cell1 = {
   source:'x',
   outputs:[],
   id:1,
+  cell_type:'code',
+  language:'python',
 };
 const arr = ref([cell0, cell1]);
 

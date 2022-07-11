@@ -9,13 +9,12 @@
 //!    - outputs - Array of output data (in CellOutput/DataOutput format)
 //!    - id - Unique identifier for cell
 //!    - cell_type - Either "code", "markdown", or "checkpoint"
-//!    - metadata - Can have:
-//!        - sub_type - For cell_type "markdown" can be "edit" or "view", for "checkpoint" can be "save" or "use"
-//!        - language - For cell_type "code" right now always "python", future expansion other languages
-//!        - state - Evaluation state, either "working", "evaluated", or undefined
-//!        - readonly - True if cell is readonly
-//!        - hidden - True if cell should be entirely hidden
-//!        - submit - True if cell should have submit button
+//!    - subtype - For cell_type "markdown" can be "edit" or "view", for "checkpoint" can be "save" or "use"
+//!    - language - For cell_type "code" right now always "python", future expansion would be other languages e.g. "javascript"
+//!    - state - Evaluation state, either "working", "evaluated", or undefined
+//!    - readonly - True if cell is readonly
+//!    - hidden - True if cell should be entirely hidden
+//!    - submit - True if cell should have submit button
 //! - select - Id of cell to show as selected
 //! - command - True if edit mode is in "command" mode (as opposed to edit mode)
 //!
@@ -32,12 +31,18 @@
             <Cell
                 :modelValue="element.source"
                 :output="element.outputs"
-                :hidden="false"
                 :id="element.id"
+                :type="computeType(element)"
+                :subtype="computeSubtype(element)"
                 :selected="isSelected(element.id)"
-                :command="false"
-                :type="'python'"
+                :state="element.state"
+                :command="isSelected(element.id) && command"
+                :hidden="isHidden(element)"
+                :readonly="isReadOnly(element)"
+                :submit="isSubmit(element)"
                 @update:modelValue="newValue => { updateIdSource(element.id, newValue); }"
+                @action="handleAction"
+                @click="handleClick"
             />
         </template>
     </draggable>
@@ -46,18 +51,6 @@
 <script setup>
 
             // <!-- <cell
-            //     :value="element.source"
-            //     :output="element.outputs"
-            //     :id="element.id"
-            //     :selected="isSelected(element.id)"
-            //     :command="isSelected(element.id) && command"
-            //     :type="computeType(element)"
-            //     :subtype="computeSubtype(element)"
-            //     :state="element.state"
-            //     :hidden="false/*isHidden(element)*/"
-            //     :readonly="isReadOnly(element)"
-            //     :submit="isSubmit(element)"
-            //     @update:value="handleInput"
             //     @action="handleAction"
             //     @click="handleClick"
             //     @submit="handleSubmit"
@@ -71,42 +64,8 @@ import Cell from './Cell.vue';
 const props = defineProps([ 'modelValue', 'select', 'command' ]);
 const emit = defineEmits(['update:modelValue', 'action', 'click', 'submit']);
 
-function updateIdSource(id, newValue) {
-    let updated = false;
-    for (let i = 0; i < props.modelValue.length; i++) {
-        if (props.modelValue[i].id === id) {
-            props.modelValue[i].source = newValue;
-            emit('update:modelValue', props.modelValue);
-            updated = true;
-            break;
-        }
-    }
-    if (!updated) throw "Could not find cell id to update";
-}
-
-function isSubmit (content) {
-    if (content.cell_type === 'code' && content.metadata !== undefined && content.metadata.submit === true) {
-        return true;
-    }
-    return false;
-}
-
-function isHidden (content) {
-    if (content.cell_type === 'code' && content.metadata !== undefined && content.metadata.hidden === true) {
-        return true;
-    }
-    return false;
-}
-
-function isReadOnly (content) {
-    if (content.metadata !== undefined && content.metadata.readonly === true) {
-        return true;
-    }
-    return false;
-}
-
 function computeType (content) {
-    if (content.cell_type === 'code') return 'code';
+    if (content.cell_type === 'code' && content.language === 'python') return 'python';
     if (content.cell_type === 'markdown') return 'markdown';
     if (content.cell_type === 'checkpoint') return 'checkpoint';
     throw "Illegal content type";
@@ -114,15 +73,49 @@ function computeType (content) {
 
 function computeSubtype (content) {
     if (content.cell_type === 'code') return '';
-    if (content.cell_type === 'markdown' && content.metadata !== undefined && content.metadata.subtype === 'view') return 'view';
-    if (content.cell_type === 'markdown' && content.metadata !== undefined && content.metadata.subtype === 'edit') return 'edit';
-    if (content.cell_type === 'checkpoint' && content.metadata !== undefined && content.metadata.subtype === 'save') return 'save';
-    if (content.cell_type === 'checkpoint' && content.metadata !== undefined && content.metadata.subtype === 'use') return 'use';
+    if (content.cell_type === 'markdown' && content.subtype === 'view') return 'view';
+    if (content.cell_type === 'markdown' && content.subtype === 'edit') return 'edit';
+    if (content.cell_type === 'checkpoint' && content.subtype === 'save') return 'save';
+    if (content.cell_type === 'checkpoint' && content.subtype === 'use') return 'use';
     throw "Illegal content subtype";
 }
-
 function isSelected (index) {
     return index === props.select;
+}
+
+function isHidden (content) {
+    // Any type of cell can be hidden
+    if (content.hidden === true) {
+        return true;
+    }
+    return false;
+}
+
+function isReadOnly (content) {
+    if (content.readonly === true) {
+        return true;
+    }
+    return false;
+}
+
+function isSubmit (content) {
+    // Only code cells can have "submit" button
+    if (content.cell_type === 'code' && content.submit === true) {
+        return true;
+    }
+    return false;
+}
+
+function updateIdSource(id, newValue) {
+    //! Update the modelValue for a specific id (input source changed for a cell)
+    for (let i = 0; i < props.modelValue.length; i++) {
+        if (props.modelValue[i].id === id) {
+            props.modelValue[i].source = newValue;
+            emit('update:modelValue', props.modelValue);
+            return;
+        }
+    }
+    throw "Could not find cell id to update";
 }
 
 function dragStart (event) {
@@ -149,6 +142,7 @@ function handleAction (event) {
 }
 
 function handleClick (event) {
+    console.log('click Cell in Cells', event);
     emit('click', event);
 }
 
