@@ -23,9 +23,8 @@
     <draggable
         v-model="modelValue"
         class="cells"
-        @start="dragStart"
-        @end="dragEnd"
         item-key="id"
+        @update:modelValue="newValue => { modelValue = newValue; $emit('update:modelValue', newValue); }"
     >
         <template #item="{element}">
             <Cell
@@ -43,19 +42,13 @@
                 @update:modelValue="newValue => { updateIdSource(element.id, newValue); }"
                 @action="handleAction"
                 @click="handleClick"
+                @submit="handleSubmit"
             />
         </template>
     </draggable>
 </template>
 
 <script setup>
-
-            // <!-- <cell
-            //     @action="handleAction"
-            //     @click="handleClick"
-            //     @submit="handleSubmit"
-            //     ref="cell"
-            // /> -->
 
 import { computed } from 'vue';
 import draggable from 'vuedraggable';
@@ -118,21 +111,6 @@ function updateIdSource(id, newValue) {
     throw "Could not find cell id to update";
 }
 
-function dragStart (event) {
-    // const cm = this.$globalCMList;
-    // for (var i = 0; i < cm.length; i++) {
-    //     cm[i].__oldDragDrop = cm[i].getOption('dragDrop');
-    //     cm[i].setOption('dragDrop', false);
-    // }
-}
-
-function dragEnd (event) {
-    const cm = this.$globalCMList;
-    for (let i = 0; i < cm.length; i++) {
-        cm[i].setOption('dragDrop', cm[i].__oldDragDrop);
-    }
-}
-
 function handleInput (event) {
     emit('update:modelValue', event);
 }
@@ -142,7 +120,6 @@ function handleAction (event) {
 }
 
 function handleClick (event) {
-    console.log('click Cell in Cells', event);
     emit('click', event);
 }
 

@@ -2,9 +2,10 @@
   <div>
     <p>Welcome to the Notebook</p>
     <Cells
-      v-model="arr"
-      :select="1"
+      v-model="notebook.cells"
+      :select="notebook.select"
       :command="false"
+      @click="handleClick"
     />
   </div>
 </template>
@@ -21,26 +22,35 @@ import CellOutput from "./CellOutput.vue";
 import CellInput from "./CellInput.vue";
 import Cells from "./Cells.vue";
 
-const cell0 = {
-  source:'for i in range(10):\n    print(i)\n',
-  outputs:[
-    { 'text/plain': 'This is some regular text.' },
-    { 'text/plain': 'This is some stderr text.', name: 'stderr' },
+const notebook = reactive({
+  select: 0,
+  cells: [
+    {
+      id:0,
+      source:'for i in range(10):\n    print(i)\n',
+      outputs:[
+        { 'text/plain': 'This is some regular text.' },
+        { 'text/plain': 'This is some stderr text.', name: 'stderr' },
+      ],
+      cell_type:'code',
+      language:'python',
+    },
+    {
+      id:1,
+      source:'x',
+      outputs:[],
+      cell_type:'code',
+      language:'python',
+    },
   ],
-  id:0,
-  cell_type:'code',
-  language:'python',
-};
-const cell1 = {
-  source:'x',
-  outputs:[],
-  id:1,
-  cell_type:'code',
-  language:'python',
-};
-const arr = ref([cell0, cell1]);
+});
 
 function insertCellBefore () {
   console.log('insertCellBefore');
 }
+
+function handleClick (event) {
+  notebook.select = event.id;
+}
+
 </script>

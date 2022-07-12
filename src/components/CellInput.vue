@@ -102,6 +102,15 @@ const blankKeymap = [
   { key:'Escape', run: nop },
 ];
 
+const ignoreInputDropExtension = function () {
+  return EditorState.transactionFilter.of(transaction => {
+    if (transaction.isUserEvent('input.drop')) {
+      return; // Ignore input.drop transactions
+    }
+    return transaction;
+  });
+};
+
 const defaultExtensions = (() => [
   // Highlight special characters
   highlightSpecialChars(),
@@ -120,6 +129,8 @@ const defaultExtensions = (() => [
   rectangularSelection(),
   // Show crosshair on rectangular selection
   crosshairCursor(),
+  // Custom drag and drop handler
+  ignoreInputDropExtension(),
   keymap.of([
     ...blankKeymap,
     ...closeBracketsKeymap,
