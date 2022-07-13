@@ -26,9 +26,12 @@
 //! - submit - Emitted when submit button is pressed (if present)
 //!     Payload is { id }
 //!
+//! Uses "mousedown" for handling mouse clicks to stay in sync with text cursor moves in codemirror
+//! (Otherwise cursor moves on button down, selection moves on button up)
+//!
 
 <template>
-    <div class="cell" :class="classObject()" v-on:click.stop="handleClick" v-if="!hidden">
+    <div class="cell" :class="classObject()" @mousedown.stop="handleClick" v-if="!hidden">
         <div class="side-left handle" :class="leftClass()">
         </div>
         <div class="side-right" :class="rightClass()">

@@ -17,10 +17,12 @@
 //!    - submit - True if cell should have submit button
 //! - select - Id of cell to show as selected
 //! - command - True if edit mode is in "command" mode (as opposed to edit mode)
+//! - allowDrag - True if cells can be dragged to reorder
 //!
 
 <template>
     <draggable
+        v-if="allowDrag"
         v-model="modelValue"
         class="cells"
         item-key="id"
@@ -46,6 +48,25 @@
             />
         </template>
     </draggable>
+            <Cell
+                v-else
+                v-for="element in modelValue"
+                :modelValue="element.source"
+                :output="element.outputs"
+                :id="element.id"
+                :type="computeType(element)"
+                :subtype="computeSubtype(element)"
+                :selected="isSelected(element.id)"
+                :state="element.state"
+                :command="isSelected(element.id) && command"
+                :hidden="isHidden(element)"
+                :readonly="isReadOnly(element)"
+                :submit="isSubmit(element)"
+                @update:modelValue="newValue => { updateIdSource(element.id, newValue); }"
+                @action="handleAction"
+                @click="handleClick"
+                @submit="handleSubmit"
+            />
 </template>
 
 <script setup>
@@ -54,7 +75,7 @@ import { computed } from 'vue';
 import draggable from 'vuedraggable';
 import Cell from './Cell.vue';
 
-const props = defineProps([ 'modelValue', 'select', 'command' ]);
+const props = defineProps([ 'modelValue', 'select', 'command', 'allowDrag' ]);
 const emit = defineEmits(['update:modelValue', 'action', 'click', 'submit']);
 
 function computeType (content) {

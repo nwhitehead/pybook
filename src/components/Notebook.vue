@@ -5,6 +5,7 @@
       v-model="notebook.cells"
       :select="notebook.select"
       :command="false"
+      :allowDrag="true"
       @click="handleClick"
     />
   </div>
