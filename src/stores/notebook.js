@@ -1,6 +1,20 @@
 import { defineStore } from 'pinia';
 
-export const useCounterStore = defineStore('counter', {
+function newCell() {
+  return {
+    source: '',
+    cell_type: 'code',
+    language: 'python',
+    evalstate: '',
+    outputs: [],
+  };
+}
+
+function newPage() {
+  return [ newCell() ];
+}
+
+export const useNotebook = defineStore('notebook', {
     state: () => {
       return { count: 0 }
     },

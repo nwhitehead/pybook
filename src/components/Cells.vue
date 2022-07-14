@@ -19,6 +19,10 @@
 //! - command - True if edit mode is in "command" mode (as opposed to edit mode)
 //! - allowDrag - True if cells can be dragged to reorder
 //!
+//! Events:
+//! - update:modelValue - Emitted when modelValue changes, payload is values array (this is for reordering cells by dragging usually)
+//! - update:modelCellValue - Emitted when single cell modelValue changes, payload is {id, value}
+//!
 
 <template>
     <draggable
@@ -26,7 +30,8 @@
         v-model="modelValue"
         class="cells"
         item-key="id"
-        @update:modelValue="newValue => { modelValue = newValue; $emit('update:modelValue', newValue); }"
+        @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
+        @update:modelCellValue="newValue => { $emit('update:modelCellValue', newValue); }"
     >
         <template #item="{element}">
             <Cell
@@ -41,7 +46,7 @@
                 :hidden="isHidden(element)"
                 :readonly="isReadOnly(element)"
                 :submit="isSubmit(element)"
-                @update:modelValue="newValue => { updateIdSource(element.id, newValue); }"
+                @update:modelValue="newValue => { $emit('update:modelCellValue', { id:element.id, value:newValue }); }"
                 @action="handleAction"
                 @click="handleClick"
                 @submit="handleSubmit"
@@ -62,7 +67,7 @@
                 :hidden="isHidden(element)"
                 :readonly="isReadOnly(element)"
                 :submit="isSubmit(element)"
-                @update:modelValue="newValue => { updateIdSource(element.id, newValue); }"
+                @update:modelValue="newValue => { $emit('update:modelCellValue', { id:element.id, value:newValue }); }"
                 @action="handleAction"
                 @click="handleClick"
                 @submit="handleSubmit"
@@ -76,7 +81,7 @@ import draggable from 'vuedraggable';
 import Cell from './Cell.vue';
 
 const props = defineProps([ 'modelValue', 'select', 'command', 'allowDrag' ]);
-const emit = defineEmits(['update:modelValue', 'action', 'click', 'submit']);
+const emit = defineEmits(['update:modelValue', 'update:modelCellValue', 'action', 'click', 'submit']);
 
 function computeType (content) {
     if (content.cell_type === 'code' && content.language === 'python') return 'python';
@@ -118,18 +123,6 @@ function isSubmit (content) {
         return true;
     }
     return false;
-}
-
-function updateIdSource(id, newValue) {
-    //! Update the modelValue for a specific id (input source changed for a cell)
-    for (let i = 0; i < props.modelValue.length; i++) {
-        if (props.modelValue[i].id === id) {
-            props.modelValue[i].source = newValue;
-            emit('update:modelValue', props.modelValue);
-            return;
-        }
-    }
-    throw "Could not find cell id to update";
 }
 
 function handleInput (event) {

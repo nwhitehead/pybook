@@ -10,6 +10,7 @@
       :select="notebook.select"
       :command="false"
       :allowDrag="true"
+      @update:modelCellValue="newValue => { updateCellIdSource(notebook.cells, newValue.id, newValue.value); }"
       @click="handleClick"
     />
   </div>
@@ -35,9 +36,9 @@ import { signalMap,
          inputPut
        } from '../signal.js';
 
-import { useCounterStore } from '../stores/notebook.js';
+import { useNotebook } from '../stores/notebook.js';
 
-const counter = useCounterStore();
+const nbstore = useNotebook();
 
 let normalstate = null;
 
@@ -78,9 +79,24 @@ const notebook = reactive({
   ],
 });
 
+function getCellId(value, id) {
+  //! Get cell by specific id
+  for (let i = 0; i < value.length; i++) {
+    if (value[i].id === id) {
+      return value[i];
+    }
+  }
+  throw 'Could not find cell id';
+}
+
+function updateCellIdSource(value, id, newValue) {
+  const cell = getCellId(value, id);
+  cell.source = newValue;
+}
+
 function cellEval () {
   console.log('Notebook cellEval');
-  const src = notebook.cells[notebook.select].source;
+  const src = getCellId(notebook.cells, notebook.select).source;
   console.log(src);
   clearInterrupt();
   python.evaluate(src, normalstate, {

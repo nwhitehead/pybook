@@ -42,7 +42,7 @@
                     :options="cellInputOptions()"
                     @action="handleAction()"
                     ref="cellinput"
-                    @update:modelValue="newValue => { modelValue = newValue; $emit('update:modelValue', newValue); }"
+                    @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
                 />
             </div>
             <CheckPoint

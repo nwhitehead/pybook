@@ -36,7 +36,7 @@
       :tab-size="indent"
       :extensions="extensions"
       :disabled="disabled"
-      @update:modelValue="newValue => { modelValue = newValue; $emit('update:modelValue', newValue); }"
+      @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
       @focus="$emit('focus', { id })"
       @blur="$emit('blur', { id })"
     />
