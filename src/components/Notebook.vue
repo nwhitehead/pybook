@@ -1,6 +1,10 @@
 <template>
-  <div>
-    <p>Welcome to the Notebook</p>
+  <div
+    id="app"
+    tabindex="0"
+    @keyup.enter.ctrl.exact="cellEval"
+    @keyup.c.ctrl.exact="cellInterrupt"
+  >
     <Cells
       v-model="notebook.cells"
       :select="notebook.select"
@@ -24,8 +28,30 @@ import CellInput from "./CellInput.vue";
 import Cells from "./Cells.vue";
 
 import { newPythonKernel } from '../python.js';
+import { signalMap,
+         isBusy,
+         isStarting, setStarting,
+         setInterrupt, clearInterrupt,
+         inputPut
+       } from '../signal.js';
 
-const python = newPythonKernel();
+import { useCounterStore } from '../stores/notebook.js';
+
+let normalstate = null;
+
+const opts = {
+  onReady: function (version) {
+    //EventBus.$emit('update:status', 'Ready');
+    console.log(version);
+    python.freshstate(normalstate, {
+      onResponse: function() {
+        normalstate = 'State 0';
+        console.log('Initial state setup');
+      },
+    });
+  },
+};
+const python = newPythonKernel(opts);
 
 const notebook = reactive({
   select: 0,
@@ -50,6 +76,23 @@ const notebook = reactive({
   ],
 });
 
+function cellEval () {
+  console.log('Notebook cellEval');
+  const src = notebook.cells[notebook.select].source;
+  console.log(src);
+  clearInterrupt();
+  python.evaluate(src, normalstate, {
+    onResponse: function () {
+      console.log('Got onResponse from evaluate');
+    }
+  });
+}
+
+function cellInterrupt () {
+  console.log('Notebook cellInterrupt');
+  setInterrupt();
+}
+
 function insertCellBefore () {
   console.log('insertCellBefore');
 }
@@ -57,5 +100,6 @@ function insertCellBefore () {
 function handleClick (event) {
   notebook.select = event.id;
 }
+
 
 </script>
