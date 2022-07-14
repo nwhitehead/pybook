@@ -23,6 +23,10 @@ import CellOutput from "./CellOutput.vue";
 import CellInput from "./CellInput.vue";
 import Cells from "./Cells.vue";
 
+import { newPythonKernel } from '../python.js';
+
+const python = newPythonKernel();
+
 const notebook = reactive({
   select: 0,
   cells: [
