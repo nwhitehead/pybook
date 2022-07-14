@@ -37,6 +37,8 @@ import { signalMap,
 
 import { useCounterStore } from '../stores/notebook.js';
 
+const counter = useCounterStore();
+
 let normalstate = null;
 
 const opts = {
