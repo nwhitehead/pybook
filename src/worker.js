@@ -76,21 +76,22 @@ async function configure(config) {
     };
     pyodide.setInterruptBuffer(sharedArray);
     pyodide.registerJsModule('pybook', pybook); // synchronous
-    pyodide.loadPackage('pbexec').then( () => {
-        pyodide.runPython('import sys; sys.setrecursionlimit(120)');
-        pyodide.runPython('import pbexec');
-        pyodide.runPython('pbexec.register_pickle()');
-        // Start with fresh state as base
-        states = { 
-            base:pyodide.globals.get('pbexec').fresh_state()
-        };
-        // Clear starting flag
-        Atomics.store(sharedArray, signalMap['starting'], 0);
-        // Clear busy flag
-        Atomics.store(sharedArray, signalMap['busy'], 0);
-        loaded = true;
-        postMessage({ type:'ready', data:version });
-    });
+    await pyodide.loadPackage('micropip');
+    pyodide.runPython('import micropip');
+    pyodide.runPython('import sys; sys.setrecursionlimit(120)');
+    await pyodide.runPythonAsync('await micropip.install("' + absurl + '/lib/pyodide/pbexec_nwhitehead-0.0.1-py3-none-any.whl' + '")');
+    pyodide.runPython('from pbexec import pbexec');
+    pyodide.runPython('pbexec.register_pickle()');
+    // Start with fresh state as base
+    states = { 
+        base:pyodide.globals.get('pbexec').fresh_state()
+    };
+    // Clear starting flag
+    Atomics.store(sharedArray, signalMap['starting'], 0);
+    // Clear busy flag
+    Atomics.store(sharedArray, signalMap['busy'], 0);
+    loaded = true;
+    postMessage({ type:'ready', data:version });
 
     // Load package by loading dependencies first serially
     async function loadDependenciesFirst (pkg) {
