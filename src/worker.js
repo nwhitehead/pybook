@@ -117,7 +117,7 @@ async function configure(config) {
     // Had deadlock on packages with dependency chains
     async function loadPackagesFromImports (code) {
         try {
-            let imports = pyodide.pyodide_py.find_imports(code).toJs();
+            let imports = pyodide.pyodide_py.code.find_imports(code).toJs();
             await loadDependenciesFirst(imports);
         } catch (e) {
         }

@@ -162,15 +162,15 @@ function filteredOutput () {
 
 function leftClass () {
     return {
-        working: this.state === 'working',
-        evaluated: this.state === 'evaluated',
+        working: props.state === 'working',
+        evaluated: props.state === 'evaluated',
     }
 }
 
 function rightClass () {
     return {
-        python: this.type === 'python',
-        markdown: this.type === 'markdown',
+        python: props.type === 'python',
+        markdown: props.type === 'markdown',
     }
 }
 

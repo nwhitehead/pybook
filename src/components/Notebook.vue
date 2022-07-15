@@ -61,13 +61,14 @@ const notebook = reactive({
   cells: [
     {
       id:0,
-      source:'for i in range(10):\n    print(i)\n',
+      source:'import time\nfor i in range(10):\n    print(i)\n    time.sleep(0.5)\n',
       outputs:[
         { 'text/plain': 'This is some regular text.' },
         { 'text/plain': 'This is some stderr text.', name: 'stderr' },
       ],
       cell_type:'code',
       language:'python',
+      state:'',
     },
     {
       id:1,
@@ -98,10 +99,11 @@ function cellEval () {
   console.log('Notebook cellEval');
   const src = getCellId(notebook.cells, notebook.select).source;
   console.log(src);
+  getCellId(notebook.cells, notebook.select).state = 'working';
   clearInterrupt();
   python.evaluate(src, normalstate, {
     onResponse: function () {
-      console.log('Got onResponse from evaluate');
+      getCellId(notebook.cells, notebook.select).state = 'evaluated';
     }
   });
 }
