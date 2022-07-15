@@ -93,36 +93,6 @@ async function configure(config) {
     loaded = true;
     postMessage({ type:'ready', data:version });
 
-    // Load package by loading dependencies first serially
-    async function loadDependenciesFirst (pkg) {
-        if (Array.isArray(pkg)) {
-            for (let pkgi of pkg) {
-                await loadDependenciesFirst(pkgi);
-            }
-            return;
-        }
-        // We manually loaded pybook in JavaScript, it is not a package
-        if (pkg === 'pybook') {
-            return;
-        }
-        const deps = Module.packages.dependencies[pkg];
-        for (let deppkg of deps) {
-            await loadDependenciesFirst(deppkg);
-        }
-        await pyodide.loadPackage(pkg);
-    }
-
-    // This function duplicates pyodide.loadPackagesFromImports
-    // pyodide.loadPackagesFromImports did not work at all
-    // Had deadlock on packages with dependency chains
-    async function loadPackagesFromImports (code) {
-        try {
-            let imports = pyodide.pyodide_py.code.find_imports(code).toJs();
-            await loadDependenciesFirst(imports);
-        } catch (e) {
-        }
-    }
-
     function getState(name) {
         if (name === undefined) {
             name = 'base';
@@ -152,7 +122,7 @@ async function configure(config) {
     async function runCellAsync(code, state) {
         const exec_module = pyodide.globals.get('pbexec');
         state = getState(state);
-        await loadPackagesFromImports(code);
+        await pyodide.loadPackagesFromImports(code);
         const eval_func = exec_module.wrapped_run_cell;
         Atomics.store(sharedArray, signalMap['busy'], 1);
         eval_func(code, globals_=state);
