@@ -72,9 +72,10 @@ const notebook = reactive({
     },
     {
       id:1,
-      source:'x',
+      source:"_That's all folks_",
       outputs:[],
-      cell_type:'code',
+      cell_type:'markdown',
+      subtype:'edit',
       language:'python',
     },
   ],
@@ -97,15 +98,22 @@ function updateCellIdSource(value, id, newValue) {
 
 function cellEval () {
   console.log('Notebook cellEval');
-  const src = getCellId(notebook.cells, notebook.select).source;
-  console.log(src);
-  getCellId(notebook.cells, notebook.select).state = 'working';
-  clearInterrupt();
-  python.evaluate(src, normalstate, {
-    onResponse: function () {
-      getCellId(notebook.cells, notebook.select).state = 'evaluated';
-    }
-  });
+  const cell = getCellId(notebook.cells, notebook.select); 
+  if (cell.cell_type === 'code') {
+    const src = cell.source;
+    console.log(src);
+    getCellId(notebook.cells, notebook.select).state = 'working';
+    clearInterrupt();
+    python.evaluate(src, normalstate, {
+      onResponse: function () {
+        cell.state = 'evaluated';
+      }
+    });
+  } else {
+    console.log('Updating markdown mathjax');
+    console.log(cell);
+    MathJax.typeset([]);
+  }
 }
 
 function cellInterrupt () {

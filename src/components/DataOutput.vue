@@ -20,7 +20,7 @@
     <div class="dataoutput">
         <pre v-if="isPre(value)" :class="getClass(value)">{{value['text/plain']}}</pre>
         <div v-if="isHtml(value)" :class="getClass(value)">
-            <div class="content" v-html="value['text/html']" />
+            <div class="content" v-html="DOMPurify.sanitize(value['text/html'])" />
         </div>
         <img v-if="isSVG(value)" :src="dataURI(value['image/svg+xml'])" />
     </div>
@@ -46,6 +46,8 @@ div.dataoutput pre.stderr {
 </style>
 
 <script setup>
+
+import DOMPurify from 'dompurify';
 
 defineProps(['value']);
 

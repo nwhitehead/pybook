@@ -56,6 +56,7 @@
             <CellOutput
                 :values="filteredOutput()"
                 v-if="showResults()"
+                ref="celloutput"
             />
         </div>
     </div>
@@ -109,6 +110,7 @@ import { marked } from 'marked';
 import CellOutput from './CellOutput.vue';
 import CellInput from './CellInput.vue';
 import CheckPoint from './CheckPoint.vue';
+import DOMPurify from 'dompurify';
 
 const props = defineProps(['modelValue', 'output', 'id', 'type', 'subtype', 'selected', 'state', 'command', 'hidden', 'readonly', 'submit']);
 
@@ -116,6 +118,7 @@ const emit = defineEmits(['update:modelValue', 'action', 'click', 'submit']);
 
 // This ref holds the CellInput instance for focus/blur
 const cellinput = ref(null);
+const celloutput = ref(null);
 
 function cellInputOptions () {
     return { type:props.type, readonly:props.readonly };
@@ -155,7 +158,7 @@ function filteredOutput () {
     }
     if (props.type === 'markdown') {
         return [ {
-            'text/html': marked(props.modelValue),
+            'text/html': DOMPurify.sanitize(marked(props.modelValue)),
         } ];
     }
 }

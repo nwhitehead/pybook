@@ -78,7 +78,6 @@ async function configure(config) {
     pyodide.registerJsModule('pybook', pybook); // synchronous
     await pyodide.loadPackage('micropip');
     pyodide.runPython('import micropip');
-    pyodide.runPython('import sys; sys.setrecursionlimit(120)');
     await pyodide.runPythonAsync('await micropip.install("' + absurl + '/lib/pyodide/pbexec_nwhitehead-0.0.1-py3-none-any.whl' + '")');
     pyodide.runPython('from pbexec import pbexec');
     pyodide.runPython('pbexec.register_pickle()');

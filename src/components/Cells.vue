@@ -53,25 +53,25 @@
             />
         </template>
     </draggable>
-            <Cell
-                v-else
-                v-for="element in modelValue"
-                :modelValue="element.source"
-                :output="element.outputs"
-                :id="element.id"
-                :type="computeType(element)"
-                :subtype="computeSubtype(element)"
-                :selected="isSelected(element.id)"
-                :state="element.state"
-                :command="isSelected(element.id) && command"
-                :hidden="isHidden(element)"
-                :readonly="isReadOnly(element)"
-                :submit="isSubmit(element)"
-                @update:modelValue="newValue => { $emit('update:modelCellValue', { id:element.id, value:newValue }); }"
-                @action="handleAction"
-                @click="handleClick"
-                @submit="handleSubmit"
-            />
+    <Cell
+        v-else
+        v-for="element in modelValue"
+        :modelValue="element.source"
+        :output="element.outputs"
+        :id="element.id"
+        :type="computeType(element)"
+        :subtype="computeSubtype(element)"
+        :selected="isSelected(element.id)"
+        :state="element.state"
+        :command="isSelected(element.id) && command"
+        :hidden="isHidden(element)"
+        :readonly="isReadOnly(element)"
+        :submit="isSubmit(element)"
+        @update:modelValue="newValue => { $emit('update:modelCellValue', { id:element.id, value:newValue }); }"
+        @action="handleAction"
+        @click="handleClick"
+        @submit="handleSubmit"
+    />
 </template>
 
 <script setup>
