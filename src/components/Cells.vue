@@ -28,6 +28,7 @@
     <draggable
         v-if="allowDrag"
         v-model="modelValue"
+        handle=".handle"
         class="cells"
         item-key="id"
         @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"

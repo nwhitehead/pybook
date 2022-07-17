@@ -70,16 +70,19 @@ function cellEval () {
     status.value = 'Working';
     python.evaluate(src, normalstate, {
       onStdout: function (msg) {
-          addOutput(cell, { 
-              'text/plain': msg,
-              name: 'stdout',
-          });
+          addOutput(cell, { name: 'stdout', 'text/plain': msg });
       },
       onStderr: function (msg) {
-          addOutput(cell, { 
-              'text/plain': msg,
-              name: 'stderr',
-          });
+          addOutput(cell, { name: 'stderr', 'text/plain': msg });
+      },
+      onOutput: function(content_type, msg) {
+        if (content_type === 'text/html') {
+          addOutput(cell, { 'text/html': msg });
+        } else if (content_type === 'text/plain') {
+          addOutput(cell, { name: 'stdout', 'text/plain': msg });
+        } else if (content_type === 'image/svg+xml') {
+          addOutput(cell, { name: 'stdout', 'text/svg+xml': msg });
+        }
       },
       onResponse: function () {
         // Check that status was previously working in case there was an interrupt
