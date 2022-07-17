@@ -5,12 +5,13 @@
     @keyup.enter.ctrl.exact="cellEval"
     @keyup.c.ctrl.exact="cellInterrupt"
   >
+    <Status :value="status" />
     <Cells
-      v-model="notebook.cells"
-      :select="notebook.select"
+      v-model="state.cells[state.page]"
+      :select="state.select"
       :command="false"
       :allowDrag="true"
-      @update:modelCellValue="newValue => { updateCellIdSource(notebook.cells, newValue.id, newValue.value); }"
+      @update:modelCellValue="newValue => { getCell(state, state.page, newValue.id).source = newValue.value; }"
       @click="handleClick"
     />
   </div>
@@ -27,6 +28,7 @@ import DataOutput from "./DataOutput.vue";
 import CellOutput from "./CellOutput.vue";
 import CellInput from "./CellInput.vue";
 import Cells from "./Cells.vue";
+import { state, getCell, clearOutput, addOutput } from '../notebook.js';
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
@@ -36,76 +38,54 @@ import { signalMap,
          inputPut
        } from '../signal.js';
 
-import { useNotebook } from '../stores/notebook.js';
-
-const nbstore = useNotebook();
-
 let normalstate = null;
+
+let status = ref('Initializing');
 
 const opts = {
   onReady: function (version) {
-    //EventBus.$emit('update:status', 'Ready');
+    status.value = 'Ready';
     console.log(version);
     python.freshstate(normalstate, {
       onResponse: function() {
         normalstate = 'State 0';
-        console.log('Initial state setup');
       },
     });
   },
 };
+
 const python = newPythonKernel(opts);
 
-const notebook = reactive({
-  select: 0,
-  cells: [
-    {
-      id:0,
-      source:'import time\nfor i in range(10):\n    print(i)\n    time.sleep(0.5)\n',
-      outputs:[
-        { 'text/plain': 'This is some regular text.' },
-        { 'text/plain': 'This is some stderr text.', name: 'stderr' },
-      ],
-      cell_type:'code',
-      language:'python',
-      state:'',
-    },
-    {
-      id:1,
-      source:"_That's all folks_\n\n$$ x^2 + y^2 = z^2 $$\n",
-      outputs:[],
-      cell_type:'markdown',
-      subtype:'edit',
-      language:'python',
-    },
-  ],
-});
-
-function getCellId(value, id) {
-  //! Get cell by specific id
-  for (let i = 0; i < value.length; i++) {
-    if (value[i].id === id) {
-      return value[i];
-    }
-  }
-  throw 'Could not find cell id';
-}
-
-function updateCellIdSource(value, id, newValue) {
-  const cell = getCellId(value, id);
-  cell.source = newValue;
-}
-
 function cellEval () {
-  console.log('Notebook cellEval');
-  const cell = getCellId(notebook.cells, notebook.select); 
+  const cell = getCell(state, state.page, state.select); 
   if (cell.cell_type === 'code') {
+    if (status.value === 'Initializing' || status.value === 'Working') {
+      console.log('Python is not ready yet');
+      return;
+    }
+    clearOutput(cell);
     const src = cell.source;
-    console.log(src);
-    getCellId(notebook.cells, notebook.select).state = 'working';
+    cell.state = 'working';
     clearInterrupt();
+    status.value = 'Working';
     python.evaluate(src, normalstate, {
+      onStdout: function (msg) {
+          addOutput(cell, { 
+              'text/plain': msg,
+              name: 'stdout',
+          });
+      },
+      onStderr: function (msg) {
+          addOutput(cell, { 
+              'text/plain': msg,
+              name: 'stderr',
+          });
+      },
       onResponse: function () {
+        // Check that status was previously working in case there was an interrupt
+        if (status.value === 'Working') {
+          status.value = 'Ready';
+        }
         cell.state = 'evaluated';
       }
     });
@@ -114,6 +94,7 @@ function cellEval () {
 
 function cellInterrupt () {
   console.log('Notebook cellInterrupt');
+  status.value = 'Interrupt';
   setInterrupt();
 }
 
@@ -122,7 +103,7 @@ function insertCellBefore () {
 }
 
 function handleClick (event) {
-  notebook.select = event.id;
+  state.select = event.id;
 }
 
 
