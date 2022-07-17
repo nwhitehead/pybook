@@ -72,7 +72,7 @@ const notebook = reactive({
     },
     {
       id:1,
-      source:"_That's all folks_",
+      source:"_That's all folks_\n\n$$ x^2 + y^2 = z^2 $$\n",
       outputs:[],
       cell_type:'markdown',
       subtype:'edit',
@@ -109,10 +109,6 @@ function cellEval () {
         cell.state = 'evaluated';
       }
     });
-  } else {
-    console.log('Updating markdown mathjax');
-    console.log(cell);
-    MathJax.typeset([]);
   }
 }
 

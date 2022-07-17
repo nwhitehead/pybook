@@ -15,12 +15,14 @@
 //!
 //! If the value has more than one MIME type, they will be shown sequentially with simplest first.
 //!
+//! Note that text/html type is passed through an HTML sanitizer to prevent various types of attacks.
+//!
 
 <template>
     <div class="dataoutput">
         <pre v-if="isPre(value)" :class="getClass(value)">{{value['text/plain']}}</pre>
         <div v-if="isHtml(value)" :class="getClass(value)">
-            <div class="content" v-html="DOMPurify.sanitize(value['text/html'])" />
+            <div class="content" v-html="htmlMarkdown" ref="htmlContent" />
         </div>
         <img v-if="isSVG(value)" :src="dataURI(value['image/svg+xml'])" />
     </div>
@@ -47,20 +49,42 @@ div.dataoutput pre.stderr {
 
 <script setup>
 
+import { computed, ref, onMounted, onUpdated } from 'vue';
 import DOMPurify from 'dompurify';
 
-defineProps(['value']);
+const htmlContent = ref(null);
+const props = defineProps(['value']);
+const htmlMarkdown = computed(() => {
+    return DOMPurify.sanitize(props.value['text/html']);
+});
+
+function typesetMath() {
+    MathJax.typesetClear([htmlContent.value]);
+    MathJax.typesetPromise([htmlContent.value]);
+}
+
+onMounted(() => {
+    if (isHtml(props.value)) {
+        typesetMath();
+    }
+});
+
+onUpdated(() => {
+    if (isHtml(props.value)) {
+        typesetMath();
+    }
+});
 
 function getClass (value) {
-    if (this.isPre(value)) {
+    if (isPre(value)) {
         if (value.name === 'stderr') {
             return 'stderr';
         }
         // Default to stdout if there is no name
         return 'stdout';
     }
-    if (this.isHtml(value)) return 'html';
-    if (this.isSVG(value)) return 'svg';
+    if (isHtml(value)) return 'html';
+    if (isSVG(value)) return 'svg';
     return 'stdout';
 }
 
