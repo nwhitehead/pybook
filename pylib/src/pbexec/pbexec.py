@@ -129,38 +129,24 @@ def dotest():
 # Things specific to pybook
 ##################
 
-class WriteBuffer:
+class WriteCustom:
     '''
     Helper class to line-buffer writes redirected from user cells.
 
     '''
     def __init__(self, handler):
-        self.stream = ''
         self.handler = handler
-    def _calls(self):
-        lines = self.stream.split('\n')
-        if len(lines) <= 1:
-            return
-        for line in lines[:-1]:
-            self.handler(line)
-        self.stream = lines[-1]
     def write(self, data):
-        self.stream += data
-        self._calls()
+        self.handler(data)
     def flush(self):
-        # Output partial line even without newline
-        # This won't be exactly correct with newlines, but the explicit flush is asking us to really flush
-        if self.stream != '':
-            self.handler(self.stream)
-            self.stream = ''
+        pass
 
-class ReadBuffer:
+class ReadCustom:
     '''
     Helper class to line-buffer reads redirected from user cells.
 
     '''
     def __init__(self, handler):
-        self.stream = ''
         self.handler = handler
     def read(self):
         return self.handler()
@@ -187,9 +173,9 @@ def wrapped_run_cell(*args, **kwargs):
     
     """
     import pybook
-    out = WriteBuffer(pybook.output_stdout)
-    err = WriteBuffer(pybook.output_stderr)
-    inp = ReadBuffer(pybook.input_stdin)
+    out = WriteCustom(pybook.output_stdout)
+    err = WriteCustom(pybook.output_stderr)
+    inp = ReadCustom(pybook.input_stdin)
     with contextlib.redirect_stdout(out):
         with contextlib.redirect_stderr(err):
             with redirect_stdin(inp):

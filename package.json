@@ -7,16 +7,19 @@
     "@codemirror/lang-python": "^6.0.0",
     "@codemirror/state": "^6.1.0",
     "@codemirror/view": "^6.0.2",
+    "ansi-to-html": "^0.7.2",
     "codemirror": "^6.0.1",
     "dompurify": "^2.3.9",
     "esbuild": "^0.14.48",
     "esbuild-plugin-vue3": "^0.3.0",
     "marked": "^4.0.17",
+    "mitt": "^3.0.0",
     "pinia": "^2.0.16",
     "sortable": "^2.0.0",
     "vue": "^3.2.37",
     "vue-codemirror": "^6.0.0",
-    "vuedraggable": "^4.1.0"
+    "vuedraggable": "^4.1.0",
+    "xterm": "^4.19.0"
   },
   "jest": {
     "transform": {}
@@ -26,6 +29,5 @@
     "build": "node src/build.cjs",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "serve": "python3 server/serve.py"
-  },
-  "devDependencies": {}
+  }
 }

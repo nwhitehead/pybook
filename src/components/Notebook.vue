@@ -15,6 +15,7 @@
       @click="handleClick"
     />
   </div>
+  <Terminal :eventBus="customBus" />
 </template>
 
 <script setup>
@@ -28,7 +29,9 @@ import DataOutput from "./DataOutput.vue";
 import CellOutput from "./CellOutput.vue";
 import CellInput from "./CellInput.vue";
 import Cells from "./Cells.vue";
+import Terminal from "./Terminal.vue";
 import { state, getCell, clearOutput, addOutput } from '../notebook.js';
+import mitt from "mitt";
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
@@ -41,6 +44,8 @@ import { signalMap,
 let normalstate = null;
 
 let status = ref('Initializing');
+
+const customBus = mitt();
 
 const opts = {
   onReady: function (version) {
@@ -57,6 +62,8 @@ const opts = {
 const python = newPythonKernel(opts);
 
 function cellEval () {
+  customBus.emit('stdout', 'cellEval called\n');
+  customBus.emit('stdout', 'cellEval called\n');
   const cell = getCell(state, state.page, state.select); 
   if (cell.cell_type === 'code') {
     if (status.value === 'Initializing' || status.value === 'Working') {

@@ -34,11 +34,8 @@ export const state = reactive({
   cells: [ [
     {
       id:0,
-      source:'import time\nfor i in range(10):\n    print(i)\n    time.sleep(0.5)\n',
-      outputs:[
-        { 'text/plain': 'This is some regular text.' },
-        { 'text/plain': 'This is some stderr text.', name: 'stderr' },
-      ],
+      source:String.raw`print("\x1b[30mblack\x1b[37mwhite")`,
+      outputs:[ ],
       cell_type:'code',
       language:'python',
       state:'',
@@ -72,5 +69,15 @@ export function clearOutput (cell) {
 }
 
 export function addOutput (cell, output) {
-  cell.outputs.push(output);
+  if (cell.outputs.length === 0) {
+    cell.outputs.push(output);
+    return;
+  }
+  if (cell.outputs[cell.outputs.length - 1].name === output.name) {
+    cell.outputs[cell.outputs.length - 1]['text/plain'] += output['text/plain'];
+    return;
+  } else {
+    cell.outputs.push(output);
+    return;
+  }
 }

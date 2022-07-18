@@ -20,7 +20,11 @@
 
 <template>
     <div class="dataoutput">
-        <pre v-if="isPre(value)" :class="getClass(value)">{{value['text/plain']}}</pre>
+        <pre
+            v-if="isPre(value)"
+            :class="getClass(value)"
+            v-html="DOMPurify.sanitize(convert.toHtml(value['text/plain']))"
+        />
         <div v-if="isHtml(value)" :class="getClass(value)">
             <div class="content" v-html="htmlMarkdown" ref="htmlContent" />
         </div>
@@ -51,7 +55,9 @@ div.dataoutput pre.stderr {
 
 import { computed, ref, onMounted, onUpdated } from 'vue';
 import DOMPurify from 'dompurify';
+import Convert from 'ansi-to-html';
 
+const convert = new Convert();
 const htmlContent = ref(null);
 const props = defineProps(['value']);
 const htmlMarkdown = computed(() => {
