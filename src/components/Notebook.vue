@@ -47,19 +47,15 @@ let status = ref('Initializing');
 
 const customBus = mitt();
 
-function prompt () {
-  customBus.emit('stdout', '>>> ');
-  customBus.acceptingInput = true;
-}
-
 onMounted(() => {
-  prompt();
+
+  customBus.emit('prompt', '>>> ');
   customBus.on('input', msg => {
     console.log('Got terminal input: ', msg);
     clearInterrupt();
     if (status.value === 'Initializing' || status.value === 'Working') {
       customBus.emit('stdout', 'Python is not ready yet\n');
-      prompt();
+      customBus.emit('prompt', '>>> ');
       return;
     }
     status.value = 'Working';
@@ -85,7 +81,7 @@ onMounted(() => {
           status.value = 'Ready';
         }
         // Done, ready for more input now
-        prompt();
+        customBus.emit('prompt', '>>> ');
       }
     });
   });
