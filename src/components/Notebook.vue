@@ -20,7 +20,7 @@
 
 <script setup>
 
-import { reactive, ref } from "vue";
+import { reactive, ref, onMounted } from "vue";
 import Dropdown from "./Dropdown.vue";
 import Status from "./Status.vue";
 import Cell from "./Cell.vue";
@@ -47,6 +47,50 @@ let status = ref('Initializing');
 
 const customBus = mitt();
 
+function prompt () {
+  customBus.emit('stdout', '>>> ');
+  customBus.acceptingInput = true;
+}
+
+onMounted(() => {
+  prompt();
+  customBus.on('input', msg => {
+    console.log('Got terminal input: ', msg);
+    clearInterrupt();
+    if (status.value === 'Initializing' || status.value === 'Working') {
+      customBus.emit('stdout', 'Python is not ready yet\n');
+      prompt();
+      return;
+    }
+    status.value = 'Working';
+    python.evaluate(msg, normalstate, {
+      onStdout: function (msg) {
+        customBus.emit('stdout', msg);
+      },
+      onStderr: function (msg) {
+        customBus.emit('stderr', msg);
+      },
+      onOutput: function(content_type, msg) {
+        if (content_type === 'text/html') {
+          customBus.emit('stdout', '<html>' + msg + '</html>');
+        } else if (content_type === 'text/plain') {
+          customBus.emit('stdout', msg);
+        } else if (content_type === 'image/svg+xml') {
+          customBus.emit('stdout', '<svg>' + msg + '</svg>');
+        }
+      },
+      onResponse: function () {
+        // Check that status was previously working in case there was an interrupt
+        if (status.value === 'Working') {
+          status.value = 'Ready';
+        }
+        // Done, ready for more input now
+        prompt();
+      }
+    });
+  });
+});
+
 const opts = {
   onReady: function (version) {
     status.value = 'Ready';
@@ -62,8 +106,6 @@ const opts = {
 const python = newPythonKernel(opts);
 
 function cellEval () {
-  customBus.emit('stdout', 'cellEval called\n');
-  customBus.emit('stdout', 'cellEval called\n');
   const cell = getCell(state, state.page, state.select); 
   if (cell.cell_type === 'code') {
     if (status.value === 'Initializing' || status.value === 'Working') {

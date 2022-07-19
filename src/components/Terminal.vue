@@ -1,29 +1,55 @@
 <template>
-    <div ref="terminal"><p>This is the terminal</p></div>
+    <div ref="terminal"></div>
 </template>
 
 <script setup>
 
 import { reactive, ref, watch, onMounted } from "vue";
 import { Terminal } from 'xterm';
+import { Prompt } from '../prompt.js';
 
 const terminal = ref(null);
 
 const props = defineProps([ 'eventBus' ]);
 
-const xterm = new Terminal();
+const xterm = new Terminal({
+    convertEol: true
+});
+
+let cli = Prompt();
+
+let currentEntry = '';
 
 onMounted(() => {
     xterm.open(terminal.value);
-    xterm.write('Hello from \x1B[1;3;31mxterm.js\x1B[0m $ ');
+    props.eventBus.emit('mounted');
+    xterm.onKey(function(event) {
+        const keyCode = event.domEvent.keyCode;
+        if (keyCode === 13) {
+            if (props.eventBus.acceptingInput) {
+                xterm.write('\r\n');
+                props.eventBus.emit('input', currentEntry);
+                currentEntry = '';
+                props.eventBus.acceptingInput = false;
+            }
+        } else if (keyCode === 8) {
+            if (currentEntry && currentEntry !== '') {
+                currentEntry = currentEntry.slice(0, currentEntry.length - 1);
+                xterm.write('\b \b');
+            }
+        } else if (event.domEvent.key && event.domEvent.key.length === 1) {
+            currentEntry += event.key;
+            xterm.write(event.key);
+        }
+    });
 });
 
-props.eventBus.on('stdout', event => {
-    console.log('Terminal got stdout', event);
+props.eventBus.on('stdout', msg => {
+    xterm.write(msg);
 });
 
-// watch(props.eventBus.bus, (bus) => {
-//     console.log('Terminal watcher triggered', bus);
-// });
+props.eventBus.on('stderr', msg => {
+    xterm.write(msg);
+});
 
 </script>
