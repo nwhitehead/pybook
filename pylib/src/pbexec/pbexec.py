@@ -149,7 +149,12 @@ class ReadCustom:
     def __init__(self, handler):
         self.handler = handler
     def read(self):
-        return self.handler()
+        s = bytearray()
+        c = self.handler()
+        if c is None:
+            return None
+        s.append(c)
+        return s.decode(encoding='utf-8')
     def readline(self):
         s = bytearray()
         while True:

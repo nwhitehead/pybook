@@ -63,7 +63,7 @@
                 v-if="showResults()"
                 ref="celloutput"
             />
-            <div v-if="showStdinInput && allowInput">
+            <div v-if="showStdinInput && allowInput" @keyup.enter.exact="handleStdinInputClick">
                 <CellInput v-model="textStdinInput" :options="{ singleLine: true }" />
                 <button @click="handleStdinInputClick">Input</button>
             </div>
@@ -217,7 +217,7 @@ onBeforeUnmount(() => {
     clearInterval(timer);
 });
 
-function handleStdinInputClick() {
+function handleStdinInputClick () {
     // Convert string from CodeMirror into byte array
     // Use UTF-8 since CodeMirror might have advanced unicode characters
     const utf8Encoder = new TextEncoder();
