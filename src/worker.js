@@ -13,6 +13,10 @@ async function configure(config) {
     importScripts(absurl + '/lib/pyodide/pyodide.js');
 
     function inputGet() {
+        // Signal that we are waiting for input
+        Atomics.store(sharedArray, signalMap['input_waiting'], 1);
+        Atomics.notify(sharedArray, signalMap['input_waiting']);
+
         var p = Atomics.load(sharedArray, signalMap['input_start']);
         var e = Atomics.load(sharedArray, signalMap['input_end']);
         while (e === p) {
@@ -25,6 +29,8 @@ async function configure(config) {
                 Atomics.store(sharedArray, signalMap['interrupt'], 0);
                 // Throw exception (will be wrapped in JsException)
                 pyodide.runPython('raise KeyboardInterrupt');
+                // Clear waiting flag
+                Atomics.store(sharedArray, signalMap['input_waiting'], 0);
                 return null;
             }
         }
@@ -38,6 +44,8 @@ async function configure(config) {
             // Rule seems to be first null flushes, second null is EOF
             value = null;
         }
+        // Clear waiting flag
+        Atomics.store(sharedArray, signalMap['input_waiting'], 0);
         return value;
     }
 

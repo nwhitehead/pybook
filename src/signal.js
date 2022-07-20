@@ -11,7 +11,8 @@ export const signalMap = {
     'starting':3,
     'input_start':4,
     'input_end':5,
-    'NUMBER':6
+    'input_waiting':6,
+    'NUMBER':7
 };
 
 export const INPUT_BUFFER_SIZE = 1024;
@@ -45,7 +46,16 @@ export function setLoading() { return set('loading'); }
 export function isStarting() { return check('starting'); }
 export function clearStarting() { return clear('starting'); }
 export function setStarting() { return set('starting'); }
+export function isInputWaiting() { return check('input_waiting'); }
+export function clearInputWaiting() { return clear('input_waiting'); }
+export function setInputWaiting() { return set('input_waiting'); }
 
+//!
+//! Push input character to buffer
+//!
+//! The expected usage is to call this function several times with various ASCII numerical values,
+//! then call it with 0 to flush the input buffer.
+//!
 export function inputPut(value) {
     var p = Atomics.load(sharedArray, signalMap['input_end']);
     Atomics.store(sharedInputArray, p, value);

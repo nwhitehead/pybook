@@ -17,9 +17,10 @@
 //!     matchBrackets - Show matching brackets (default true)
 //!     closeBrackets - Add closing brackets automatically (default false)
 //!     highlightSelectionMatches - Show matching selections (default false)
+//!     singleLine - Force editor to only allow single line of input (default false)
 //!
 //! Events:
-//! - update:modelValue" - Emitted when modelValue changes, payload is value
+//! - update:modelValue - Emitted when modelValue changes, payload is value
 //! - focus - Emitted when cell is focused, payload is { id }
 //! - blur - Emitted when cell loses focus, payload is { id }
 //!
@@ -171,6 +172,9 @@ const extensions = computed(() => {
   }
   if (opts.type === 'markdown') {
     ext.push(markdown());
+  }
+  if (opts.singleLine) {
+    ext.push(EditorState.transactionFilter.of(tr => tr.newDoc.lines > 1 ? [] : tr));
   }
   return ext;
 });

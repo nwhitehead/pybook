@@ -3,7 +3,7 @@
     id="app"
     tabindex="0"
     @keyup.enter.ctrl.exact="cellEval"
-    @keyup.c.ctrl.exact="cellInterrupt"
+    @keyup.k.ctrl.exact="cellInterrupt"
   >
     <Status :value="status" />
     <Cells
