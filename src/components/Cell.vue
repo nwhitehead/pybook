@@ -3,6 +3,10 @@
 //!
 //! This is a Vue component representing one cell in a notebook.
 //!
+//! This component is also responsible for handling blocking stdin input from Python. Input is always
+//! done at the end of all output with a button and CellInput area to edit text. Only shown when
+//! python is blocking on stdin input.
+//!
 //! Props:
 //! - modelValue - Input value for this cell, in CellInput format
 //! - output - Output value for this cell, in CellOutput format
@@ -16,6 +20,7 @@
 //! - hidden - true if cell is hidden and should not be shown
 //! - readonly - true if cell is readonly and cannot be edited
 //! - submit - true if cell should include a "Submit" button
+//! - allowInput - true if cell should allow dynamic stdin input
 //!
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
@@ -58,6 +63,10 @@
                 v-if="showResults()"
                 ref="celloutput"
             />
+            <div v-if="showStdinInput && allowInput">
+                <CellInput v-model="textStdinInput" :options="{ singleLine: true }" />
+                <button @click="handleStdinInputClick">Input</button>
+            </div>
         </div>
     </div>
 </template>
@@ -105,20 +114,29 @@ div .side-right {
 
 <script setup>
 
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { marked } from 'marked';
 import CellOutput from './CellOutput.vue';
 import CellInput from './CellInput.vue';
 import CheckPoint from './CheckPoint.vue';
 import DOMPurify from 'dompurify';
 
-const props = defineProps(['modelValue', 'output', 'id', 'type', 'subtype', 'selected', 'state', 'command', 'hidden', 'readonly', 'submit']);
+import { isInputWaiting, inputPut } from '../signal.js';
+
+const props = defineProps(['modelValue', 'output', 'id', 'type', 'subtype', 'selected', 'state', 'command', 'hidden', 'readonly', 'submit', 'allowInput']);
 
 const emit = defineEmits(['update:modelValue', 'action', 'click', 'submit']);
 
 // This ref holds the CellInput instance for focus/blur
 const cellinput = ref(null);
 const celloutput = ref(null);
+
+// Time is used to trigger watcher on SharedArrayBuffer (Vue doesn't know when value changes)
+let timer = null;
+// Text currently entered for stdin input in editor
+let textStdinInput = ref('');
+// Whether to show stdin input area
+let showStdinInput = ref(false);
 
 function cellInputOptions () {
     return { type:props.type, readonly:props.readonly };
@@ -187,6 +205,35 @@ function handleClick (event) {
 
 function handleSubmit (event) {
     emit('submit', { id:props.id });
+}
+
+onMounted(() => {
+    timer = setInterval(() => {
+        showStdinInput.value = isInputWaiting();
+    }, 500);
+});
+
+onBeforeUnmount(() => {
+    clearInterval(timer);
+});
+
+function handleStdinInputClick() {
+    // Convert string from CodeMirror into byte array
+    // Use UTF-8 since CodeMirror might have advanced unicode characters
+    const utf8Encoder = new TextEncoder();
+    const bytes = utf8Encoder.encode(textStdinInput.value);
+    // Send bytes one by one using inputPut
+    // Receiver will handle flipping isInputWaiting flag as appropriate
+    for (let i = 0; i < bytes.length; i++) {
+        inputPut(bytes[i]);
+    }
+    // Empty input needs to be distinguished from EOF (like pressing Ctrl-D)
+    if (bytes.length === 0) {
+        inputPut(10);
+    }
+    inputPut(0);
+    // Clear text editor buffer
+    textStdinInput.value = '';
 }
 
 </script>

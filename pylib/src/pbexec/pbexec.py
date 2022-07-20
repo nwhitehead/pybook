@@ -151,12 +151,12 @@ class ReadCustom:
     def read(self):
         return self.handler()
     def readline(self):
-        s = ''
+        s = bytearray()
         while True:
             c = self.handler()
             if c is None:
-                return s
-            s = s + chr(c)
+                return s.decode(encoding='utf-8')
+            s.append(c)
     def flush(self):
         pass
 

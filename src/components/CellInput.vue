@@ -173,6 +173,7 @@ const extensions = computed(() => {
   if (opts.type === 'markdown') {
     ext.push(markdown());
   }
+  // For single line mode, filter out any transaction that increases lines past 1
   if (opts.singleLine) {
     ext.push(EditorState.transactionFilter.of(tr => tr.newDoc.lines > 1 ? [] : tr));
   }
