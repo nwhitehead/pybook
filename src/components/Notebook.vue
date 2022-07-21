@@ -180,6 +180,7 @@ function insertCellBefore () {
 
 function handleClick (event) {
   state.select = event.id;
+  modeEdit();
 }
 
 
