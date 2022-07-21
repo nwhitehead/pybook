@@ -18,11 +18,10 @@
 //!     closeBrackets - Add closing brackets automatically (default false)
 //!     highlightSelectionMatches - Show matching selections (default false)
 //!     singleLine - Force editor to only allow single line of input (default false)
+//!     canFocus - Allow input area to be focused by user (default true)
 //!
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
-//! - focus - Emitted when cell is focused, payload is { id }
-//! - blur - Emitted when cell loses focus, payload is { id }
 //!
 //! NOTE: This component requires clearing the VueCodemirror global extensions.
 //!
@@ -37,9 +36,8 @@
       :tab-size="indent"
       :extensions="extensions"
       :disabled="disabled"
+      ref="cmElement"
       @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
-      @focus="$emit('focus', { id })"
-      @blur="$emit('blur', { id })"
     />
   </div>
 </template>
@@ -67,7 +65,7 @@ div.cellinput.markdown {
 
 <script setup>
 
-import { computed, ref } from "vue";
+import { computed, ref, watch, nextTick } from "vue";
 import { Codemirror } from "vue-codemirror";
 import { python } from "@codemirror/lang-python";
 import { markdown } from "@codemirror/lang-markdown";
@@ -81,9 +79,10 @@ import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
 import { searchKeymap, highlightSelectionMatches } from "@codemirror/search"
 import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete"
 
-import EventBus from "./EventBus.js";
-
 const props = defineProps([ 'modelValue', 'id', 'options' ]);
+const emit = defineEmits([ 'update:modelValue' ]);
+
+let cmElement = ref(null);
 
 function nop(target) {
   return true;
@@ -97,7 +96,6 @@ const blankKeymap = [
   { key:'Ctrl-Enter', run: nop },
   { key:'Shift-Enter', run: nop },
   { key:'Alt-Enter', run: nop },
-  { key:'Ctrl-c', run: nop },
   { key:'Ctrl-k', run: nop },
   { key:'Ctrl-i', run: nop },
   { key:'Escape', run: nop },
@@ -192,12 +190,30 @@ const isMarkdown = computed(() => {
 
 const disabled = computed(() => {
   const opts = props.options ? props.options : {};
-  return opts.readonly;
+  return opts.readonly || (opts.canFocus === false);
 });
 
 const indent = computed(() => {
   const opts = props.options ? props.options : {};
   return opts.indent ? opts.indent : 4; // default to 4 if none set
+});
+
+watch(disabled, (newValue, oldValue) => {
+  // Watch for CellInput that goes from disabled to not disabled
+  // Need to focus textbox of editor in that case (avoid needing to click 2 times to get focus)
+  if (!newValue && oldValue) {
+    // We need the DOM element of the codemirror component, get it with $el
+    const cmDomElement = cmElement.value.$el;
+    // Now find the right part that accepts focus
+    const textBox = cmDomElement.querySelectorAll('[role="textbox"]');
+    // Need to wait for DOM update to do actual focus
+    // At this point we have flag changed, but DOM not updated yet
+    nextTick(() => {
+      textBox.forEach( (el) => {
+        el.focus();
+      });
+    });
+  }
 });
 
 </script>

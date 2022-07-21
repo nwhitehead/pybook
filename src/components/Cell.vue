@@ -46,7 +46,6 @@
                     :id="id"
                     :options="cellInputOptions()"
                     @action="handleAction()"
-                    ref="cellinput"
                     @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
                 />
             </div>
@@ -61,7 +60,6 @@
             <CellOutput
                 :values="filteredOutput()"
                 v-if="showResults()"
-                ref="celloutput"
             />
             <div v-if="showStdinInput && allowInput" @keyup.enter.exact="handleStdinInputClick">
                 <CellInput v-model="textStdinInput" :options="{ singleLine: true }" />
@@ -127,10 +125,6 @@ const props = defineProps(['modelValue', 'output', 'id', 'type', 'subtype', 'sel
 
 const emit = defineEmits(['update:modelValue', 'action', 'click', 'submit']);
 
-// This ref holds the CellInput instance for focus/blur
-const cellinput = ref(null);
-const celloutput = ref(null);
-
 // Time is used to trigger watcher on SharedArrayBuffer (Vue doesn't know when value changes)
 let timer = null;
 // Text currently entered for stdin input in editor
@@ -139,7 +133,11 @@ let textStdinInput = ref('');
 let showStdinInput = ref(false);
 
 function cellInputOptions () {
-    return { type:props.type, readonly:props.readonly };
+    return {
+        type: props.type,
+        readonly: props.readonly,
+        canFocus: props.selected && !props.command
+    };
 }
 
 function showEdit () {

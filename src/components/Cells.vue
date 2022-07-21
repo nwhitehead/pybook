@@ -144,23 +144,4 @@ function handleSubmit (event) {
     emit('submit', event);
 }
 
-function focus (n) {
-    //return this.$refs.cell[n].focus();
-}
-
-function blur (n) {
-    //return this.$refs.cell[n].blur();
-}
-
-function blurAll () {
-    // Check that this.values is defined
-    // It can be undefined when all pages are deleted before fresh empty page is added
-    if (this.values !== undefined) {
-        for (let i = 0; i < this.values.length; i++) {
-            this.blur(i);
-        }
-    }
-    return true;
-}
-
 </script>
