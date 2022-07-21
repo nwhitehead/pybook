@@ -35,10 +35,11 @@ export function Prompt (opts) {
                 const key = event.domEvent.key;
                 if (key === 'Enter') {
                     opts.xterm.write('\r\n');
-                    opts.handleInput(currentEntry);
+                    const entry = currentEntry;
                     currentEntry = '';
                     cursor = 0;
                     acceptingInput = false;
+                    opts.handleInput(entry);
                 } else if (key === 'Backspace') {
                     if (currentEntry && currentEntry !== '' && cursor > 0) {
                         currentEntry = currentEntry.slice(0, cursor - 1) + currentEntry.slice(cursor, currentEntry.length);
