@@ -16,7 +16,6 @@ export function Prompt (opts) {
     let historyPosition = 0;
 
     function updateLine() {
-        console.log(currentEntry, cursor);
         // Move cursor to start of line, write entire line, with space to delete any moving stuff
         opts.xterm.write('\r' + opts.prompt + currentEntry + ' ');
         // Move cursor to correct position

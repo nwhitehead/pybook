@@ -51,7 +51,6 @@ onMounted(() => {
 
   customBus.emit('prompt', '>>> ');
   customBus.on('input', msg => {
-    console.log('Got terminal input: ', msg);
     clearInterrupt();
     if (status.value === 'Initializing' || status.value === 'Working') {
       customBus.emit('stdout', 'Python is not ready yet\n');
