@@ -47,7 +47,7 @@
                 :hidden="isHidden(element)"
                 :readonly="isReadOnly(element)"
                 :submit="isSubmit(element)"
-                :allowInput="true"
+                :allowInput="isSelected(element.id)"
                 @update:modelValue="newValue => { $emit('update:modelCellValue', { id:element.id, value:newValue }); }"
                 @action="handleAction"
                 @click="handleClick"

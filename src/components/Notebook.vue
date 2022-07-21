@@ -4,6 +4,9 @@
     tabindex="0"
     @keyup.enter.ctrl.exact="cellEval"
     @keyup.k.ctrl.exact="cellInterrupt"
+    @keyup.escape.exact="ifEdit(modeCommand)"
+    @keyup.enter.exact="ifCommand(modeEdit)"
+    ref="appref"
   >
     <Status :value="status" />
     <Cells
@@ -42,11 +45,38 @@ import { signalMap,
        } from '../signal.js';
 
 let normalstate = null;
+let appref = ref(null);
 
 let status = ref('Initializing');
 let command = ref(false);
 
 const customBus = mitt();
+
+function ifEdit (func) {
+  if (!command.value) {
+    return func();
+  }
+}
+
+function ifCommand (func) {
+  if (command.value) {
+    return func();
+  }
+}
+
+function modeEdit () {
+  command.value = false;
+}
+
+function modeCommand () {
+  command.value = true;
+  appref.value.focus();
+}
+
+function handleEscape () {
+  console.log('Escape', command.value);
+  ifEdit(modeCommand);
+}
 
 onMounted(() => {
 
