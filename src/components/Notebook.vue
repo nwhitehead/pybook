@@ -6,6 +6,8 @@
     @keyup.k.ctrl.exact="cellInterrupt"
     @keyup.escape.exact="ifEdit(modeCommand)"
     @keyup.enter.exact="ifCommand(modeEdit)"
+    @keyup.up.exact="ifCommand(() => { cellPrevious(state) })"
+    @keyup.down.exact="ifCommand(() => { cellNext(state) })"
     ref="appref"
   >
     <Status :value="status" />
@@ -33,7 +35,8 @@ import CellOutput from "./CellOutput.vue";
 import CellInput from "./CellInput.vue";
 import Cells from "./Cells.vue";
 import Terminal from "./Terminal.vue";
-import { state, getCell, clearOutput, addOutput } from '../notebook.js';
+import { state, getCell, clearOutput, addOutput,
+         cellPrevious, cellNext } from '../notebook.js';
 import mitt from "mitt";
 
 import { newPythonKernel } from '../python.js';
@@ -71,11 +74,6 @@ function modeEdit () {
 function modeCommand () {
   command.value = true;
   appref.value.focus();
-}
-
-function handleEscape () {
-  console.log('Escape', command.value);
-  ifEdit(modeCommand);
 }
 
 onMounted(() => {
