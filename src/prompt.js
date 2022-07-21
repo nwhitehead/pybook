@@ -14,9 +14,13 @@ export function Prompt (opts) {
     // Keep track of history
     let history = [];
     let historyPosition = 0;
+    // Keep track of temporary currentEntry when scrolling through history
+    let historySavedCurrent = '';
 
     function updateLine() {
-        // Move cursor to start of line, write entire line, with space to delete any moving stuff
+        // Erase line
+        opts.xterm.write('\u001b[2K');
+        // Move cursor to start of line, write entire line
         opts.xterm.write('\r' + opts.prompt + currentEntry + ' ');
         // Move cursor to correct position
         opts.xterm.write('\u001b[' + (currentEntry.length - cursor + 1) + 'D');
@@ -36,6 +40,9 @@ export function Prompt (opts) {
                 if (key === 'Enter') {
                     opts.xterm.write('\r\n');
                     const entry = currentEntry;
+                    // Add to history
+                    history.push(entry);
+                    historyPosition = history.length;
                     currentEntry = '';
                     cursor = 0;
                     acceptingInput = false;
@@ -54,6 +61,28 @@ export function Prompt (opts) {
                 } else if (key === 'ArrowRight') {
                     if (cursor < currentEntry.length) {
                         cursor += 1;
+                        updateLine();
+                    }
+                } else if (key === 'ArrowUp') {
+                    if (historyPosition > 0 && history.length > 0) {
+                        if (historyPosition === history.length) {
+                            // save current entry
+                            historySavedCurrent = currentEntry;
+                        }
+                        historyPosition--;
+                        currentEntry = history[historyPosition];
+                        cursor = currentEntry.length;
+                        updateLine();
+                    }
+                } else if (key === 'ArrowDown') {
+                    if (historyPosition < history.length) {
+                        historyPosition++;
+                        if (historyPosition === history.length) {
+                            currentEntry = historySavedCurrent;
+                        } else {
+                            currentEntry = history[historyPosition];
+                        }
+                        cursor = currentEntry.length;
                         updateLine();
                     }
                 } else if (key && key.length === 1) {

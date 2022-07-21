@@ -9,7 +9,7 @@
     <Cells
       v-model="state.cells[state.page]"
       :select="state.select"
-      :command="false"
+      :command="command"
       :allowDrag="true"
       @update:modelCellValue="newValue => { getCell(state, state.page, newValue.id).source = newValue.value; }"
       @click="handleClick"
@@ -44,6 +44,7 @@ import { signalMap,
 let normalstate = null;
 
 let status = ref('Initializing');
+let command = ref(false);
 
 const customBus = mitt();
 
