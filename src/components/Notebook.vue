@@ -11,6 +11,8 @@
     ref="appref"
   >
     <Status :value="status" />
+    <Pagination :pages="state.cells.length" :current="state.page"
+      @page="(p) => { state.page = p; }" />
     <Cells
       v-model="state.cells[state.page]"
       :select="state.select"
@@ -34,6 +36,7 @@ import DataOutput from "./DataOutput.vue";
 import CellOutput from "./CellOutput.vue";
 import CellInput from "./CellInput.vue";
 import Cells from "./Cells.vue";
+import Pagination from "./Pagination.vue";
 import Terminal from "./Terminal.vue";
 import { state, getCell, clearOutput, addOutput,
          cellPrevious, cellNext } from '../notebook.js';
