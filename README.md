@@ -2,11 +2,15 @@
 
 ## Building
 
-There is a build phase... for JavaScript (sigh). Need `node`, `npm`, and a bunch of packages in `package.json`. Once that is setup, you can build with:
+You will need `node`, `npm`, and packages from `package.json`. Once you have `node` and `npm` setup you should be able to do `npm install`.
 
-    npm run build
+You will need a local `python3`. There is a wheel file to build that is used by Pyodide.
 
-Output files go into `/build`.
+Pyodide is needed to run locally, it is somewhat large.
+
+There is a `Makefile` that will download Pyodide and extract it, then build a local Python library needed by Pybook, then build the JavaScript application.
+
+    make
 
 ## Running
 
@@ -15,6 +19,18 @@ To view, start server:
     npm run serve
 
 Then go to http://localhost:8001/src/
+
+## Rebuilding
+
+If you change JavaScript code, there is a build phase. Output files go into `/build`. You can also just do a toplevel `make`, or if you want to do the specific JavaScript parts do:
+
+    npm run build
+
+If you change Python package code in `pbexec`, you will need to rebuild the wheel file. This should be done automatically with `make` as well. To do this manually, inside `pylib` do:
+
+    python3 -m build
+
+This will create a wheel file that needs to be copied to `lib/pyodide`.
 
 ## Unit Testing
 
