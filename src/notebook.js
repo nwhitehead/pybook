@@ -202,3 +202,27 @@ export function moveCellAfter (state) {
     nbpage.splice(cellIndex + 1, 0, cell);
   }
 }
+
+//! Update type of selected cell to make it code (Python)
+export function typeCellCode (state) {
+  const nbpage = getPage(state, state.page);
+  let cell = getCell(state, state.page, state.select);
+  cell.cell_type = 'code';
+  cell.language = 'python';
+}
+
+//! Update type of selected cell to make it markdown in edit mode
+export function typeCellMarkdownEdit (state) {
+  const nbpage = getPage(state, state.page);
+  let cell = getCell(state, state.page, state.select);
+  cell.cell_type = 'markdown';
+  cell.subtype = 'edit';
+}
+
+//! Update type of selected cell to make it markdown in view mode
+export function typeCellMarkdownView (state) {
+  const nbpage = getPage(state, state.page);
+  let cell = getCell(state, state.page, state.select);
+  cell.cell_type = 'markdown';
+  cell.subtype = 'view';
+}

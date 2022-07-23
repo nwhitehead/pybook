@@ -20,9 +20,9 @@
             { text:'Move cell up', action:() => { moveCellBefore(state); }},
             { text:'Move cell down', action:() => { moveCellAfter(state); }},
             { divider:true },
-            { text:'Type - Code', action:typeCellCode },
-            { text:'Type - MarkDown - Edit', action:typeCellMarkdownEdit },
-            { text:'Type - MarkDown - View', action:typeCellMarkdownView },
+            { text:'Type - Code', action:() => { typeCellCode(state); }},
+            { text:'Type - MarkDown - Edit', action:() => { typeCellMarkdownEdit(state); }},
+            { text:'Type - MarkDown - View', action:() => { typeCellMarkdownView(state); }},
             { divider:true },
             { text:'Send stdin input', action:typeSomething },
         ]" />
@@ -74,7 +74,8 @@ import { state, getCell, clearOutput, addOutput,
          cellPrevious, cellNext,
          insertCellBefore, insertCellAfter,
          deleteCell,
-         moveCellBefore, moveCellAfter } from '../notebook.js';
+         moveCellBefore, moveCellAfter,
+         typeCellCode, typeCellMarkdownEdit, typeCellMarkdownView } from '../notebook.js';
 import mitt from "mitt";
 
 import { newPythonKernel } from '../python.js';
