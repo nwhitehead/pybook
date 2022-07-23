@@ -156,14 +156,18 @@ export function cellNext (state) {
 export function insertCellBefore (state) {
   const nbpage = getPage(state, state.page);
   let cellIndex = findCell(state, state.page, state.select);
-  nbpage.splice(cellIndex, 0, newCell() );
+  const cell = newCell();
+  nbpage.splice(cellIndex, 0, cell );
+  state.selection = cell.id;
 }
 
 //! Insert new cell after selected cell
 export function insertCellAfter (state) {
   const nbpage = getPage(state, state.page);
   let cellIndex = findCell(state, state.page, state.select);
-  nbpage.splice(cellIndex + 1, 0, newCell() );
+  const cell = newCell();
+  nbpage.splice(cellIndex + 1, 0, cell );
+  state.selection = cell.id;
 }
 
 //! Delete selected cell
@@ -225,4 +229,32 @@ export function typeCellMarkdownView (state) {
   let cell = getCell(state, state.page, state.select);
   cell.cell_type = 'markdown';
   cell.subtype = 'view';
+}
+
+//! Insert new page before current page (and set it to active page)
+export function insertPageBefore (state) {
+  const page = newPage();
+  state.cells.splice(state.page, 0, page);
+}
+
+//! Insert new page after current page (and set it to active page)
+export function insertPageAfter (state) {
+  const page = newPage();
+  state.cells.splice(state.page + 1, 0, page);
+  state.page += 1;
+}
+
+//! Delete current page (select next page if it exists, or previous page if it exists, or create blank page)
+export function deletePage (state) {
+  state.cells.splice(state.page, 1);
+  if (state.cells.length === 0) {
+    // If no pages left, make a blank one
+    state.cells.splice(0, 0, newPage());
+    state.page = 0;
+  } else {
+    // Check to see if we deleted last page
+    if (state.page >= state.cells.length) {
+      state.page = state.cells.length - 1;
+    }
+  }
 }

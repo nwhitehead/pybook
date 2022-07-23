@@ -23,13 +23,11 @@
             { text:'Type - Code', action:() => { typeCellCode(state); }},
             { text:'Type - MarkDown - Edit', action:() => { typeCellMarkdownEdit(state); }},
             { text:'Type - MarkDown - View', action:() => { typeCellMarkdownView(state); }},
-            { divider:true },
-            { text:'Send stdin input', action:typeSomething },
         ]" />
         <Dropdown name="Page" :values="[
-            { text:'Insert new page before', action:insertPageBefore },
-            { text:'Insert new page after', action:insertPageAfter },
-            { text:'Delete page', action:deletePage },
+            { text:'Insert new page before', action:() => { insertPageBefore(state); }},
+            { text:'Insert new page after', action:() => { insertPageAfter(state); }},
+            { text:'Delete page', action:() => { deletePage(state); }},
             { divider:true },
             { text:'Move page earlier', action:movePageBefore },
             { text:'Move page later', action:movePageAfter },
@@ -72,10 +70,10 @@ import Status from "./Status.vue";
 import Terminal from "./Terminal.vue";
 import { state, getCell, clearOutput, addOutput,
          cellPrevious, cellNext,
-         insertCellBefore, insertCellAfter,
-         deleteCell,
+         insertCellBefore, insertCellAfter, deleteCell,
          moveCellBefore, moveCellAfter,
-         typeCellCode, typeCellMarkdownEdit, typeCellMarkdownView } from '../notebook.js';
+         typeCellCode, typeCellMarkdownEdit, typeCellMarkdownView,
+         insertPageBefore, insertPageAfter, deletePage } from '../notebook.js';
 import mitt from "mitt";
 
 import { newPythonKernel } from '../python.js';
