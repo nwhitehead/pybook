@@ -29,8 +29,8 @@
             { text:'Insert new page after', action:() => { insertPageAfter(state); }},
             { text:'Delete page', action:() => { deletePage(state); }},
             { divider:true },
-            { text:'Move page earlier', action:movePageBefore },
-            { text:'Move page later', action:movePageAfter },
+            { text:'Move page earlier', action:() => { movePageBefore(state); }},
+            { text:'Move page later', action:() => { movePageAfter(state); }},
         ]" />
         <Dropdown name="Debug" :values="[
             { text:'Console dump', action:debugDump },
@@ -73,7 +73,8 @@ import { state, getCell, clearOutput, addOutput,
          insertCellBefore, insertCellAfter, deleteCell,
          moveCellBefore, moveCellAfter,
          typeCellCode, typeCellMarkdownEdit, typeCellMarkdownView,
-         insertPageBefore, insertPageAfter, deletePage } from '../notebook.js';
+         insertPageBefore, insertPageAfter, deletePage,
+         movePageBefore, movePageAfter } from '../notebook.js';
 import mitt from "mitt";
 
 import { newPythonKernel } from '../python.js';

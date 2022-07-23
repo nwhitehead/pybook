@@ -258,3 +258,29 @@ export function deletePage (state) {
     }
   }
 }
+
+//! Move current page one position earlier
+export function movePageBefore (state) {
+  if (state.page > 0) {
+    const page = state.cells[state.page];
+    // Delete page at original index
+    state.cells.splice(state.page, 1);
+    // Insert page at lower index
+    state.cells.splice(state.page - 1, 0, page);
+    // Select moved page
+    state.page -= 1;
+  }
+}
+
+//! Move current page one position later
+export function movePageAfter (state) {
+  if (state.page < state.cells.length - 1) {
+    const page = state.cells[state.page];
+    // Delete page at original index
+    state.cells.splice(state.page, 1);
+    // Insert page at higher index
+    state.cells.splice(state.page + 1, 0, page);
+    // Select moved page
+    state.page += 1;
+  }
+}
