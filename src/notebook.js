@@ -165,3 +165,40 @@ export function insertCellAfter (state) {
   let cellIndex = findCell(state, state.page, state.select);
   nbpage.splice(cellIndex + 1, 0, newCell() );
 }
+
+//! Delete selected cell
+export function deleteCell (state) {
+  const nbpage = getPage(state, state.page);
+  let cellIndex = findCell(state, state.page, state.select);
+  nbpage.splice(cellIndex, 1);
+  // If page has no cells, add a blank one
+  if (nbpage.length === 0) {
+    nbpage.splice(0, 0, newCell());
+  }
+}
+
+//! Move cell up one position (not off page)
+export function moveCellBefore (state) {
+  const nbpage = getPage(state, state.page);
+  let cellIndex = findCell(state, state.page, state.select);
+  if (cellIndex > 0) {
+    const cell = nbpage[cellIndex];
+    // Delete cell at original index
+    nbpage.splice(cellIndex, 1);
+    // Insert cell at lower index
+    nbpage.splice(cellIndex - 1, 0, cell);
+  }
+}
+
+//! Move cell down one position (not off page)
+export function moveCellAfter (state) {
+  const nbpage = getPage(state, state.page);
+  let cellIndex = findCell(state, state.page, state.select);
+  if (cellIndex < nbpage.length - 1) {
+    const cell = nbpage[cellIndex];
+    // Delete cell at original index
+    nbpage.splice(cellIndex, 1);
+    // Insert copy of cell at higher index
+    nbpage.splice(cellIndex + 1, 0, cell);
+  }
+}

@@ -15,10 +15,10 @@
         <Dropdown name="Cell" :values="[
             { text:'Insert new cell before', action:() => { insertCellBefore(state); }},
             { text:'Insert new cell after', action:() => { insertCellAfter(state); }},
-            { text:'Delete cell', action:deleteCell },
+            { text:'Delete cell', action:() => { deleteCell(state); }},
             { divider:true },
-            { text:'Move cell up', action:moveCellBefore },
-            { text:'Move cell down', action:moveCellAfter },
+            { text:'Move cell up', action:() => { moveCellBefore(state); }},
+            { text:'Move cell down', action:() => { moveCellAfter(state); }},
             { divider:true },
             { text:'Type - Code', action:typeCellCode },
             { text:'Type - MarkDown - Edit', action:typeCellMarkdownEdit },
@@ -72,7 +72,9 @@ import Status from "./Status.vue";
 import Terminal from "./Terminal.vue";
 import { state, getCell, clearOutput, addOutput,
          cellPrevious, cellNext,
-         insertCellBefore, insertCellAfter } from '../notebook.js';
+         insertCellBefore, insertCellAfter,
+         deleteCell,
+         moveCellBefore, moveCellAfter } from '../notebook.js';
 import mitt from "mitt";
 
 import { newPythonKernel } from '../python.js';
