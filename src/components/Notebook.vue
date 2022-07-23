@@ -11,6 +11,38 @@
     ref="appref"
   >
     <Status :value="status" />
+    <div id="menu">
+        <Dropdown name="Cell" :values="[
+            { text:'Insert new cell before', action:() => { insertCellBefore(state); }},
+            { text:'Insert new cell after', action:() => { insertCellAfter(state); }},
+            { text:'Delete cell', action:deleteCell },
+            { divider:true },
+            { text:'Move cell up', action:moveCellBefore },
+            { text:'Move cell down', action:moveCellAfter },
+            { divider:true },
+            { text:'Type - Code', action:typeCellCode },
+            { text:'Type - MarkDown - Edit', action:typeCellMarkdownEdit },
+            { text:'Type - MarkDown - View', action:typeCellMarkdownView },
+            { divider:true },
+            { text:'Send stdin input', action:typeSomething },
+        ]" />
+        <Dropdown name="Page" :values="[
+            { text:'Insert new page before', action:insertPageBefore },
+            { text:'Insert new page after', action:insertPageAfter },
+            { text:'Delete page', action:deletePage },
+            { divider:true },
+            { text:'Move page earlier', action:movePageBefore },
+            { text:'Move page later', action:movePageAfter },
+        ]" />
+        <Dropdown name="Debug" :values="[
+            { text:'Console dump', action:debugDump },
+            { text:'Clear local files', action:debugClear },
+            { text:'Save notebook', action:debugSave },
+            { divider:true },
+            { text:'Save', filesave:true },
+        ]" />
+    </div>
+
     <Pagination :pages="state.cells.length" :current="state.page"
       @page="(p) => { state.page = p; }" />
     <Cells
@@ -28,18 +60,19 @@
 <script setup>
 
 import { reactive, ref, onMounted } from "vue";
-import Dropdown from "./Dropdown.vue";
-import Status from "./Status.vue";
 import Cell from "./Cell.vue";
+import CellInput from "./CellInput.vue";
+import CellOutput from "./CellOutput.vue";
+import Cells from "./Cells.vue";
 import CheckPoint from "./CheckPoint.vue";
 import DataOutput from "./DataOutput.vue";
-import CellOutput from "./CellOutput.vue";
-import CellInput from "./CellInput.vue";
-import Cells from "./Cells.vue";
+import Dropdown from "./Dropdown.vue";
 import Pagination from "./Pagination.vue";
+import Status from "./Status.vue";
 import Terminal from "./Terminal.vue";
 import { state, getCell, clearOutput, addOutput,
-         cellPrevious, cellNext } from '../notebook.js';
+         cellPrevious, cellNext,
+         insertCellBefore, insertCellAfter } from '../notebook.js';
 import mitt from "mitt";
 
 import { newPythonKernel } from '../python.js';
@@ -175,10 +208,6 @@ function cellInterrupt () {
   console.log('Notebook cellInterrupt');
   status.value = 'Interrupt';
   setInterrupt();
-}
-
-function insertCellBefore () {
-  console.log('insertCellBefore');
 }
 
 function handleClick (event) {

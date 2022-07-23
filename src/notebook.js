@@ -27,8 +27,7 @@ function newPage() {
   return [ newCell() ];
 }
 
-// A notebook is an array of pages
-export const state = reactive({
+const testDoc = {
   select: 0,
   page: 0,
   cells: [ 
@@ -60,8 +59,18 @@ export const state = reactive({
       },
     ]
   ]
-});
+};
 
+freshId(testDoc);
+
+//! A notebook is an array of pages
+//!
+export const state = reactive(testDoc);
+
+console.log(state.value);
+//freshId(state.);
+
+//! Get page of cells from state
 export function getPage (state, page) {
   if (page < 0 || page >= state.cells.length) {
     throw 'Could not get requested page';
@@ -69,6 +78,8 @@ export function getPage (state, page) {
   return state.cells[page];
 }
 
+//! Find single cell from given page and id
+//! Returns index in page
 export function findCell (state, page, id) {
   const nbpage = getPage(state, page);
   for (let i = 0; i < nbpage.length; i++) {
@@ -79,16 +90,22 @@ export function findCell (state, page, id) {
   throw 'Could not get requested cell';
 }
 
+//! Get single cell from given page and id
+//! Cell may be modified directly after return
 export function getCell (state, page, id) {
   const nbpage = getPage(state, page);
   const cellIndex = findCell (state, page, id);
   return nbpage[cellIndex];
 }
 
+//! Clear output of a cell
 export function clearOutput (cell) {
   cell.outputs = [];
 }
 
+//! Add output to a cell
+//! Consolidates streams of the same type to allow output before newlines
+//! If name of stream changes, starts a new output stream (will add newline)
 export function addOutput (cell, output) {
   if (cell.outputs.length === 0) {
     cell.outputs.push(output);
@@ -103,6 +120,9 @@ export function addOutput (cell, output) {
   }
 }
 
+//! Select previous cell on page
+//! Stops at top of page
+//! Skips over hidden cells
 export function cellPrevious (state) {
   const nbpage = getPage(state, state.page);
   let cellIndex = findCell(state, state.page, state.select);
@@ -116,6 +136,9 @@ export function cellPrevious (state) {
   state.select = cellIndex;
 }
 
+//! Select next cell on page
+//! Stops at bottom of page
+//! Skips over hidden cells
 export function cellNext (state) {
   const nbpage = getPage(state, state.page);
   let cellIndex = findCell(state, state.page, state.select);
@@ -127,4 +150,18 @@ export function cellNext (state) {
     }
   }
   state.select = cellIndex;
+}
+
+//! Insert new cell before selected cell
+export function insertCellBefore (state) {
+  const nbpage = getPage(state, state.page);
+  let cellIndex = findCell(state, state.page, state.select);
+  nbpage.splice(cellIndex, 0, newCell() );
+}
+
+//! Insert new cell after selected cell
+export function insertCellAfter (state) {
+  const nbpage = getPage(state, state.page);
+  let cellIndex = findCell(state, state.page, state.select);
+  nbpage.splice(cellIndex + 1, 0, newCell() );
 }
