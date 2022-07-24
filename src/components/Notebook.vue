@@ -2,12 +2,16 @@
   <div
     id="app"
     tabindex="0"
-    @keyup.enter.ctrl.exact="cellEval"
-    @keyup.k.ctrl.exact="cellInterrupt"
-    @keyup.escape.exact="ifEdit(modeCommand)"
-    @keyup.enter.exact="ifCommand(modeEdit)"
-    @keyup.up.exact="ifCommand(() => { cellPrevious(state) })"
-    @keyup.down.exact="ifCommand(() => { cellNext(state) })"
+    @keydown.right.ctrl.exact.prevent="() => { pageNext(state); }"
+    @keydown.left.ctrl.exact.prevent="() => { pagePrevious(state); }"
+    @keydown.up.ctrl.exact.prevent="() => { cellPrevious(state); }"
+    @keydown.down.ctrl.exact.prevent="() => { cellNext(state); }"
+    @keydown.enter.ctrl.exact.prevent="cellEval"
+    @keydown.k.ctrl.exact.prevent="cellInterrupt"
+    @keydown.escape.exact.prevent="ifEdit(modeCommand)"
+    @keydown.enter.exact.prevent="ifCommand(modeEdit)"
+    @keydown.up.exact.prevent="ifCommand(() => { cellPrevious(state) })"
+    @keydown.down.exact.prevent="ifCommand(() => { cellNext(state) })"
     ref="appref"
   >
     <Status :value="status" />
@@ -42,7 +46,7 @@
     </div>
 
     <Pagination :pages="state.cells.length" :current="state.page"
-      @page="(p) => { state.page = p; }" />
+      @page="(p) => { pageSet(state, p); }" />
     <Cells
       v-model="state.cells[state.page]"
       :select="state.select"
@@ -73,6 +77,7 @@ import { state, getCell, clearOutput, addOutput,
          insertCellBefore, insertCellAfter, deleteCell,
          moveCellBefore, moveCellAfter,
          typeCellCode, typeCellMarkdownEdit, typeCellMarkdownView,
+         pageNext, pagePrevious, pageSet,
          insertPageBefore, insertPageAfter, deletePage,
          movePageBefore, movePageAfter } from '../notebook.js';
 import mitt from "mitt";

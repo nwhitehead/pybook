@@ -133,7 +133,7 @@ export function cellPrevious (state) {
       cellIndex--;
     }
   }
-  state.select = cellIndex;
+  state.select = nbpage[cellIndex].id;
 }
 
 //! Select next cell on page
@@ -149,7 +149,7 @@ export function cellNext (state) {
       cellIndex++;
     }
   }
-  state.select = cellIndex;
+  state.select = nbpage[cellIndex].id;
 }
 
 //! Insert new cell before selected cell
@@ -235,13 +235,14 @@ export function typeCellMarkdownView (state) {
 export function insertPageBefore (state) {
   const page = newPage();
   state.cells.splice(state.page, 0, page);
+  selectFirst(state);
 }
 
 //! Insert new page after current page (and set it to active page)
 export function insertPageAfter (state) {
   const page = newPage();
   state.cells.splice(state.page + 1, 0, page);
-  state.page += 1;
+  pageSet(state, state.page + 1);
 }
 
 //! Delete current page (select next page if it exists, or previous page if it exists, or create blank page)
@@ -250,11 +251,11 @@ export function deletePage (state) {
   if (state.cells.length === 0) {
     // If no pages left, make a blank one
     state.cells.splice(0, 0, newPage());
-    state.page = 0;
+    pageSet(state, 0);
   } else {
     // Check to see if we deleted last page
     if (state.page >= state.cells.length) {
-      state.page = state.cells.length - 1;
+      pageSet(state, state.page = state.cells.length - 1);
     }
   }
 }
@@ -268,7 +269,7 @@ export function movePageBefore (state) {
     // Insert page at lower index
     state.cells.splice(state.page - 1, 0, page);
     // Select moved page
-    state.page -= 1;
+    pageSet(state, state.page - 1);
   }
 }
 
@@ -281,6 +282,34 @@ export function movePageAfter (state) {
     // Insert page at higher index
     state.cells.splice(state.page + 1, 0, page);
     // Select moved page
+    pageSet(state, state.page + 1);
+  }
+}
+
+//! Select first cell on current page
+export function selectFirst (state)
+{
+  state.select = state.cells[state.page][0].id;
+}
+
+//! Move to specific page
+export function pageSet (state, p) {
+  state.page = p;
+  selectFirst(state);
+}
+
+//! Move to prevous page
+export function pagePrevious (state) {
+  if (state.page > 0) {
+    state.page -= 1;
+    selectFirst(state);
+  }
+}
+
+//! Move to next page
+export function pageNext (state) {
+  if (state.page < state.cells.length - 1) {
     state.page += 1;
+    selectFirst(state);
   }
 }

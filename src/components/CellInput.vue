@@ -31,7 +31,7 @@
     <codemirror
       v-model="modelValue"
       :style="{ maxHeight: '600px' }"
-      :autofocus="false"
+      :autofocus="!disabled"
       :indent-with-tab="true"
       :tab-size="indent"
       :extensions="extensions"
