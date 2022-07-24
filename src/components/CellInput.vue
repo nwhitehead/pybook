@@ -4,6 +4,9 @@
 //! This is a Vue component that represents a cell input area. It is built using CodeMirror. The cell can have
 //! syntax highlighting for Python or Markdown.
 //!
+//! With multiple cells in a notebook, normal situation is that one CellInput has canFocus true, other have false.
+//! In command mode everything has canFocus set to false.
+//!
 //! Props:
 //! - modelValue - This is the main text contents inside the cell input.
 //! - id - This is set by creator, will be passed in emitted messages to keep cells easy to distinguish
