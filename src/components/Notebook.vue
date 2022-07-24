@@ -33,7 +33,7 @@
             { text:'Move page later', action:() => { movePageAfter(state); }},
         ]" />
         <Dropdown name="Debug" :values="[
-            { text:'Console dump', action:debugDump },
+            { text:'Console dump', action:() => { debugDump(state); }},
             { text:'Clear local files', action:debugClear },
             { text:'Save notebook', action:debugSave },
             { divider:true },
@@ -217,5 +217,9 @@ function handleClick (event) {
   modeEdit();
 }
 
+function debugDump (state) {
+  const value = JSON.parse(JSON.stringify(state));
+  console.log(value);
+}
 
 </script>
