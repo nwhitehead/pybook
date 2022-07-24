@@ -2,16 +2,25 @@
   <div
     id="app"
     tabindex="0"
-    @keydown.right.ctrl.exact.prevent="() => { pageNext(state); }"
-    @keydown.left.ctrl.exact.prevent="() => { pagePrevious(state); }"
-    @keydown.up.ctrl.exact.prevent="() => { cellPrevious(state); }"
-    @keydown.down.ctrl.exact.prevent="() => { cellNext(state); }"
-    @keydown.enter.ctrl.exact.prevent="cellEval"
-    @keydown.k.ctrl.exact.prevent="cellInterrupt"
-    @keydown.escape.exact.prevent="ifEdit(modeCommand)"
+    @keydown.left.ctrl.exact.prevent="pagePrevious(state)"
+    @keydown.right.ctrl.exact.prevent="pageNext(state)"
+    @keydown.up.exact.prevent="ifCommand(cellPrevious, state)"
+    @keydown.up.ctrl.exact.prevent="cellPrevious(state)"
+    @keydown.down.exact.prevent="ifCommand(cellNext, state)"
+    @keydown.down.ctrl.exact.prevent="cellNext(state)"
     @keydown.enter.exact.prevent="ifCommand(modeEdit)"
-    @keydown.up.exact.prevent="ifCommand(() => { cellPrevious(state) })"
-    @keydown.down.exact.prevent="ifCommand(() => { cellNext(state) })"
+    @keydown.enter.shift.exact.prevent="cellEval(state); cellNext(state);"
+    @keydown.enter.ctrl.exact.prevent="cellEval(state)"
+    @keydown.enter.alt.exact.prevent="cellEval(state); insertCellAfter(state); cellNext(state);"
+    @keydown.k.ctrl.exact.prevent="cellInterrupt()"
+    @keydown.escape.exact.prevent="ifEdit(modeCommand)"
+    @keydown.a.exact="ifCommand(insertCellBefore, state)"
+    @keydown.b.exact="ifCommand(insertCellAfter, state)"
+    @keydown.c.exact="ifCommand(cellClearOutput, state)"
+    @keydown.d.exact="ifCommand(deleteCell, state)"
+    @keydown.y.exact="ifCommand(typeCellCode, state)"
+    @keydown.m.exact="ifCommand(typeCellMarkdownEdit, state)"
+    @keydown.m.shift.exact="ifCommand(typeCellMarkdownView, state)"
     ref="appref"
   >
     <Status :value="status" />
@@ -98,15 +107,15 @@ let command = ref(false);
 
 const customBus = mitt();
 
-function ifEdit (func) {
+function ifEdit (func, arg) {
   if (!command.value) {
-    return func();
+    return func(arg);
   }
 }
 
-function ifCommand (func) {
+function ifCommand (func, arg) {
   if (command.value) {
-    return func();
+    return func(arg);
   }
 }
 
@@ -172,7 +181,13 @@ const opts = {
 
 const python = newPythonKernel(opts);
 
-function cellEval () {
+//! Clear output of selected cell
+function cellClearOutput (state) {
+  const cell = getCell(state, state.page, state.select); 
+  clearOutput(cell);
+}
+
+function cellEval (state) {
   const cell = getCell(state, state.page, state.select); 
   if (cell.cell_type === 'code') {
     if (status.value === 'Initializing' || status.value === 'Working') {

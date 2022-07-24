@@ -179,6 +179,12 @@ export function deleteCell (state) {
   if (nbpage.length === 0) {
     nbpage.splice(0, 0, newCell());
   }
+  // Set selection to next cell (or last cell if it exists)
+  if (cellIndex <= nbpage.length - 1) {
+    state.select = nbpage[cellIndex].id;
+  } else {
+    state.select = nbpage[cellIndex - 1].id;
+  }
 }
 
 //! Move cell up one position (not off page)
