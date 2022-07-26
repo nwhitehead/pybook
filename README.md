@@ -20,7 +20,7 @@ To view, start server:
 
     npm run serve
 
-Then go to http://localhost:8001/src/
+Then go to http://localhost:8080/static/src/
 
 ## Rebuilding
 
