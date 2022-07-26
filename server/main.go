@@ -5,21 +5,48 @@ import (
     "github.com/gin-gonic/gin"
 )
 
+// For any type T, return pointer to given value of type T
+// This lets us create literals for pointer types
+func Ptr[T any](v T) *T {
+    return &v
+}
+
 type notebook struct {
-	Title string `json:"name"`
-	Author string `json:"author"`
-	Contents string `json:"contents"`
+	Identifier *string `json:"identifier,omitempty"`
+	Title *string `json:"name,omitempty"`
+	Author *string `json:"author,omitempty"`
+	Contents *string `json:"contents,omitempty"`
 }
 
 // Demo data
 var notebooks = []notebook{
-	{Title:"Test Notebook 1", Author:"Nathan", Contents:"blah"},
-	{Title:"Test Notebook 2", Author:"Nathan", Contents:"foobar"},
+	{Identifier:Ptr("1234"), Title:Ptr("Test Notebook 1"), Author:Ptr("Nathan"), Contents:Ptr("blah")},
+	{Identifier:Ptr("8375309"), Title:Ptr("Test Notebook 2"), Author:Ptr("Nathan"), Contents:Ptr("foobar")},
+}
+
+// Get single notebook
+func getNotebookByIdentifier(c *gin.Context) {
+	id := c.Param("identifier");
+	for _, notebook := range notebooks {
+		if *notebook.Identifier == id {
+			c.IndentedJSON(http.StatusOK, notebook)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{
+		"message": "Notebook not found",
+		"identifier": id,
+	})
 }
 
 // getNotebooks responds with the list of all notebooks as JSON.
 func getNotebooks(c *gin.Context) {
-    c.IndentedJSON(http.StatusOK, notebooks)
+	lst := []notebook{}
+	for _, notebook := range notebooks {
+		notebook.Contents = nil;
+		lst = append(lst, notebook)
+	}
+	c.IndentedJSON(http.StatusOK, lst)
 }
 
 func middleware() gin.HandlerFunc {
@@ -47,6 +74,7 @@ func main() {
     router := gin.Default()
 	router.Use(middleware());
     router.GET("/notebooks", getNotebooks)
+    router.GET("/notebook/:identifier", getNotebookByIdentifier)
 	router.Static("/static", "../")
 	router.Run("localhost:8080")
 }
