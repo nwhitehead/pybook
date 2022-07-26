@@ -6,9 +6,11 @@ You will need `node`, `npm`, and packages from `package.json`. Once you have `no
 
 You will need a local `python3`. There is a wheel file to build that is used by Pyodide.
 
+You will need `go` for the server and backend API. Make sure `go` is available from the command line.
+
 Pyodide is needed to run locally, it is somewhat large.
 
-There is a `Makefile` that will download Pyodide and extract it, then build a local Python library needed by Pybook, then build the JavaScript application.
+There is a `Makefile` that will download Pyodide and extract it, then build a local Python library needed by Pybook, then build the JavaScript application, then build the Go server.
 
     make
 

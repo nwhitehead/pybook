@@ -67,9 +67,6 @@ freshId(testDoc);
 //!
 export const state = reactive(testDoc);
 
-console.log(state.value);
-//freshId(state.);
-
 //! Get page of cells from state
 export function getPage (state, page) {
   if (page < 0 || page >= state.cells.length) {

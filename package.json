@@ -28,6 +28,6 @@
   "scripts": {
     "build": "node src/build.cjs",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
-    "serve": "python3 server/serve.py"
+    "serve": "cd server && go run main.go"
   }
 }

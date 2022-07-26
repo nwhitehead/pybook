@@ -21,7 +21,7 @@ import { signalMap, setStarting, clearInterrupt,
 // Spawn the web worker thread and configure it
 function newPythonWorker() {
     const config = {
-        absurl: document.location.protocol + '//' + document.location.host,
+        absurl: document.location.href + '..',
         sharedArray: sharedArray,
         sharedInputArray: sharedInputArray,
         signalMap: signalMap,
