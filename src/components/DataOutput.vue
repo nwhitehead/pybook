@@ -16,6 +16,10 @@
 //! If the value has more than one MIME type, they will be shown sequentially with simplest first.
 //!
 //! Note that text/html type is passed through an HTML sanitizer to prevent various types of attacks.
+//! For stdout/stderr output, the text is first HTML escaped to allow things like REDACTED to work.
+//! (The string I want to put there breaks the Vue esbuild compile...)
+//! Next the escaped HTML is put through an ANSI convert function to allow ANSI escape codes for colors etc.
+//! Finally there is an HTML sanitizer to prevent unintentional final results with dangerous consequences.
 //!
 
 <template>
@@ -23,7 +27,7 @@
         <pre
             v-if="isPre(value)"
             :class="getClass(value)"
-            v-html="DOMPurify.sanitize(convert.toHtml(value['text/plain']))"
+            v-html="preContent"
         />
         <div v-if="isHtml(value)" :class="getClass(value)">
             <div class="content" v-html="htmlMarkdown" ref="htmlContent" />
@@ -63,6 +67,13 @@ const props = defineProps(['value']);
 const htmlMarkdown = computed(() => {
     return DOMPurify.sanitize(props.value['text/html']);
 });
+const preContent = computed(() => {
+    return DOMPurify.sanitize(convert.toHtml(escapeHtml(props.value['text/plain'])));
+});
+
+function escapeHtml (unsafe) {
+    return unsafe.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+}
 
 function typesetMath() {
     MathJax.typesetClear([htmlContent.value]);
