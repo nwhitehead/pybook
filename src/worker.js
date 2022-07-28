@@ -76,12 +76,16 @@ async function configure(config) {
         }
     };
     pyodide.setInterruptBuffer(sharedArray);
+    // Set SIGTRAP signal handler to do a breakpoint()
+    pyodide.runPython('import signal\ndef __handleTrap(number, frame): import pdb; pdb.post_mortem(frame)\nsignal.signal(signal.SIGTRAP, __handleTrap)');
+    // Register pybook model (JavaScript code, not a real module)
     pyodide.registerJsModule('pybook', pybook); // synchronous
+    // Get micropip to be able to load local pbexec pure python package
     await pyodide.loadPackage('micropip');
     pyodide.runPython('import micropip');
+    // Install pbexec
     await pyodide.runPythonAsync('await micropip.install("' + absurl + '/lib/pyodide/pbexec_nwhitehead-0.0.1-py3-none-any.whl' + '")');
     pyodide.runPython('from pbexec import pbexec');
-    pyodide.runPython('pbexec.register_pickle()');
     // Start with fresh state as base
     states = { 
         base:pyodide.globals.get('pbexec').fresh_state()

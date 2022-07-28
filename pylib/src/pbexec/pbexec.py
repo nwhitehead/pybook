@@ -12,6 +12,7 @@ import copy
 import contextlib
 import io
 import sys
+import tempfile
 import traceback
 
 def fresh_state():
@@ -54,12 +55,13 @@ def default_func(value):
     if value is not None:
         print(f'→ {repr(value)}')
 
-def run_cell(script, globals_=None, locals_=None, func=default_func, history=True):
+def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True):
     """
     Run script with given globals and locals environment
     
     Call func on each expression to do something with value (otherwise return values ignored).
     If history is True, append script to __history in global state.
+    If write is True, write script to temporary file to help with debugging with pdb.
     
     """
     if globals_ is None:
@@ -87,14 +89,24 @@ def run_cell(script, globals_=None, locals_=None, func=default_func, history=Tru
                 node.body[index] = ast.Expr(ast.Call(ast.Name('__expr_callback', ast.Load()), args=[value], keywords=[]))
         # Fill in line/col numbers for programmatically modified nodes
         ast.fix_missing_locations(node)
+    # Write file if specified
+    filename = '<eval>'
+    if write:
+        tmpfile = tempfile.NamedTemporaryFile(mode='w+t', encoding='utf-8', prefix='cell_', delete=True)
+        tmpfile.write(script)
+        filename = tmpfile.name
+        tmpfile.flush()
     # Compile wrapped script, run wrapper definition
     try:
-        exec(compile(node, filename='<eval>', mode='exec'), globals_, locals_)
+        exec(compile(node, filename=filename, mode='exec'), globals_, locals_)
     except BaseException as err:
         exc_type, exc_value, exc_tb = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
     sys.stdout.flush()
     sys.stderr.flush()
+    # Delete temporary named file if applicable
+    if write:
+        tmpfile.close()
     return
 
 def dotest():
@@ -214,7 +226,6 @@ def register_pickle():
     '''
     import copyreg
     import io
-    import pybook
 
     def __pickler(m):
         # Record name of module, e.g. "copyreg" or "sys"
@@ -227,8 +238,6 @@ def register_pickle():
         return sys.modules[data]
 
     copyreg.pickle(type(copyreg), __pickler, __unpickler)
-    # Special handling for JsProxy type (hard to get type unless we have a module)
-    copyreg.pickle(type(pybook), __pickler, __unpickler)
 
     def __file_pickler(f):
         pos = 0
@@ -256,6 +265,16 @@ def register_pickle():
     copyreg.pickle(io.BufferedWriter, __file_pickler)
     copyreg.pickle(io.BufferedRandom, __file_pickler)
     copyreg.pickle(io.FileIO, __file_pickler)
+
+def register_pickle_pybook():
+    import copyreg
+    import pybook
+    def __pickler(m):
+        return m.__name__
+    def __unpickler(data):
+        return sys.modules[data]
+    # Special handling for JsProxy type (hard to get type unless we have a module)
+    copyreg.pickle(type(pybook), __pickler, __unpickler)
 
 def test_deepcopy():
     a = { 'os':sys.modules['os'], 'x':[1, 2, sys.modules['copy']] }
@@ -285,7 +304,7 @@ def test_deepcopy():
                 f.close()
             g = copy.deepcopy(f)
             assert(f.name == g.name)
-            assert(f.mode == g.mode)
+            assert(f.mode.replace('w', 'a') == g.mode)
             assert(f.closed == g.closed)
             if not f.closed:
                 assert(f.tell() == g.tell())
@@ -299,5 +318,7 @@ else:
     # Used in notebook
     try:
         redefine_builtins()
+        register_pickle()
+        register_pickle_pybook()
     except:
         print('Could not redefine builtins')

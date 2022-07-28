@@ -13,6 +13,7 @@
     @keydown.enter.ctrl.exact.prevent="cellEval(state)"
     @keydown.enter.alt.exact.prevent="cellEval(state); insertCellAfter(state); cellNext(state);"
     @keydown.k.ctrl.exact.prevent="cellInterrupt()"
+    @keydown.d.ctrl.shift.exact.prevent="cellDebug()"
     @keydown.escape.exact.prevent="ifEdit(modeCommand)"
     @keydown.a.exact="ifCommand(insertCellBefore, state)"
     @keydown.b.exact="ifCommand(insertCellAfter, state)"
@@ -230,6 +231,12 @@ function cellInterrupt () {
   console.log('Notebook cellInterrupt');
   status.value = 'Interrupt';
   setInterrupt();
+}
+
+function cellDebug () {
+  console.log('Notebook cellDebug');
+  status.value = 'Interrupt';
+  setInterrupt(5); // 5 is SIGTRAP
 }
 
 function handleClick (event) {

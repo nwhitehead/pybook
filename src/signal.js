@@ -29,14 +29,17 @@ function check(name) {
 function clear(name) {
     Atomics.store(sharedArray, signalMap[name], 0);
 }
-function set(name) {
-    Atomics.store(sharedArray, signalMap[name], 2); // 2 is sigint for interrupt, see pyodide.setInterruptBuffer docs
+function set(name, number) {
+    if (number === undefined) {
+        number = 2; // 2 is sigint for interrupt, see pyodide.setInterruptBuffer docs
+    }
+    Atomics.store(sharedArray, signalMap[name], number);
     Atomics.notify(sharedArray, signalMap[name]);
 }
 
 export function isInterrupt() { return check('interrupt'); }
 export function clearInterrupt() { return clear('interrupt'); }
-export function setInterrupt() { return set('interrupt'); }
+export function setInterrupt(number) { return set('interrupt', number); }
 export function isBusy() { return check('busy'); }
 export function clearBusy() { return clear('busy'); }
 export function setBusy() { return set('busy'); }
