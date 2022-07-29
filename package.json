@@ -15,6 +15,7 @@
     "marked": "^4.0.17",
     "mitt": "^3.0.0",
     "pinia": "^2.0.16",
+    "prismjs": "^1.28.0",
     "sortable": "^2.0.0",
     "vue": "^3.2.37",
     "vue-codemirror": "^6.0.0",

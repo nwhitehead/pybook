@@ -1,11 +1,9 @@
 //!
 //! notebook
 //!
-//! Reactive data structure representing a full notebook. This is used directly by Notebook component.
-//! Groups the data itself with helper functions for manipulating the data.
+//! This module is helper functions for manipulating notebook state. Actual reactive variable is in Notebook.
 //!
 
-import { reactive } from "vue";
 import { freshId } from './fresh.js';
 
 //! Create a default blank cell
@@ -63,9 +61,16 @@ const testDoc = {
 
 freshId(testDoc);
 
-//! A notebook is an array of pages
-//!
-export const state = reactive(testDoc);
+export const blankState = {
+  select: 0,
+  page: 0,
+  cells: [ newPage() ],
+};
+
+//! Set the selection
+export function selectId (state, id) {
+  state.select = id;
+}
 
 //! Get page of cells from state
 export function getPage (state, page) {

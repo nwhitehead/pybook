@@ -84,7 +84,7 @@ import draggable from 'vuedraggable';
 import Cell from './Cell.vue';
 
 const props = defineProps([ 'modelValue', 'select', 'command', 'allowDrag' ]);
-const emit = defineEmits(['update:modelValue', 'update:modelCellValue', 'action', 'click', 'submit']);
+const emit = defineEmits([ 'update:modelValue', 'update:modelCellValue', 'action', 'click', 'submit' ]);
 
 function computeType (content) {
     if (content.cell_type === 'code' && content.language === 'python') return 'python';

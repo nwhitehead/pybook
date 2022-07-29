@@ -1,6 +1,17 @@
+//!
+//! Notebook
+//!
+//! A Vue component representing a notebook. Notebooks are pages of cells along with interfaces for manipulating and running cells.
+//!
+//! Props:
+//! - modelValue - The state of the notebook. An object with:
+//!     - select - ID of currently selected cell (should be on current page)
+//!     - page - Index of currently selected page
+//!     - cells - An array of pages, each page is an array of cells following Cells component
+//!
+
 <template>
   <div
-    id="app"
     tabindex="0"
     @keydown.left.ctrl.exact.prevent="pagePrevious(state)"
     @keydown.right.ctrl.exact.prevent="pageNext(state)"
@@ -24,7 +35,7 @@
     ref="appref"
   >
     <Status :value="status" />
-    <div id="menu">
+    <div>
         <Dropdown name="Cell" :values="[
             { text:'Insert new cell before', action:() => { insertCellBefore(state); }},
             { text:'Insert new cell after', action:() => { insertCellAfter(state); }},
@@ -81,7 +92,7 @@ import Dropdown from "./Dropdown.vue";
 import Pagination from "./Pagination.vue";
 import Status from "./Status.vue";
 import Terminal from "./Terminal.vue";
-import { state, getCell, clearOutput, addOutput,
+import { getCell, clearOutput, addOutput,
          cellPrevious, cellNext,
          insertCellBefore, insertCellAfter, deleteCell,
          moveCellBefore, moveCellAfter,
@@ -99,11 +110,19 @@ import { signalMap,
          inputPut
        } from '../signal.js';
 
-let normalstate = null;
-let appref = ref(null);
+const props = defineProps([ 'modelValue' ]);
+const emit = defineEmits([ 'update:modelValue', 'action' ]);
 
+// Keep track of Python state name
+let normalstate = null;
+// This is a reference to the DOM notebook (needed for focusing)
+let appref = ref(null);
+// This is the currently shown status for Python kernel
 let status = ref('Initializing');
+// State of command/edit mode
 let command = ref(false);
+// Actual notebook state
+let state = props.modelValue;
 
 const customBus = mitt();
 
