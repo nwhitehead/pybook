@@ -13,6 +13,9 @@
 //! different ways to be displayed then include a "display" function in the "fields". Fields are given in order to display left to right.
 //! Fields are shown using "title" string on table.
 //!
+//! Emits:
+//! - click - When a choice is clicked, payload is document object
+//!
 
 <template>
     <table class="table">
@@ -23,12 +26,20 @@
         </thead>
         <tbody>
             <tr v-for="item in modelValue">
-                <td v-for="field in fields">{{item[field]}}</td>
+                <td v-for="field in fields" @click="handleClick(item)">{{item[field.name]}}</td>
             </tr>
         </tbody>
     </table>
 </template>
 
 <script setup>
-defineProps([ 'modelValue', 'fields' ]);
+
+const props = defineProps([ 'modelValue', 'fields' ]);
+
+const emit = defineEmits([ 'click' ]);
+
+function handleClick (item) {
+    emit('click', item);
+}
+
 </script>
