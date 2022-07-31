@@ -31,6 +31,7 @@ func emptyNotebook() contents {
 // Demo data
 var notebooks = []notebook{
 	{Identifier:"1234", Title:"Test Notebook 1", Author:"Nathan", Contents:emptyNotebook()},
+	{Identifier:"1235", Title:"Test Notebook 2", Author:"Nathan", Contents:emptyNotebook()},
 }
 
 // Get single notebook

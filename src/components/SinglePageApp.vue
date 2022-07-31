@@ -38,7 +38,6 @@ let identifier = ref(null);
 let mutated = ref(false);
 
 watch(nbstate, async (oldState, newState) => {
-    console.log('nbstate changed to ', newState);
     mutated.value = true;
 });
 
@@ -54,16 +53,19 @@ onBeforeUnmount(() => {
 
 async function handleSave () {
     if (identifier.value !== null && mutated.value) {
-        console.log('saving to identifier ', identifier.value, nbstate);
+        const id = identifier.value;
+        // Prevent nested saves while waiting for this save to finish
+        identifier.value = null;
+        // Get notebook state as standard JS object without reactivity
         const unreactiveState = JSON.parse(JSON.stringify(nbstate));
-        console.log('unreactiveState', unreactiveState);
-        const res = await axios.post(`/notebook/${identifier.value}`, unreactiveState);
-        console.log('result of post', res);
+        const res = await axios.post(`/notebook/${id}`, unreactiveState);
         mutated.value = false;
+        identifier.value = id;
     }
 }
 
 async function handleChooserClick (item) {
+    await handleSave();
     const res = await axios.get(`/notebook/${item.identifier}`);
     const newnbstate = res.data.contents;
     // Setup autosave variables
