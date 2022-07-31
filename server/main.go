@@ -3,6 +3,7 @@ package main
 import (
     "net/http"
     "github.com/gin-gonic/gin"
+	"encoding/json"
 )
 
 // For any type T, return pointer to given value of type T
@@ -11,24 +12,32 @@ func Ptr[T any](v T) *T {
     return &v
 }
 
+type contents map[string]interface{}
+
 type notebook struct {
-	Identifier *string `json:"identifier,omitempty"`
-	Title *string `json:"name,omitempty"`
-	Author *string `json:"author,omitempty"`
-	Contents *string `json:"contents,omitempty"`
+	Identifier string `json:"identifier"`
+	Title string `json:"name"`
+	Author string `json:"author"`
+	Contents contents `json:"contents"`
+}
+
+// Unmarhall needs a result area, so wrap this in a function that returns parsed result
+func emptyNotebook() contents {
+	var result contents;
+	json.Unmarshal([]byte(`{"select":0,"page":0,"cells":[[{"id":0,"source":"Hello","cell_type":"code","language":"python","evalstate":"","outputs":[]}]]}`), &result);
+	return result;	
 }
 
 // Demo data
 var notebooks = []notebook{
-	{Identifier:Ptr("1234"), Title:Ptr("Test Notebook 1"), Author:Ptr("Nathan"), Contents:Ptr("blah")},
-	{Identifier:Ptr("8375309"), Title:Ptr("Test Notebook 2"), Author:Ptr("Nathan"), Contents:Ptr("foobar")},
+	{Identifier:"1234", Title:"Test Notebook 1", Author:"Nathan", Contents:emptyNotebook()},
 }
 
 // Get single notebook
 func getNotebookByIdentifier(c *gin.Context) {
 	id := c.Param("identifier");
 	for _, notebook := range notebooks {
-		if *notebook.Identifier == id {
+		if notebook.Identifier == id {
 			c.IndentedJSON(http.StatusOK, notebook)
 			return
 		}
@@ -43,7 +52,6 @@ func getNotebookByIdentifier(c *gin.Context) {
 func getNotebooks(c *gin.Context) {
 	lst := []notebook{}
 	for _, notebook := range notebooks {
-		notebook.Contents = nil;
 		lst = append(lst, notebook)
 	}
 	c.IndentedJSON(http.StatusOK, lst)
