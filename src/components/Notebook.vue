@@ -8,6 +8,8 @@
 //!     - select - ID of currently selected cell (should be on current page)
 //!     - page - Index of currently selected page
 //!     - cells - An array of pages, each page is an array of cells following Cells component
+//! - mutated - True if the modelValue has been mutated from the saved state (show icon)
+//! - title - Title of notebook
 //!
 
 <template>
@@ -58,11 +60,10 @@
         ]" />
         <Dropdown name="Debug" :values="[
             { text:'Console dump', action:() => { debugDump(state); }},
-            { text:'Clear local files', action:debugClear },
-            { text:'Save notebook', action:debugSave },
             { divider:true },
             { text:'Save', filesave:true },
         ]" />
+      <p v-if="mutated">Modified</p>
     </div>
 
     <Pagination :pages="state.cells.length" :current="state.page"
@@ -110,7 +111,7 @@ import { signalMap,
          inputPut
        } from '../signal.js';
 
-const props = defineProps([ 'modelValue' ]);
+const props = defineProps([ 'modelValue', 'mutated', 'title' ]);
 const emit = defineEmits([ 'update:modelValue', 'action' ]);
 
 // Keep track of Python state name

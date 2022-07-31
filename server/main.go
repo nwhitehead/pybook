@@ -48,6 +48,34 @@ func getNotebookByIdentifier(c *gin.Context) {
 	})
 }
 
+// Set contents of single notebook
+func setNotebookByIdentifier(c *gin.Context) {
+	id := c.Param("identifier");
+	var json contents
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"identifier": id,
+			"error": err.Error(),
+		})
+		return
+	}
+	for index, notebook := range notebooks {
+		if notebook.Identifier == id {
+			notebooks[index].Contents = json;
+			c.IndentedJSON(http.StatusOK, gin.H{
+				"message": "Notebook updated",
+				"identifier": id,
+				"data": json,
+			})
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, gin.H{
+		"message": "Notebook not found",
+		"identifier": id,
+	})
+}
+
 // getNotebooks responds with the list of all notebooks as JSON.
 func getNotebooks(c *gin.Context) {
 	lst := []notebook{}
@@ -83,6 +111,7 @@ func main() {
 	router.Use(middleware());
     router.GET("/notebooks", getNotebooks)
     router.GET("/notebook/:identifier", getNotebookByIdentifier)
+    router.POST("/notebook/:identifier", setNotebookByIdentifier)
 	router.Static("/static", "../")
 	router.Run("localhost:8080")
 }
