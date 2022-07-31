@@ -21,9 +21,7 @@ import { blankState } from "../notebook.js";
 import axios from 'axios';
 
 onMounted(async () => {
-    console.log('SinglePageApp component created');
     const res = await axios.get(`/notebooks`);
-    console.log('Got notebooks', res.data);
     choices.value = res.data;
 });
 
@@ -36,9 +34,10 @@ let fields = [
 let nbstate = reactive(blankState);
 
 async function handleChooserClick (item) {
-    console.log('Handle chooser click for identifier ', item.identifier);
     const res = await axios.get(`/notebook/${item.identifier}`);
-    console.log('Got notebook ', res.data);
+    const newnbstate = res.data.contents;
+    // Assign all fields of nbstate (can't just use = to assign because it will lose the reactivity)
+    Object.assign(nbstate, newnbstate);
 }
 
 </script>
