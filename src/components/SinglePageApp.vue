@@ -18,6 +18,7 @@ import { onMounted, reactive, ref, watch, nextTick, onBeforeMount, onBeforeUnmou
 import Notebook from "./Notebook.vue";
 import Chooser from "./Chooser.vue";
 import { blankState } from "../notebook.js";
+import { freshId } from "../fresh.js";
 import axios from 'axios';
 
 onMounted(async () => {
@@ -58,9 +59,13 @@ async function handleSave () {
         identifier.value = null;
         // Get notebook state as standard JS object without reactivity
         const unreactiveState = JSON.parse(JSON.stringify(nbstate));
-        const res = await axios.post(`/notebook/${id}`, unreactiveState);
-        mutated.value = false;
-        identifier.value = id;
+        try {
+            const res = await axios.post(`/notebook/${id}`, unreactiveState);
+            mutated.value = false;
+        }
+        finally {
+            identifier.value = id;
+        }
     }
 }
 
@@ -68,6 +73,7 @@ async function handleChooserClick (item) {
     await handleSave();
     const res = await axios.get(`/notebook/${item.identifier}`);
     const newnbstate = res.data.contents;
+    freshId(newnbstate);
     // Setup autosave variables
     identifier.value = item.identifier;
     // Assign all fields of nbstate (can't just use = to assign because it will lose the reactivity)

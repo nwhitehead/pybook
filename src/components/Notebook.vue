@@ -64,6 +64,7 @@
             { text:'Save', filesave:true },
         ]" />
       <p v-if="mutated">Modified</p>
+      <p v-if="!mutated">Saved</p>
     </div>
 
     <Pagination :pages="state.cells.length" :current="state.page"
