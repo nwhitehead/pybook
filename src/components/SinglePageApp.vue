@@ -5,9 +5,6 @@
 //!
 
 <template>
-    <div>
-        <p>Hello to the Single Page App</p>
-    </div>
     <Chooser v-model="choices" :fields="fields" @click="handleChooserClick" />
     <Notebook v-model="nbstate" :mutated="mutated" />
 </template>

@@ -25,7 +25,8 @@
     @keydown.enter.shift.exact.prevent="cellEval(state); cellNext(state);"
     @keydown.enter.ctrl.exact.prevent="cellEval(state)"
     @keydown.enter.alt.exact.prevent="cellEval(state); insertCellAfter(state); cellNext(state);"
-    @keydown.k.ctrl.exact.prevent="cellInterrupt()"
+    @keydown.k.ctrl.exact.prevent="cellInterrupt(state)"
+    @keydown.k.shift.ctrl.exact.prevent="terminate(state)"
     @keydown.escape.exact.prevent="ifEdit(modeCommand)"
     @keydown.a.exact="ifCommand(insertCellBefore, state)"
     @keydown.b.exact="ifCommand(insertCellAfter, state)"
@@ -247,10 +248,16 @@ function cellEval (state) {
   }
 }
 
-function cellInterrupt () {
-  console.log('Notebook cellInterrupt');
+function cellInterrupt (state) {
   status.value = 'Interrupt';
   setInterrupt();
+}
+
+function terminate (state) {
+  const cell = getCell(state, state.page, state.select); 
+  cell.state = 'evaluated';
+  python.terminate();
+  status.value = 'Initializing';
 }
 
 function handleClick (event) {

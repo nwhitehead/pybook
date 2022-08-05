@@ -100,6 +100,7 @@ const blankKeymap = [
   { key:'Shift-Enter', run: nop },
   { key:'Alt-Enter', run: nop },
   { key:'Ctrl-k', run: nop },
+  { key:'Ctrl-Shift-k', run: nop },
   { key:'Ctrl-i', run: nop },
   { key:'Escape', run: nop },
 ];
