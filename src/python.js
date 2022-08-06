@@ -181,9 +181,9 @@ export function newPythonKernel(opts) {
             callbacks = callback;
             worker.postMessage({ type:'execute', expr:expr, name:name });
         },
-        submit: function(expr, name, callback) {
+        setglobal: function(name, identifier, value, callback) {
             callbacks = callback;
-            worker.postMessage({ type:'submit', expr:expr, name:name });
+            worker.postMessage({ type:'setglobal', name:name, identifier:identifier, value:value });
         },
         freshstate: function(name, callback) {
             callbacks = callback;

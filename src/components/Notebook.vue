@@ -209,7 +209,6 @@ const opts = {
     console.log(version);
     python.freshstate(normalstate, {
       onResponse: function() {
-        normalstate = 'State 0';
       },
     });
   },
@@ -225,7 +224,7 @@ function cellClearOutput (state) {
 
 function cellEval (state) {
   const cell = getCell(state, state.page, state.select); 
-  if (cell.cell_type === 'code') {
+  if (cell.cell_type === 'code' || cell.cell_type === 'submit') {
     if (status.value === 'Initializing' || status.value === 'Working') {
       console.log('Python is not ready yet');
       return;
@@ -235,6 +234,10 @@ function cellEval (state) {
     cell.state = 'working';
     clearInterrupt();
     status.value = 'Working';
+    if (cell.cell_type === 'submit') {
+      // Only difference is that we set the user input to global variable '__input'
+      python.setglobal(normalstate, '__input', cell.user);
+    }
     python.evaluate(src, normalstate, {
       onStdout: function (msg) {
           addOutput(cell, { name: 'stdout', 'text/plain': msg });
@@ -281,8 +284,7 @@ function handleClick (event) {
 
 function handleSubmit (event) {
   state.select = event.id;
-  const cell = getCell(state, state.page, state.select); 
-  console.log('Submit!', event, cell);
+  cellEval(state);
 }
 
 function debugDump (state) {

@@ -76,8 +76,6 @@ async function configure(config) {
         }
     };
     pyodide.setInterruptBuffer(sharedArray);
-    // Set SIGTRAP signal handler to do a breakpoint()
-    pyodide.runPython('import signal\ndef __handleTrap(number, frame): import pdb; pdb.post_mortem(frame)\nsignal.signal(signal.SIGTRAP, __handleTrap)');
     // Register pybook model (JavaScript code, not a real module)
     pyodide.registerJsModule('pybook', pybook); // synchronous
     // Get micropip to be able to load local pbexec pure python package
@@ -98,7 +96,7 @@ async function configure(config) {
     postMessage({ type:'ready', data:version });
 
     function getState(name) {
-        if (name === undefined) {
+        if (name === undefined || name === null) {
             name = 'base';
         }
         return states[name];
@@ -125,26 +123,24 @@ async function configure(config) {
     // Version of pyodide.runPythonAsync that goes through exec.wrapped_run_cell
     async function runCellAsync(code, state) {
         const exec_module = pyodide.globals.get('pbexec');
-        state = getState(state);
+        let theState = getState(state);
         await pyodide.loadPackagesFromImports(code);
         const eval_func = exec_module.wrapped_run_cell;
         Atomics.store(sharedArray, signalMap['busy'], 1);
-        eval_func(code, globals_=state);
+        eval_func(code, globals_=theState);
         Atomics.store(sharedArray, signalMap['busy'], 0);
     };
 
-    async function submitCellAsync(code) {
-        const submit_func = pyodide.globals.submit;
-        console.log('submit_func is ', submit_func);
-        Atomics.store(sharedArray, signalMap['busy'], 1);
-        submit_func(code); // let the submit function decide whether to use pbexec or not (needed to get real output)
-        Atomics.store(sharedArray, signalMap['busy'], 0);
-    };
+    // Set an indentifier in a given state to a value
+    function setGlobal(name, identifier, value) {
+        let theState = getState(name);
+        theState.set(identifier, value);
+    }
 
     // Switch our message response to update from waiting for config to responding to inputs
     onmessage = async function(e) {
         let input = e.data;
-        if (input.type === 'execute' || input.type === 'submit' || input.type === 'freshstate' || input.type === 'duplicatestate' || input.type === 'deletestate') {
+        if (input.type === 'execute' || input.type === 'setglobal' || input.type === 'freshstate' || input.type === 'duplicatestate' || input.type === 'deletestate') {
             if (!loaded) {
                 postMessage({ type:'notready' });
             } else {
@@ -153,8 +149,9 @@ async function configure(config) {
                     await runCellAsync(input.expr, input.name);
                     postMessage({ type: 'response' });
                 }
-                if (input.type === 'submit') {
-                    submitCellAsync(input.expr, input.name);
+                if (input.type === 'setglobal') {
+                    // Set a global variable
+                    setGlobal(input.name, input.identifier, input.value);
                     postMessage({ type: 'response' });
                 }
                 if (input.type === 'freshstate') {

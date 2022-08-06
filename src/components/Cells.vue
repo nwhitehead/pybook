@@ -90,8 +90,8 @@ function computeModelValue (content) {
     // Submit type cells have two edit areas, the "source" area that will be evaluated when the submit button is clicked,
     // and the "user" area that the user fills out. The source presumably looks at the content of the user area to do things.
     // Users can edit both areas by flipping 'edit'/'view' subtype for the submit.
-    if (content.cell_type === 'submit' && content.subtype === 'edit') return content.source;
     if (content.cell_type === 'submit' && content.subtype === 'view') return content.user;
+    // Handle submit - edit as normal fallthrough
     return content.source;
 }
 
@@ -99,7 +99,9 @@ function computeType (content) {
     if (content.cell_type === 'code' && content.language === 'python') return 'python';
     if (content.cell_type === 'markdown') return 'markdown';
     if (content.cell_type === 'checkpoint') return 'checkpoint';
-    if (content.cell_type === 'submit') return 'submit';
+    if (content.cell_type === 'submit' && content.subtype === 'edit') return 'python';
+    if (content.cell_type === 'submit' && content.subtype === 'view' && content.language === 'python') return 'python';
+    if (content.cell_type === 'submit' && content.subtype === 'view' && content.language === 'text') return 'text';
     throw "Illegal content type";
 }
 
