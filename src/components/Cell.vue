@@ -11,9 +11,10 @@
 //! - modelValue - Input value for this cell, in CellInput format
 //! - output - Output value for this cell, in CellOutput format
 //! - id - Unique identifier to keep track of this cell
-//! - type - 'python', 'markdown', or 'checkpoint'
-//! - subtype - For type 'markdown', either 'edit' or 'show'
+//! - type - 'python', 'markdown', 'checkpoint', or 'submit'
+//! - subtype - For type 'markdown', either 'edit' or 'view'
 //!             For type 'checkpoint', either 'save' or 'use'
+//!             For type 'submit', either 'edit' or 'view'
 //! - selected - true when this cell should be drawn selected
 //! - state - Evaluation state, either "working", "evaluated", or undefined
 //! - command - true to draw cell as in command mode
@@ -32,7 +33,7 @@
 //!     Payload is { id }
 //!
 //! Uses "mousedown" for handling mouse clicks to stay in sync with text cursor moves in codemirror
-//! (Otherwise cursor moves on button down, selection moves on button up)
+//! (Otherwise text cursor moves on button down, selection moves on button up)
 //!
 
 <template>
@@ -88,6 +89,9 @@
     border-left-width: 5px;
     border-right-width: 5px;
 }
+div.submit {
+    background: #fed;
+}
 .readonly-inner {
     border: 15px solid;
     border-image: repeating-linear-gradient(44deg, #888,#888 7px,#ff0 7px, #ff0 15px, #888 15px) 0 15 0 0;
@@ -121,6 +125,9 @@ import DOMPurify from 'dompurify';
 
 import { isInputWaiting, inputPut } from '../signal.js';
 
+// Time interval to check for waiting stdin (to show input textarea)
+const STDIN_CHECK_INTERVAL = 500;
+
 const props = defineProps(['modelValue', 'output', 'id', 'type', 'subtype', 'selected', 'state', 'command', 'hidden', 'readonly', 'submit', 'allowInput']);
 
 const emit = defineEmits(['update:modelValue', 'action', 'click', 'submit']);
@@ -141,7 +148,11 @@ function cellInputOptions () {
 }
 
 function showEdit () {
-    return props.type === undefined || props.type === 'python' || (props.type === 'markdown' && props.subtype === 'edit');
+    if (props.type === undefined) return true;
+    if (props.type === 'python') return true;
+    if (props.type === 'markdown' && props.subtype === 'edit') return true;
+    if (props.type === 'submit') return true;
+    return false;
 }
 
 function showResults () {
@@ -190,6 +201,7 @@ function rightClass () {
     return {
         python: props.type === 'python',
         markdown: props.type === 'markdown',
+        submit: props.submit,
     }
 }
 
@@ -208,7 +220,7 @@ function handleSubmit (event) {
 onMounted(() => {
     timer = setInterval(() => {
         showStdinInput.value = isInputWaiting();
-    }, 500);
+    }, STDIN_CHECK_INTERVAL);
 });
 
 onBeforeUnmount(() => {

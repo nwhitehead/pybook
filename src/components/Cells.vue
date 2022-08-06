@@ -36,7 +36,7 @@
     >
         <template #item="{element}">
             <Cell
-                :modelValue="element.source"
+                :modelValue="computeModelValue(element)"
                 :output="element.outputs"
                 :id="element.id"
                 :type="computeType(element)"
@@ -58,7 +58,7 @@
     <Cell
         v-else
         v-for="element in modelValue"
-        :modelValue="element.source"
+        :modelValue="computeModelValue(element)"
         :output="element.outputs"
         :id="element.id"
         :type="computeType(element)"
@@ -86,10 +86,20 @@ import Cell from './Cell.vue';
 const props = defineProps([ 'modelValue', 'select', 'command', 'allowDrag' ]);
 const emit = defineEmits([ 'update:modelValue', 'update:modelCellValue', 'action', 'click', 'submit' ]);
 
+function computeModelValue (content) {
+    // Submit type cells have two edit areas, the "source" area that will be evaluated when the submit button is clicked,
+    // and the "user" area that the user fills out. The source presumably looks at the content of the user area to do things.
+    // Users can edit both areas by flipping 'edit'/'view' subtype for the submit.
+    if (content.cell_type === 'submit' && content.subtype === 'edit') return content.source;
+    if (content.cell_type === 'submit' && content.subtype === 'view') return content.user;
+    return content.source;
+}
+
 function computeType (content) {
     if (content.cell_type === 'code' && content.language === 'python') return 'python';
     if (content.cell_type === 'markdown') return 'markdown';
     if (content.cell_type === 'checkpoint') return 'checkpoint';
+    if (content.cell_type === 'submit') return 'submit';
     throw "Illegal content type";
 }
 
@@ -99,6 +109,8 @@ function computeSubtype (content) {
     if (content.cell_type === 'markdown' && content.subtype === 'edit') return 'edit';
     if (content.cell_type === 'checkpoint' && content.subtype === 'save') return 'save';
     if (content.cell_type === 'checkpoint' && content.subtype === 'use') return 'use';
+    if (content.cell_type === 'submit' && content.subtype === 'view') return 'view';
+    if (content.cell_type === 'submit' && content.subtype === 'edit') return 'edit';
     throw "Illegal content subtype";
 }
 function isSelected (index) {
@@ -121,11 +133,7 @@ function isReadOnly (content) {
 }
 
 function isSubmit (content) {
-    // Only code cells can have "submit" button
-    if (content.cell_type === 'code' && content.submit === true) {
-        return true;
-    }
-    return false;
+    return content.cell_type === 'submit';
 }
 
 function handleInput (event) {

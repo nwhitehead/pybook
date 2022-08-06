@@ -50,6 +50,8 @@
             { text:'Type - Code', action:() => { typeCellCode(state); }},
             { text:'Type - MarkDown - Edit', action:() => { typeCellMarkdownEdit(state); }},
             { text:'Type - MarkDown - View', action:() => { typeCellMarkdownView(state); }},
+            { text:'Type - Submit - Edit', action:() => { typeCellSubmitEdit(state); }},
+            { text:'Type - Submit - View', action:() => { typeCellSubmitView(state); }},
         ]" />
         <Dropdown name="Page" :values="[
             { text:'Insert new page before', action:() => { insertPageBefore(state); }},
@@ -75,8 +77,9 @@
       :select="state.select"
       :command="command"
       :allowDrag="true"
-      @update:modelCellValue="newValue => { getCell(state, state.page, newValue.id).source = newValue.value; }"
+      @update:modelCellValue="handleUpdateModelCellValue"
       @click="handleClick"
+      @submit="handleSubmit"
     />
   </div>
   <Terminal :eventBus="customBus" />
@@ -99,7 +102,7 @@ import { getCell, clearOutput, addOutput,
          cellPrevious, cellNext,
          insertCellBefore, insertCellAfter, deleteCell,
          moveCellBefore, moveCellAfter,
-         typeCellCode, typeCellMarkdownEdit, typeCellMarkdownView,
+         typeCellCode, typeCellMarkdownEdit, typeCellMarkdownView, typeCellSubmitEdit ,typeCellSubmitView,
          pageNext, pagePrevious, pageSet,
          insertPageBefore, insertPageAfter, deletePage,
          movePageBefore, movePageAfter } from '../notebook.js';
@@ -128,6 +131,17 @@ let command = ref(false);
 let state = props.modelValue;
 
 const customBus = mitt();
+
+function handleUpdateModelCellValue (newValue) {
+  const cell = getCell(state, state.page, newValue.id);
+  // Only tricky part is that for submit cells we might be updating source or user area
+  if (cell.cell_type === 'submit' && cell.subtype === 'view') {
+    cell.user = newValue.value;
+  } else {
+    // Also covers submit--edit case
+    cell.source = newValue.value;
+  }
+}
 
 function ifEdit (func, arg) {
   if (!command.value) {
@@ -263,6 +277,12 @@ function terminate (state) {
 function handleClick (event) {
   state.select = event.id;
   modeEdit();
+}
+
+function handleSubmit (event) {
+  state.select = event.id;
+  const cell = getCell(state, state.page, state.select); 
+  console.log('Submit!', event, cell);
 }
 
 function debugDump (state) {

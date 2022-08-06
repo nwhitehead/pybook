@@ -239,6 +239,24 @@ export function typeCellMarkdownView (state) {
   cell.subtype = 'view';
 }
 
+//! Update type of selected cell to make it submit area in edit mode (Python)
+export function typeCellSubmitEdit (state) {
+  const nbpage = getPage(state, state.page);
+  let cell = getCell(state, state.page, state.select);
+  cell.cell_type = 'submit';
+  cell.subtype = 'edit';
+  cell.language = 'python';
+}
+
+//! Update type of selected cell to make it submit area in edit mode (Python)
+export function typeCellSubmitView (state) {
+  const nbpage = getPage(state, state.page);
+  let cell = getCell(state, state.page, state.select);
+  cell.cell_type = 'submit';
+  cell.subtype = 'view';
+  cell.language = 'python';
+}
+
 //! Insert new page before current page (and set it to active page)
 export function insertPageBefore (state) {
   const page = newPage();
