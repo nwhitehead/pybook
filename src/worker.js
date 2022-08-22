@@ -127,7 +127,7 @@ async function configure(config) {
         await pyodide.loadPackagesFromImports(code);
         const eval_func = exec_module.wrapped_run_cell;
         Atomics.store(sharedArray, signalMap['busy'], 1);
-        eval_func(code, globals_=theState);
+        await eval_func(code, globals_=theState);
         Atomics.store(sharedArray, signalMap['busy'], 0);
     };
 

@@ -55,7 +55,7 @@ def default_func(value):
     if value is not None:
         print(f'→ {repr(value)}')
 
-def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True):
+async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True):
     """
     Run script with given globals and locals environment
     
@@ -98,7 +98,10 @@ def run_cell(script, globals_=None, locals_=None, func=default_func, history=Tru
         tmpfile.flush()
     # Compile wrapped script, run wrapper definition
     try:
-        exec(compile(node, filename=filename, mode='exec'), globals_, locals_)
+        code = compile(node, filename=filename, mode='exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+        coro = eval(code, globals_, locals_)
+        if coro is not None:
+            await coro
     except BaseException as err:
         exc_type, exc_value, exc_tb = sys.exc_info()
         traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
@@ -109,21 +112,21 @@ def run_cell(script, globals_=None, locals_=None, func=default_func, history=Tru
         tmpfile.close()
     return
 
-def dotest():
+async def dotest():
     test='''x = 5; 12; x; x+=1; x'''
     test2='''y+1'''
     results = []
     def callback(v):
         results.append(v)
-    run_cell(test, globals(), globals(), callback)
+    await run_cell(test, globals(), globals(), callback)
     assert(results == [12, 5, 6])
     results = []
     global y
     y = 10
-    run_cell(test2, globals(), globals(), callback)
+    await run_cell(test2, globals(), globals(), callback)
     assert(results == [11])
 
-    run_cell('print(1); 2; x=3; x; x+=1; print(x); x+1')
+    await run_cell('print(1); 2; x=3; x; x+=1; print(x); x+1')
     # This test should show:
     #    1
     #    → 2
@@ -181,7 +184,7 @@ class redirect_stdin(contextlib._RedirectStream):
     ''' Redirect stdin '''
     _stream = "stdin"
 
-def wrapped_run_cell(*args, **kwargs):
+async def wrapped_run_cell(*args, **kwargs):
     """
     Same interface as run_cell but wrap stdout, stdin, and stderr with pybook interface.
 
@@ -196,7 +199,7 @@ def wrapped_run_cell(*args, **kwargs):
     with contextlib.redirect_stdout(out):
         with contextlib.redirect_stderr(err):
             with redirect_stdin(inp):
-                run_cell(*args, **kwargs)
+                await run_cell(*args, **kwargs)
 
 def redefine_builtins():
     import pybook
@@ -311,7 +314,8 @@ def test_deepcopy():
 
 if __name__ == '__main__':
     # Do simple tests if run at command line
-    dotest()
+    import asyncio
+    asyncio.run(dotest())
     register_pickle()
     test_deepcopy()
 else:
