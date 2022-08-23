@@ -98,13 +98,12 @@ def parse(text):
             item = []
             return # No item to finish
         item_str = '\n'.join(item)
-        metadata = {}
+        cell = { 'id':idnum, 'cell_type':current_type, 'source':item_str, 'outputs':[] }
         for option in current_options:
-            metadata[option] = True
-        cell = { 'id':idnum, 'cell_type':current_type, 'metadata':metadata, 'source':item_str, 'outputs':[] }
+            cell[option] = True
         idnum += 1
         if current_type == 'markdown':
-            cell['metadata']['subtype'] = 'view'
+            cell['subtype'] = 'view'
         page.append(cell)
         item = []
         current_type = ''
@@ -155,11 +154,11 @@ def unparse_cell(cell):
     options = []
     if cell['cell_type'] == 'code':
         header = r'#%'
-    if 'hidden' in cell['metadata'] and cell['metadata']['hidden']:
+    if 'hidden' in cell and cell['hidden']:
         options.append('hidden')
-    if 'startup' in cell['metadata'] and cell['metadata']['startup']:
+    if 'startup' in cell and cell['startup']:
         options.append('startup')
-    if 'submit' in cell['metadata'] and cell['metadata']['submit']:
+    if 'submit' in cell and cell['submit']:
         options.append('submit')
     for option in options:
         header += ' ' + option
@@ -183,14 +182,14 @@ print(42)
         {
             'id': 1,
             'cell_type': 'markdown',
-            'metadata': {'hidden': True, 'subtype': 'view'},
+            'hidden': True,
+            'subtype': 'view',
             'source': '# Headline',
             'outputs': [],
         },
         {
             'id': 2,
             'cell_type': 'code',
-            'metadata': {},
             'source': 'print(42)',
             'outputs': [],
         },
@@ -219,14 +218,14 @@ hello
         {
             'id': 1,
             'cell_type': 'markdown',
-            'metadata': {'subtype': 'view'},
+            'subtype': 'view',
             'source': '# Title\nmore',
             'outputs': [],
         },
         {
             'id': 2,
             'cell_type': 'code',
-            'metadata': {'startup': True},
+            'startup': True,
             'source': 'print(42)',
             'outputs': [],
         },
@@ -234,14 +233,14 @@ hello
         {
             'id': 3,
             'cell_type': 'markdown',
-            'metadata': {'subtype': 'view'},
+            'subtype': 'view',
             'source': 'hello',
             'outputs': [],
         },
         {
             'id': 4,
             'cell_type': 'code',
-            'metadata': {'submit': True},
+            'submit': True,
             'source': '# hi',
             'outputs': [],
         },
