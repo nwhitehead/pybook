@@ -75,6 +75,7 @@ def test_parse_special_delimiter_line():
 def parse(text):
     ''' Given PyBook format text described in FileSpec.md, return dictionary object representing JSON notebook '''
     # Strategy is to accumulate lines into latest item, and items into latest page, etc.
+    idnum = 1
     pages = [] # Array of pages
     page = [] # Array of items
     item = [] # Array of lines
@@ -82,6 +83,7 @@ def parse(text):
     current_options = []
 
     def finish_item():
+        nonlocal idnum
         nonlocal page
         nonlocal item
         nonlocal current_type
@@ -99,7 +101,8 @@ def parse(text):
         metadata = {}
         for option in current_options:
             metadata[option] = True
-        cell = { 'cell_type':current_type, 'metadata':metadata, 'source':item_str, 'outputs':[] }
+        cell = { 'id':idnum, 'cell_type':current_type, 'metadata':metadata, 'source':item_str, 'outputs':[] }
+        idnum += 1
         if current_type == 'markdown':
             cell['metadata']['subtype'] = 'view'
         page.append(cell)
@@ -178,12 +181,14 @@ print(42)
 '''
     assert parse(txt1) == [[
         {
+            'id': 1,
             'cell_type': 'markdown',
             'metadata': {'hidden': True, 'subtype': 'view'},
             'source': '# Headline',
             'outputs': [],
         },
         {
+            'id': 2,
             'cell_type': 'code',
             'metadata': {},
             'source': 'print(42)',
@@ -212,12 +217,14 @@ hello
     assert parse(txt2) == [
     [
         {
+            'id': 1,
             'cell_type': 'markdown',
             'metadata': {'subtype': 'view'},
             'source': '# Title\nmore',
             'outputs': [],
         },
         {
+            'id': 2,
             'cell_type': 'code',
             'metadata': {'startup': True},
             'source': 'print(42)',
@@ -225,12 +232,14 @@ hello
         },
     ], [
         {
+            'id': 3,
             'cell_type': 'markdown',
             'metadata': {'subtype': 'view'},
             'source': 'hello',
             'outputs': [],
         },
         {
+            'id': 4,
             'cell_type': 'code',
             'metadata': {'submit': True},
             'source': '# hi',
