@@ -4,13 +4,10 @@ import (
     "net/http"
     "github.com/gin-gonic/gin"
 	"encoding/json"
+	"io/ioutil"
+	"log"
+	"fmt"
 )
-
-// For any type T, return pointer to given value of type T
-// This lets us create literals for pointer types
-func Ptr[T any](v T) *T {
-    return &v
-}
 
 type contents map[string]interface{}
 
@@ -21,11 +18,23 @@ type notebook struct {
 	Contents contents `json:"contents"`
 }
 
-// Unmarhall needs a result area, so wrap this in a function that returns parsed result
+// Unmarshall needs a result area, so wrap this in a function that returns parsed result
 func emptyNotebook() contents {
 	var result contents;
-	json.Unmarshal([]byte(`{"select":0,"page":0,"cells":[[{"id":0,"source":"Hello","cell_type":"code","language":"python","evalstate":"","outputs":[]}]]}`), &result);
+	json.Unmarshal([]byte(`{"select":0,"page":0,"cells":[[{"id":0,"source":"","cell_type":"code","language":"python","evalstate":"","outputs":[]}]]}`), &result);
 	return result;	
+}
+
+func getFiles() {
+	files, err := ioutil.ReadDir("notebooks")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range files {
+		if !file.IsDir() {
+			fmt.Println(file.Name())
+		}
+	}
 }
 
 // Demo data
@@ -81,6 +90,7 @@ func setNotebookByIdentifier(c *gin.Context) {
 func getNotebooks(c *gin.Context) {
 	lst := []notebook{}
 	for _, notebook := range notebooks {
+		notebook.Contents = nil
 		lst = append(lst, notebook)
 	}
 	c.IndentedJSON(http.StatusOK, lst)
@@ -108,6 +118,7 @@ func middleware() gin.HandlerFunc {
 }
 
 func main() {
+	getFiles()
     router := gin.Default()
 	router.Use(middleware());
     router.GET("/notebooks", getNotebooks)

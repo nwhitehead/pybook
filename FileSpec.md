@@ -50,10 +50,6 @@ After the Python cell contents can come output lines. These are indicated with:
 
 The tags are followed by exactly one character of whitespace. The single line tags are ended by a newline, the multiline forms are ended by the explicit tag followed by a newline. To avoid escaping issues, the start/end tags are customizable. Implementations should choose a sequence of characters that does not appear in the output. Before interpretation, each `\n#` is replaced with `\n` to uncomment the code.
 
-### Markdown
-
-Markdown is normal markdown, within triple quotes. So first line of `'''` and last line of `'''` are ignored in Markdown rendering. Only small hiccup is that this messes up triple quotes in the Markdown text. The fix is to escape `'''` with `\'''` for every occurrence. Each occurrence of `\'''` will be replaced with `'''` inside the Markdown body before being rendered. For extreme cases of Markdown text discussing the escape mechanism, there may be more than one escape backslash before the triple quotes. Only one level will be removed before interpreting as Markdown.
-
 ## Pages
 
 One notebook file can have several pages. Each page is separated with:
