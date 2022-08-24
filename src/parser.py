@@ -6,6 +6,7 @@ Specification described in FileSpec.md
 '''
 
 import argparse
+import json
 import pytest
 
 def split_by_lines(txt):
@@ -63,6 +64,17 @@ def parse_special_delimiter_line(txt):
         if k in options:
             line_type = types[k]
             options.remove(k)
+    legal_options = ['hidden', 'noexec', 'auto', 'nooutput', 'readonly', 'startup', 'test', 'submit']
+    legal_key_options = ['id']
+    for option in options:
+        # Check if it has an = in the name
+        spl = option.split('=')
+        if len(spl) == 2:
+            if spl[0] not in legal_key_options:
+                raise Exception(f"Illegal key option '{option}'")
+        else:
+            if option not in legal_options:
+                raise Exception(f"Illegal option '{option}'")
     return { 'type':line_type, 'options':options }
 
 def test_parse_special_delimiter_line():
@@ -70,9 +82,9 @@ def test_parse_special_delimiter_line():
     assert parse_special_delimiter_line(r'#%') == { 'type': 'code', 'options': []}
     with pytest.raises(Exception):
         parse_special_delimiter_line(r'#%md')
-    assert parse_special_delimiter_line(r'#% noexec') == { 'type': 'code', 'options': ['noexec']}
+    assert parse_special_delimiter_line(r'#% auto') == { 'type': 'code', 'options': ['auto']}
     assert parse_special_delimiter_line(r'#% md') == { 'type': 'markdown', 'options': []}
-    assert parse_special_delimiter_line(r'#% hidden noexec') == { 'type': 'code', 'options': ['hidden', 'noexec']}
+    assert parse_special_delimiter_line(r'#% hidden auto') == { 'type': 'code', 'options': ['hidden', 'auto']}
 
 def parse(text):
     ''' Given PyBook format text described in FileSpec.md, return dictionary object representing JSON notebook '''
@@ -83,6 +95,7 @@ def parse(text):
     item = [] # Array of lines
     current_type = 'start' # Assume we start in unknown type
     current_options = []
+    ids = set()
 
     def finish_item():
         nonlocal idnum
@@ -100,9 +113,18 @@ def parse(text):
             item = []
             return # No item to finish
         item_str = '\n'.join(item)
+        # Remove trailing space from item
+        item_str = item_str.rstrip()
         cell = { 'id':idnum, 'cell_type':current_type, 'source':item_str, 'outputs':[] }
         for option in current_options:
-            cell[option] = True
+            spl = option.split('=')
+            if len(spl) == 2:
+                cell[spl[0]] = spl[1]
+            else:
+                cell[spl[0]] = True
+        if cell['id'] in ids:
+            raise Exception(f"Identifier is not unique '{cell['id']}'")
+        ids.add(cell['id'])
         idnum += 1
         if current_type == 'markdown':
             cell['subtype'] = 'view'
@@ -124,26 +146,18 @@ def parse(text):
     for line in lines:
         if is_special_delimiter(line):
             delim = parse_special_delimiter_line(line)
-            def markdown_func():
-                nonlocal current_type
-                nonlocal current_options
+            if delim['type'] == 'markdown':
                 finish_item()
                 current_type = delim['type']
                 current_options = delim['options']
-            def code_func():
-                nonlocal current_type
-                nonlocal current_options
+            elif delim['type'] == 'code':
                 finish_item()
                 current_type = delim['type']
                 current_options = delim['options']
-            matches = {
-                'markdown': markdown_func,
-                'code': code_func,
-                'page': finish_page,
-                'end': finish_item,
-            }
-            if delim['type'] in matches:
-                matches[delim['type']]()
+            elif delim['type'] == 'page':
+                finish_page()
+            elif delim['type'] == 'end':
+                finish_item()
             else:
                 raise Exception('Unexpected delimiter: ' + delim['type'])
         else:
@@ -212,8 +226,10 @@ print(42)
 #% page
 #%%
 hello
+
 #% submit
 # hi
+
 '''
     assert parse(txt2) == [
     [
@@ -255,7 +271,13 @@ def main():
     argparser.add_argument('--infile', required=True)
     argparser.add_argument('--outfile', required=True)
     args = argparser.parse_args()
-    print(args)
+    with open(args.infile, 'r') as f_in:
+        text = f_in.read()
+        parsed = parse(text)
+        out = json.dumps(parsed, sort_keys=True, indent=4)
+        with open(args.outfile, 'w') as f_out:
+            f_out.write(out)
+            f_out.write('\n')
 
 if __name__ == '__main__':
     main()

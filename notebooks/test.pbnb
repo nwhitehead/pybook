@@ -1,0 +1,25 @@
+#% id=intro1
+# Code cells can have multiple expressions. Each value is shown, unless the
+# result is None in which case nothing is shown. This is consistent with the
+# behavior of the Python REPL.
+1
+2
+None
+4
+
+#% id=print
+# You can also print to stdout, which shows up in the output area.
+print("Hello from PyBook")
+
+#%
+# There is one Python state. It will be affected by each cell you evaluate.
+# Try evaluating this cell and the next one in different orders.
+x = 0
+y = 0
+x, y
+
+#%
+print(f'x is {x}, y is {y}')
+x += 1
+y += 3
+x, y
