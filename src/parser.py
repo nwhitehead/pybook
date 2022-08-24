@@ -1,9 +1,11 @@
 '''
-Parse PBNB format files
+Parse PBNB format files into JSON internal format
 
 Specification described in FileSpec.md
 
 '''
+
+import argparse
 import pytest
 
 def split_by_lines(txt):
@@ -248,7 +250,12 @@ hello
     # Can't test unparse(parse(txt2)) == txt2 because the unparse chooses different ways to represent the notebook
     assert parse(unparse(parse(txt2))) == parse(txt2)
 
-'''
+def main():
+    argparser = argparse.ArgumentParser(description='Parse PyBook notebook format pbnb files')
+    argparser.add_argument('--infile', required=True)
+    argparser.add_argument('--outfile', required=True)
+    args = argparser.parse_args()
+    print(args)
 
-'''
-    
+if __name__ == '__main__':
+    main()

@@ -9,19 +9,23 @@ and _Jupyter_ (formerly named _IPython_).
 
 This notebook shows you some of the features of PyBook and walks you through
 how to do some common tasks.
+
 #%
 # This is a cell that contains Python code.
 # Click this cell to focus, then evaluate it by pressing Ctrl-Enter
 # (You can also use the menu to choose Cell - Evaluate)
 # The result of the evalution is shown in the cell after the code.
 40 + 2
+
 #%%
 Internally PyBook uses Pyodide for the Python interpreter.
+
 #%
 # Let's see some versions
 import sys
 sys.version
 sys.modules['pyodide'].__version__
+
 #%
 # Code cells can have multiple expressions. Each value is shown, unless the
 # result is None in which case nothing is shown. This is consistent with the
@@ -30,21 +34,26 @@ sys.modules['pyodide'].__version__
 2
 None
 4
+
 #%
 # You can also print to stdout, which shows up in the output area.
 print("Hello from PyBook")
+
 #%
 # There is one Python state. It will be affected by each cell you evaluate.
 # Try evaluating this cell and the next one in different orders.
 x = 0
 y = 0
 x, y
+
 #%
 print(f'x is {x}, y is {y}')
 x += 1
 y += 3
 x, y
+
 #% page
+
 #%
 # You can import modules
 # Standard libraries always exist, but other modules need to have been
@@ -52,11 +61,14 @@ x, y
 import sys
 print('Here is text on stdout')
 print('Here is an error message on stderr', file=sys.stderr)
-print('Interleaving order is not guaranteed but hopefully is helpful')#%
+print('Interleaving order is not guaranteed but hopefully is helpful')
+
+#%
 # Showing evaluated results can help debug
 a = [1, 2, 3]
 a = a.append(4) # oops
 print(a)
+
 #%
 # Sleeping works, Python interpretation happens in a worker thread.
 # The cell cursor color changes when the interpreter is busy.
@@ -66,18 +78,22 @@ for i in range(5):
   print('Waiting...')
   time.sleep(1)
 print('Done')
+
 #%%
 Part of the design of PyBook is that you can't queue up many cells to
 evaluate. If a cell is busy, you need to interrupt it or wait until it's done
 before you can evaluate another cell.
+
 #%
-# You can interrupt long computations with Ctrl-C
+# You can interrupt long computations with Ctrl-K
 # (or use the menu)
 import time
 print('Big calculation...')
 time.sleep(100)
 print('Whew')
+
 #% page
+
 #%
 # Pyodide has many good modules ported.
 # You can do fun things with math using Numpy
@@ -91,25 +107,31 @@ A
 Q, R = np.linalg.qr(A)
 Q
 R
-Q @ R   # The @ is matrix multiplication
+Q @ R   # The @ is the matrix multiplication operator
+
 #% page
+
 #%
 # Files can be used, but the "filesystem" is just memory in the interpreter
 # In particular, it will be reset every time you restart the interpreter.
 
 with open('poem.txt', 'w') as f:
   f.write('roses are red')
+
 #%
 # But file contents do persist between cells
 
 with open('poem.txt') as f:
   print(f.read())
+
 #%
 # The pybook module is a special module that lets you do more things
 
 import pybook
-pybook.output_text_content('text/plain', 'violets are blue')#%
-# The first argument is the content type, which lets you do HTML
+pybook.output_text_content('text/plain', 'violets are blue')
+
+#%
+# The first argument to output_text_content is the content type, which lets you do HTML
 
 import pybook
 pybook.output_text_content('text/html', 'Hearts are <b>wonderful</b>')

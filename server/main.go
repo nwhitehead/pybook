@@ -26,7 +26,7 @@ func emptyNotebook() contents {
 }
 
 func getFiles() {
-	files, err := ioutil.ReadDir("notebooks")
+	files, err := ioutil.ReadDir("../notebooks")
 	if err != nil {
 		log.Fatal(err)
 	}

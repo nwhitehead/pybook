@@ -62,7 +62,10 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
     Call func on each expression to do something with value (otherwise return values ignored).
     If history is True, append script to __history in global state.
     If write is True, write script to temporary file to help with debugging with pdb.
-    
+
+    This function is marked async because cells may include top-level asynchronous behavior.
+    This function waits for user code with `await`.
+
     """
     if globals_ is None:
         globals_ = globals()
@@ -112,7 +115,8 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
         tmpfile.close()
     return
 
-async def dotest():
+async def test_run_cell():
+    ''' Simple test cases for run_cell '''
     test='''x = 5; 12; x; x+=1; x'''
     test2='''y+1'''
     results = []
@@ -133,12 +137,6 @@ async def dotest():
     #    → 3
     #    4
     #    → 5
-    # This test should show:
-    #    [1]
-    #    [→ 2]
-    #    [→ 3]
-    #    [4]
-    #    [→ 5]
 
 ##################
 # Things specific to pybook
@@ -189,7 +187,7 @@ async def wrapped_run_cell(*args, **kwargs):
     Same interface as run_cell but wrap stdout, stdin, and stderr with pybook interface.
 
     Writing lines to stdout will call pybook.output_stdout, writing lines to stderr
-    will call pybook.output_stderr. Input is not currently working...
+    will call pybook.output_stderr.
     
     """
     import pybook
@@ -280,6 +278,7 @@ def register_pickle_pybook():
     copyreg.pickle(type(pybook), __pickler, __unpickler)
 
 def test_deepcopy():
+    import os
     a = { 'os':sys.modules['os'], 'x':[1, 2, sys.modules['copy']] }
     b = copy.deepcopy(a)
     a['os'] = 'changed'
@@ -311,11 +310,12 @@ def test_deepcopy():
             assert(f.closed == g.closed)
             if not f.closed:
                 assert(f.tell() == g.tell())
+    os.unlink('blah.txt')
 
 if __name__ == '__main__':
     # Do simple tests if run at command line
     import asyncio
-    asyncio.run(dotest())
+    asyncio.run(test_run_cell())
     register_pickle()
     test_deepcopy()
 else:
