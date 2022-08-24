@@ -59,13 +59,16 @@ def parse_special_delimiter_line(txt):
         'md': 'markdown',
         'page': 'page',
         'end': 'end',
+        'submit': 'submit',
+        'user': 'user',
+        'test': 'test',
     }
     for k in types:
         if k in options:
             line_type = types[k]
             options.remove(k)
-    legal_options = ['hidden', 'noexec', 'auto', 'nooutput', 'readonly', 'startup', 'test', 'submit']
-    legal_key_options = ['id']
+    legal_options = ['hidden', 'noexec', 'auto', 'nooutput', 'readonly', 'startup']
+    legal_key_options = ['id', 'language']
     for option in options:
         # Check if it has an = in the name
         spl = option.split('=')
@@ -87,11 +90,12 @@ def test_parse_special_delimiter_line():
     assert parse_special_delimiter_line(r'#% hidden auto') == { 'type': 'code', 'options': ['hidden', 'auto']}
 
 def parse(text):
-    ''' Given PyBook format text described in FileSpec.md, return dictionary object representing JSON notebook '''
+    ''' Given PyBook format text described in FileSpec.md, return dictionary object representing JSON notebook and test page '''
     # Strategy is to accumulate lines into latest item, and items into latest page, etc.
     idnum = 1
     pages = [] # Array of pages
     page = [] # Array of items
+    test_page = [] # Array of test items
     item = [] # Array of lines
     current_type = 'start' # Assume we start in unknown type
     current_options = []
@@ -126,9 +130,20 @@ def parse(text):
             raise Exception(f"Identifier is not unique '{cell['id']}'")
         ids.add(cell['id'])
         idnum += 1
-        if current_type == 'markdown':
+        if current_type == 'markdown' and 'subtype' not in cell:
             cell['subtype'] = 'view'
-        page.append(cell)
+        if cell['cell_type'] == 'submit':
+            cell['user'] = ''
+            if len(page) > 0:
+                last = page[-1]
+                if last['cell_type'] == 'user':
+                    cell['user'] = last['source']
+                    cell['id'] = last['id']
+                    page = page[:-1]
+        if cell['cell_type'] == 'test':
+            test_page.append(cell)
+        else:
+            page.append(cell)
         item = []
         current_type = ''
         current_options = []
@@ -150,7 +165,7 @@ def parse(text):
                 finish_item()
                 current_type = delim['type']
                 current_options = delim['options']
-            elif delim['type'] == 'code':
+            elif delim['type'] == 'code' or delim['type'] == 'submit' or delim['type'] == 'user':
                 finish_item()
                 current_type = delim['type']
                 current_options = delim['options']
@@ -158,27 +173,35 @@ def parse(text):
                 finish_page()
             elif delim['type'] == 'end':
                 finish_item()
+            elif delim['type'] == 'test':
+                finish_item()
+                current_type = delim['type']
+                current_options = delim['options']
             else:
                 raise Exception('Unexpected delimiter: ' + delim['type'])
         else:
             item.append(line)
     finish_page()
-    return pages
+    return {'pages':pages, 'test_page':test_page}
 
 def unparse_cell(cell):
-    header = r'#%%'
+    # First paste options
     options = []
-    if cell['cell_type'] == 'code':
-        header = r'#%'
     if 'hidden' in cell and cell['hidden']:
         options.append('hidden')
     if 'startup' in cell and cell['startup']:
         options.append('startup')
-    if 'submit' in cell and cell['submit']:
-        options.append('submit')
-    for option in options:
-        header += ' ' + option
-    return header + '\n' + cell['source'] + '\n'
+    optiontxt = ' '.join(options)
+    if len(optiontxt) > 0:
+        optiontxt = ' ' + optiontxt
+    if cell['cell_type'] == 'markdown':
+        return f"#%%{optiontxt}\n{cell['source']}\n"
+    elif cell['cell_type'] == 'code':
+        return f"#%{optiontxt}\n{cell['source']}\n"
+    elif cell['cell_type'] == 'submit':
+        return f"#% user{optiontxt}\n{cell['user']}\n#% submit {optiontxt}\n{cell['source']}\n"
+    else:
+        raise Exception(f"Unknown type '{cell['cell_type']}'")
 
 def unparse_page(page):
     return ''.join([unparse_cell(cell) for cell in page])
@@ -194,7 +217,7 @@ def test_parse():
 #%
 print(42)
 '''
-    assert parse(txt1) == [[
+    assert parse(txt1)['pages'] == [[
         {
             'id': 1,
             'cell_type': 'markdown',
@@ -210,8 +233,8 @@ print(42)
             'outputs': [],
         },
     ]]
-    assert unparse(parse(txt1)) == txt1
-    assert parse(unparse(parse(txt1))) == parse(txt1)
+    assert unparse(parse(txt1)['pages']) == txt1
+    assert parse(unparse(parse(txt1)['pages'])) == parse(txt1)
 
     txt2 = '''#% md
 # Title
@@ -231,7 +254,7 @@ hello
 # hi
 
 '''
-    assert parse(txt2) == [
+    assert parse(txt2)['pages'] == [
     [
         {
             'id': 1,
@@ -257,27 +280,56 @@ hello
         },
         {
             'id': 4,
-            'cell_type': 'code',
-            'submit': True,
+            'cell_type': 'submit',
             'source': '# hi',
+            'user': '',
             'outputs': [],
         },
     ]]
     # Can't test unparse(parse(txt2)) == txt2 because the unparse chooses different ways to represent the notebook
-    assert parse(unparse(parse(txt2))) == parse(txt2)
+    assert parse(unparse(parse(txt2)['pages'])) == parse(txt2)
 
 def main():
     argparser = argparse.ArgumentParser(description='Parse PyBook notebook format pbnb files')
     argparser.add_argument('--infile', required=True)
-    argparser.add_argument('--outfile', required=True)
+    argparser.add_argument('--outfile')
+    argparser.add_argument('--test', action='store_true')
     args = argparser.parse_args()
     with open(args.infile, 'r') as f_in:
         text = f_in.read()
         parsed = parse(text)
-        out = json.dumps(parsed, sort_keys=True, indent=4)
-        with open(args.outfile, 'w') as f_out:
-            f_out.write(out)
-            f_out.write('\n')
+        out = json.dumps(parsed['pages'], sort_keys=True, indent=4)
+        # Test flow
+        if args.test:
+            test_page = parsed['test_page']
+            state = {}
+            notebook = json.loads(out)
+            # __notebook contains the entire JSON notebook
+            state['__notebook'] = notebook
+            # __cells contains mapping from id to source
+            # __user contains mapping from id to user default text
+            cells = {}
+            user = {}
+            for page in notebook:
+                for cell in page:
+                    if cell['cell_type'] == 'code':
+                        cells[cell['id']] = cell['source']
+                    if cell['cell_type'] == 'submit':
+                        cells[cell['id']] = cell['source']
+                        user[cell['id']] = cell['user']
+            state['__cells'] = cells
+            state['__user'] = user
+            for cell in test_page:
+                cell_src = cell['source']
+                exec(cell_src, state)
+            return
+        # Normal output flow
+        if not args.outfile:
+            print(out)
+        else:
+            with open(args.outfile, 'w') as f_out:
+                f_out.write(out)
+                f_out.write('\n')
 
 if __name__ == '__main__':
     main()

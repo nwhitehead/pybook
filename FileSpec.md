@@ -32,11 +32,28 @@ The `#%` tag for Python code includes the following boolean options:
     * `readonly` means to make the contents not editable (default is editable)
     * `test` means to ignore cell normally, only use for special testing parse mode
     * `submit` means to make cell a submit cell
+    * `user` set the default user text for a submit cell
 
 The tags can come in any order, but cannot be repeated.
 
 Some options have arguments. These are indicated with `id=value` syntax.
     * `id=VALUE` set the unique cell identifier (normally set to fresh integer automatically)
+    * `language=LANGUAGE` set the language for submit areas (choices are `python` and `text`)
+
+### Submit cells
+
+To write submit cells with user default text, order this way:
+```
+#% user language=text
+Default user text
+
+#% submit
+print(f"You submitted {__input}")
+```
+
+If a `user` and `submit` cell are adjacent, they are merged into one submit cell. The `language` of the user part
+sets the syntax highlighting. The second `submit` part is always Python code that will evaluate when the "submit"
+button is pressed, and will have `__input` bound to the text entered into the cell by the user.
 
 ### Markdown options
 

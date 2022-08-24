@@ -1,4 +1,4 @@
-#% id=intro1
+#% id=intro
 # Code cells can have multiple expressions. Each value is shown, unless the
 # result is None in which case nothing is shown. This is consistent with the
 # behavior of the Python REPL.
@@ -23,3 +23,18 @@ print(f'x is {x}, y is {y}')
 x += 1
 y += 3
 x, y
+
+#%%
+You can also have cells that have "submit" buttons. These run Python code and
+can respond based on the text that is submitted.
+
+#% user language=text id=submit1
+Enter something here
+
+#% submit
+print(f"You typed {__input}")
+
+#% test
+cell=__cells['submit1']
+print(cell)
+print(__user['submit1'])
