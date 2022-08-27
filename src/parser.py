@@ -6,8 +6,11 @@ Specification described in FileSpec.md
 '''
 
 import argparse
+import ast
+import asyncio
 import json
 import pytest
+import sys
 
 def split_by_lines(txt):
     ''' Split a long text string into array of lines '''
@@ -289,7 +292,31 @@ hello
     # Can't test unparse(parse(txt2)) == txt2 because the unparse chooses different ways to represent the notebook
     assert parse(unparse(parse(txt2)['pages'])) == parse(txt2)
 
-def main():
+async def run_tests(notebook, test_page):
+    state = {}
+    # Setup test pybook module
+    import pybook_test
+    sys.modules['pybook'] = pybook_test
+    # __notebook contains the entire JSON notebook
+    state['__notebook'] = notebook
+    # __cells contains mapping from id to cell structure
+    # __source contains mapping from id to cell source
+    cells = {}
+    source = {}
+    for page in notebook:
+        for cell in page:
+            cells[cell['id']] = cell
+            source[cell['id']] = cell['source']
+    state['__cells'] = cells
+    state['__source'] = source
+    for cell in test_page:
+        cell_src = cell['source']
+        code = compile(cell_src, filename='test', mode='exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+        coro = eval(code, state, state)
+        if coro is not None:
+            await coro
+
+async def main():
     argparser = argparse.ArgumentParser(description='Parse PyBook notebook format pbnb files')
     argparser.add_argument('--infile', required=True)
     argparser.add_argument('--outfile')
@@ -302,26 +329,8 @@ def main():
         # Test flow
         if args.test:
             test_page = parsed['test_page']
-            state = {}
             notebook = json.loads(out)
-            # __notebook contains the entire JSON notebook
-            state['__notebook'] = notebook
-            # __cells contains mapping from id to source
-            # __user contains mapping from id to user default text
-            cells = {}
-            user = {}
-            for page in notebook:
-                for cell in page:
-                    if cell['cell_type'] == 'code':
-                        cells[cell['id']] = cell['source']
-                    if cell['cell_type'] == 'submit':
-                        cells[cell['id']] = cell['source']
-                        user[cell['id']] = cell['user']
-            state['__cells'] = cells
-            state['__user'] = user
-            for cell in test_page:
-                cell_src = cell['source']
-                exec(cell_src, state)
+            await run_tests(notebook, test_page)
             return
         # Normal output flow
         if not args.outfile:
@@ -332,4 +341,4 @@ def main():
                 f_out.write('\n')
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

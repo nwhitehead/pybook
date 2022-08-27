@@ -53,7 +53,7 @@ def default_func(value):
 
     """
     if value is not None:
-        print(f'→ {repr(value)}')
+        sys.stdout.write(f'→ {repr(value)}\n')
 
 async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True):
     """
