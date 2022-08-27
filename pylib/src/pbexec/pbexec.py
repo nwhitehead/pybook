@@ -55,7 +55,7 @@ def default_func(value):
     if value is not None:
         sys.stdout.write(f'→ {repr(value)}\n')
 
-async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True):
+async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True, print_exception=True, propagate_exception=False):
     """
     Run script with given globals and locals environment
     
@@ -65,6 +65,13 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
 
     This function is marked async because cells may include top-level asynchronous behavior.
     This function waits for user code with `await`.
+
+    If print_exception is True, prints exception information and traceback if user
+    code raises an exception.
+
+    If propagate_exception is True, exceptions raised in user code propagate to caller.
+
+    Default is for print_exception to be True and propagate_exception to be False.
 
     """
     if globals_ is None:
@@ -80,9 +87,11 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
     try:
         node = ast.parse(cell)
     except SyntaxError as err:
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_tb.tb_next.tb_next)
-        return
+        if print_exception:
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_tb.tb_next.tb_next)
+        if propagate_exception:
+            raise err
     if func is not None:
         # Replace all expressions with calls to __expr_callback to process values
         statements = node.body
@@ -106,13 +115,17 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
         if coro is not None:
             await coro
     except BaseException as err:
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
-    sys.stdout.flush()
-    sys.stderr.flush()
-    # Delete temporary named file if applicable
-    if write:
-        tmpfile.close()
+        if print_exception:
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
+        if propagate_exception:
+            raise err
+    finally:
+        sys.stdout.flush()
+        sys.stderr.flush()
+        # Delete temporary named file if applicable
+        if write:
+            tmpfile.close()
     return
 
 async def test_run_cell():
@@ -137,6 +150,21 @@ async def test_run_cell():
     #    → 3
     #    4
     #    → 5
+
+async def test_run_cell_assert():
+    ''' Test assert rewriting '''
+    await run_cell('assert True', globals(), globals(), print_exception=False, propagate_exception=True)
+    try:
+        await run_cell('assert False', globals(), globals(), print_exception=False, propagate_exception=True)
+        raise Exception('Did not get assertion failure as expected')
+    except AssertionError as e:
+        pass
+    await run_cell('assert 3 == 3', globals(), globals(), print_exception=False, propagate_exception=True)
+    try:
+        await run_cell('assert 3 == 4', globals(), globals(), print_exception=False, propagate_exception=True)
+        raise Exception('Did not get assertion failure as expected')
+    except AssertionError as e:
+        pass
 
 ##################
 # Things specific to pybook
@@ -316,6 +344,7 @@ if __name__ == '__main__':
     # Do simple tests if run at command line
     import asyncio
     asyncio.run(test_run_cell())
+    asyncio.run(test_run_cell_assert())
     register_pickle()
     test_deepcopy()
 else:
