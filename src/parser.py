@@ -120,8 +120,10 @@ def parse(text):
             item = []
             return # No item to finish
         item_str = '\n'.join(item)
-        # Remove trailing space from item
-        item_str = item_str.rstrip()
+        # Remove possible trailing space from item
+        item_str = item_str.rstrip('\n')
+        # Remove possible prefix space from item
+        item_str = item_str.lstrip('\n')
         cell = { 'id':idnum, 'cell_type':current_type, 'source':item_str, 'outputs':[] }
         for option in current_options:
             spl = option.split('=')
@@ -307,7 +309,7 @@ async def run_tests(notebook, test_page):
         for cell in page:
             cells[cell['id']] = cell
             source[cell['id']] = cell['source']
-    state['__cells'] = cells
+    state['__cell'] = cells
     state['__source'] = source
     for cell in test_page:
         cell_src = cell['source']

@@ -17,7 +17,7 @@
 //!
 //! Note that text/html type is passed through an HTML sanitizer to prevent various types of attacks.
 //! For stdout/stderr output, the text is first HTML escaped to allow things like REDACTED to work.
-//! (The string I want to put there breaks the Vue esbuild compile...)
+//! (The string I want to put in place of REDACTED breaks the Vue esbuild compile...)
 //! Next the escaped HTML is put through an ANSI convert function to allow ANSI escape codes for colors etc.
 //! Finally there is an HTML sanitizer to prevent unintentional final results with dangerous consequences.
 //!

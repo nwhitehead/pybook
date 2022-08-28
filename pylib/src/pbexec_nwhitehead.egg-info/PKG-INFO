@@ -2,11 +2,8 @@ Metadata-Version: 2.1
 Name: pbexec-nwhitehead
 Version: 0.0.1
 Summary: Run cells in PyBook notebooks
-Home-page: UNKNOWN
 Author: Nathan Whitehead
 Author-email: nwhitehe@gmail.com
-License: UNKNOWN
-Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
@@ -17,5 +14,3 @@ License-File: LICENSE
 # Exec for Pyodide PyBook
 
 This is an internal package for evaluating Python cells in the PyBook notebook interface using Pyodide.
-
-
