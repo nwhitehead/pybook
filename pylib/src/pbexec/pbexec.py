@@ -55,31 +55,6 @@ def default_func(value):
     if value is not None:
         sys.stdout.write(f'→ {repr(value)}\n')
 
-def visit(node):
-    #print(f'Visiting [{ast.dump(node)}] in visit')
-    return [node]
-
-def rewrite_assert(code):
-    #print(f'Rewriting asserts in [{code}]')
-    nodes = [code]
-    while nodes:
-        node = nodes.pop()
-        for name, field in ast.iter_fields(node):
-            if isinstance(field, list):
-                new = []
-                for i, child in enumerate(field):
-                    if isinstance(child, ast.Assert):
-                        # Found instance of assert, transform it
-                        new.extend(visit(child))
-                    else:
-                        new.append(child)
-                        if isinstance(child, ast.AST):
-                            nodes.append(child)
-                setattr(node, name, new)
-            elif (isinstance(field, ast.AST) and not isinstance(field, ast.expr)):
-                # Expressions cannot contain asserts
-                nodes.append(field)
-
 async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True, print_exception=True, propagate_exception=False):
     """
     Run script with given globals and locals environment
@@ -133,8 +108,6 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
         tmpfile.write(script)
         filename = tmpfile.name
         tmpfile.flush()
-    # Rewrite asserts to have diagnostic information
-    rewrite_assert(node)
     # Compile wrapped script, run wrapper definition
     try:
         code = compile(node, filename=filename, mode='exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
