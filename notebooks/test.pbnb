@@ -10,21 +10,24 @@ None
 #% test
 # Common test setup code
 import pybook
-import pytest
+import unittest
+tc = unittest.TestCase()
 
-#% test
-# Test that when intro cell is executed, shows the right things in output area
-def test_three():
-    assert 3==4
+#% test id=test_intro
 
-pytest.main()
-'''
+tc.assertEqual(pybook.sync_test_run_outputs(__cells['intro']['source']),
+[
+    {'name': 'stdout', 'text/plain': '→ 1\n'},
+    {'name': 'stdout', 'text/plain': '→ 2\n'},
+    {'name': 'stdout', 'text/plain': '→ 4\n'}
+])
+
 assert(pybook.sync_test_run_outputs(__cells['intro']['source']) == [
     {'name': 'stdout', 'text/plain': '→ 1\n'},
     {'name': 'stdout', 'text/plain': '→ 2\n'},
     {'name': 'stdout', 'text/plain': '→ 4\n'}
 ])
-'''
+
 #% id=print
 # You can also print to stdout, which shows up in the output area.
 print("Hello from PyBook")

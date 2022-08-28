@@ -311,7 +311,7 @@ async def run_tests(notebook, test_page):
     state['__source'] = source
     for cell in test_page:
         cell_src = cell['source']
-        code = compile(cell_src, filename='test', mode='exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+        code = compile(cell_src, filename=f'test id={cell["id"]}', mode='exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
         coro = eval(code, state, state)
         if coro is not None:
             await coro
