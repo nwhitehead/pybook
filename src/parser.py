@@ -313,10 +313,14 @@ async def run_tests(notebook, test_page):
     state['__source'] = source
     for cell in test_page:
         cell_src = cell['source']
-        code = compile(cell_src, filename=f'test id={cell["id"]}', mode='exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+        filename = f'test id={cell["id"]}'
+        code = compile(cell_src, filename=filename, mode='exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
+        sys.stdout.write(f'{filename} ')
+        sys.stdout.write('\033[33mRUNNING\033[0m\033[1m\n')
         coro = eval(code, state, state)
         if coro is not None:
             await coro
+        sys.stdout.write(f'\033[0m{filename} \033[32mPASSED\033[0m\033[0K\n')
 
 async def main():
     argparser = argparse.ArgumentParser(description='Parse PyBook notebook format pbnb files')

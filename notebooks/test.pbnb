@@ -1,4 +1,4 @@
-#% test
+#% test id=setup
 
 # Common test setup code
 import pybook
@@ -40,18 +40,22 @@ x = 1
 y = 2
 x, y
 
-#% id=xystate_use
-print(f'x is {x}, y is {y}')
-x += 1
-y += 3
-x, y
-
 #% test id=test_xystate
 
 pybook.assertEqual(pybook.sync_test_run_outputs(__source['xystate']),
 [
     {'name': 'stdout', 'text/plain': '→ (1, 2)\n'},
 ])
+
+#% id=xystate_use
+
+print(f'x is {x}, y is {y}')
+x += 1
+y += 3
+x, y
+
+#% test id=test_xystate_use
+
 pybook.assertEqual(pybook.sync_test_run_outputs(__source['xystate_use']),
 [
     {'name': 'stdout', 'text/plain': 'x is 1, y is 2\n→ (2, 5)\n'},
@@ -80,6 +84,4 @@ pybook.assertEqual(pybook.sync_test_run_outputs(__source['submit1'], user='Natha
     {'name': 'stdout', 'text/plain': 'You typed Nathan\n'},
 ])
 
-#% test
-
-print('All tests passed')
+#% test id=teardown
