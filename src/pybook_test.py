@@ -61,4 +61,43 @@ def sync_test_run_outputs(txt, user=''):
 
 import unittest
 tc = unittest.TestCase()
+
 assertEqual = tc.assertEqual
+assertNotEqual = tc.assertNotEqual
+assertTrue = tc.assertTrue
+assertFalse = tc.assertFalse
+assertIs = tc.assertIs
+assertIsNot = tc.assertIsNot
+assertIsNone = tc.assertIsNone
+assertIsNotNone = tc.assertIsNotNone
+assertIn = tc.assertIn
+assertNotIn = tc.assertNotIn
+assertIsInstance = tc.assertIsInstance
+assertNotIsInstance = tc.assertNotIsInstance
+
+assertRaises = tc.assertRaises
+assertRaisesRegex = tc.assertRaisesRegex
+assertWarns = tc.assertWarns
+assertWarnsRegex = tc.assertWarnsRegex
+assertLogs = tc.assertLogs
+assertNoLogs = tc.assertNoLogs
+
+assertAlmostEqual = tc.assertAlmostEqual
+assertNotAlmostEqual = tc.assertNotAlmostEqual
+assertGreater = tc.assertGreater
+assertGreaterEqual = tc.assertGreaterEqual
+assertLess = tc.assertLess
+assertLessEqual = tc.assertLessEqual
+assertRegex = tc.assertRegex
+assertNotRegex = tc.assertNotRegex
+assertCountEqual = tc.assertCountEqual
+
+addTypeEqualityFunc = tc.addTypeEqualityFunc
+assertMultiLineEqual = tc.assertMultiLineEqual
+assertSequenceEqual = tc.assertSequenceEqual
+assertListEqual = tc.assertListEqual
+assertTupleEqual = tc.assertTupleEqual
+assertSetEqual = tc.assertSetEqual
+assertDictEqual = tc.assertDictEqual
+
+fail = tc.fail
