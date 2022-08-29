@@ -7,21 +7,22 @@ on a Python data structure representing the notebook cell outputs.
 
 '''
 
+import copy
+
 # This global variable represents the state of the cell
 outputs = []
 
-def _add_output(data):
-    ''' Append text if data is same channel as last message in outputs, otherwise append new text '''
-    if len(outputs) > 0 and 'name' in outputs[-1] and 'name' in data and 'text/plain' in outputs[-1] and 'text/plain' in data and outputs[-1]['name'] == data['name']:
-        outputs[-1]['text/plain'] += data['text/plain']
-        return
-    outputs.append(data)
+def fresh_state():
+    return {}
 
-def reset_outputs():
-    outputs.clear()
-
-def get_outputs():
-    return outputs
+def duplicate_state(state):
+    res = {}
+    for key, value in state.items():
+        try:
+            res[key] = copy.deepcopy(state[key])
+        except Exception as err:
+            raise KeyError(key)
+    return res
 
 def sleep(sec):
     pass
@@ -37,26 +38,49 @@ def input_stdin():
 
 ## Following are specific to testing environment
 
-async def test_run_outputs(txt):
-    reset_outputs()
+def _add_output(data):
+    ''' Append text if data is same channel as last message in outputs, otherwise append new text '''
+    if len(outputs) > 0 and 'name' in outputs[-1] and 'name' in data and 'text/plain' in outputs[-1] and 'text/plain' in data and outputs[-1]['name'] == data['name']:
+        outputs[-1]['text/plain'] += data['text/plain']
+        return
+    outputs.append(data)
+
+def reset_outputs():
+    outputs.clear()
+
+def get_outputs():
+    ''' Return current outputs and clear them '''
+    global outputs
+    result = outputs[:]
+    outputs = []
+    return result
+
+async def _exec(txt, state=None, user=''):
+    if state is None:
+        state = globals()
+    state['__input'] = user
     from pbexec import pbexec
-    await pbexec.wrapped_run_cell(txt)
+    await pbexec.wrapped_run_cell(txt, globals_=state, locals_=state, print_exception=False, propagate_exception=True)
+
+async def exec_outputs(txt, state=None, user=''):
+    reset_outputs()
+    await _exec(txt, state, user)
     return outputs
 
-def sync_test_run_outputs(txt, user=''):
+def sync_exec(txt, state=None, user=''):
     # Allow nested event loops
     import nest_asyncio
     nest_asyncio.apply()
 
-    reset_outputs()
-    from pbexec import pbexec
     import asyncio
     loop = asyncio.get_event_loop()
     async def f():
-        state = globals()
-        state['__input'] = user
-        await pbexec.wrapped_run_cell(txt, globals_=state, print_exception=False, propagate_exception=True)
+        await _exec(txt, state, user)
     loop.run_until_complete(f())
+
+def sync_exec_outputs(txt, state=None, user=''):
+    reset_outputs()
+    sync_exec(txt, state, user)
     return outputs
 
 import unittest

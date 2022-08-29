@@ -2,6 +2,7 @@
 
 # Common test setup code
 import pybook
+state = pybook.fresh_state()
 
 #% id=intro
 
@@ -15,7 +16,8 @@ None
 
 #% test id=test_intro
 
-pybook.assertEqual(pybook.sync_test_run_outputs(__source['intro']),
+pybook.sync_exec(__source['intro'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
 [
     {'name': 'stdout', 'text/plain': '→ 1\n→ 2\n→ 4\n'}
 ])
@@ -27,7 +29,8 @@ print("Hello from PyBook")
 
 #% test id=test_print
 
-pybook.assertEqual(pybook.sync_test_run_outputs(__source['print']),
+pybook.sync_exec(__source['print'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
 [
     {'name': 'stdout', 'text/plain': 'Hello from PyBook\n'},
 ])
@@ -42,7 +45,8 @@ x, y
 
 #% test id=test_xystate
 
-pybook.assertEqual(pybook.sync_test_run_outputs(__source['xystate']),
+pybook.sync_exec(__source['xystate'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
 [
     {'name': 'stdout', 'text/plain': '→ (1, 2)\n'},
 ])
@@ -56,12 +60,24 @@ x, y
 
 #% test id=test_xystate_use
 
-pybook.assertEqual(pybook.sync_test_run_outputs(__source['xystate_use']),
+pybook.sync_exec(__source['xystate_use'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
 [
     {'name': 'stdout', 'text/plain': 'x is 1, y is 2\n→ (2, 5)\n'},
 ])
 
+state = pybook.fresh_state()
+pybook.sync_exec(__source['xystate'], state=state)
+pybook.sync_exec(__source['xystate_use'], state=state)
+pybook.reset_outputs()
+pybook.sync_exec(__source['xystate_use'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'x is 2, y is 5\n→ (3, 8)\n'},
+])
+
 #%%
+
 You can also have cells that have "submit" buttons. These run Python code and
 can respond based on the text that is submitted.
 
@@ -75,11 +91,13 @@ print(f"You typed {__input}")
 
 #% test id=test_submit1
 
-pybook.assertEqual(pybook.sync_test_run_outputs(__source['submit1'], user=__cell['submit1']['user']),
+pybook.sync_exec(__source['submit1'], user=__cell['submit1']['user'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
 [
     {'name': 'stdout', 'text/plain': 'You typed Enter something here\n'},
 ])
-pybook.assertEqual(pybook.sync_test_run_outputs(__source['submit1'], user='Nathan'),
+pybook.sync_exec(__source['submit1'], user='Nathan', state=state)
+pybook.assertEqual(pybook.get_outputs(),
 [
     {'name': 'stdout', 'text/plain': 'You typed Nathan\n'},
 ])
