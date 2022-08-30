@@ -1,4 +1,11 @@
+#% test id=setup
+
+# Common test setup code
+import pybook
+state = pybook.fresh_state()
+
 #%%
+
 # Introduction to PyBook
 
 Welcome to *PyBook*!
@@ -10,23 +17,42 @@ and _Jupyter_ (formerly named _IPython_).
 This notebook shows you some of the features of PyBook and walks you through
 how to do some common tasks.
 
-#%
+#% id=expr
+
 # This is a cell that contains Python code.
 # Click this cell to focus, then evaluate it by pressing Ctrl-Enter
 # (You can also use the menu to choose Cell - Evaluate)
 # The result of the evalution is shown in the cell after the code.
 40 + 2
 
+#% test id=expr
+
+pybook.sync_exec(__source['expr'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': '→ 42\n'}
+])
+
 #%%
+
+#%%
+
 Internally PyBook uses Pyodide for the Python interpreter.
 
-#%
+#% id=versions
+
 # Let's see some versions
 import sys
 sys.version
-sys.modules['pyodide'].__version__
 
-#%
+#% test id=versions
+
+pybook.sync_exec(__source['versions'], state=state)
+version = pybook.get_outputs()[0]['text/plain']
+pybook.assertEqual(version[:7], "→ '3.10")
+
+#% id=intro
+
 # Code cells can have multiple expressions. Each value is shown, unless the
 # result is None in which case nothing is shown. This is consistent with the
 # behavior of the Python REPL.
@@ -35,26 +61,72 @@ sys.modules['pyodide'].__version__
 None
 4
 
-#%
+#% test id=intro
+
+pybook.sync_exec(__source['intro'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': '→ 1\n→ 2\n→ 4\n'}
+])
+
+#% id=print
+
 # You can also print to stdout, which shows up in the output area.
 print("Hello from PyBook")
 
-#%
+#% test id=print
+
+pybook.sync_exec(__source['print'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'Hello from PyBook\n'},
+])
+
+#% id=xystate
+
 # There is one Python state. It will be affected by each cell you evaluate.
-# Try evaluating this cell and the next one in different orders.
-x = 0
-y = 0
+# Try evaluating this cell and then the next one.
+x = 1
+y = 2
 x, y
 
-#%
+#% test id=xystate
+
+pybook.sync_exec(__source['xystate'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': '→ (1, 2)\n'},
+])
+
+#% id=xystate_use
+
 print(f'x is {x}, y is {y}')
 x += 1
 y += 3
 x, y
 
+#% test id=xystate_use
+
+pybook.sync_exec(__source['xystate_use'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'x is 1, y is 2\n→ (2, 5)\n'},
+])
+
+state = pybook.fresh_state()
+pybook.sync_exec(__source['xystate'], state=state)
+pybook.sync_exec(__source['xystate_use'], state=state)
+pybook.reset_outputs()
+pybook.sync_exec(__source['xystate_use'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'x is 2, y is 5\n→ (3, 8)\n'},
+])
+
 #% page
 
-#%
+#% id=modules
+
 # You can import modules
 # Standard libraries always exist, but other modules need to have been
 # compiled into Pyodide packages.
@@ -63,28 +135,59 @@ print('Here is text on stdout')
 print('Here is an error message on stderr', file=sys.stderr)
 print('Interleaving order is not guaranteed but hopefully is helpful')
 
-#%
+#% test id=modules
+
+pybook.sync_exec(__source['modules'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'Here is text on stdout\n'},
+    {'name': 'stderr', 'text/plain': 'Here is an error message on stderr\n'},
+    {'name': 'stdout', 'text/plain': 'Interleaving order is not guaranteed but hopefully is helpful\n'},
+])
+
+
+#% id=showing
+
 # Showing evaluated results can help debug
 a = [1, 2, 3]
 a = a.append(4) # oops
-print(a)
+print(a)        # if you just do "a" here you won't see anything because "a" is None
 
-#%
+#% test id=showing
+
+pybook.sync_exec(__source['showing'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'None\n'}
+])
+
+#% id=sleep
+
 # Sleeping works, Python interpretation happens in a worker thread.
-# The cell cursor color changes when the interpreter is busy.
+# The cell color changes when the interpreter is busy.
 import time
 print('Starting countdown')
 for i in range(5):
-  print('Waiting...')
-  time.sleep(1)
+    print('Waiting...')
+    time.sleep(1)
 print('Done')
 
+#% test id=sleep
+
+pybook.sync_exec(__source['sleep'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'Starting countdown\nWaiting...\nWaiting...\nWaiting...\nWaiting...\nWaiting...\nDone\n'}
+])
+
 #%%
-Part of the design of PyBook is that you can't queue up many cells to
-evaluate. If a cell is busy, you need to interrupt it or wait until it's done
+
+Part of the design of PyBook is that you can't evaluate many cells at the same time in parallel.
+If a cell is busy, you need to interrupt it or wait until it's done
 before you can evaluate another cell.
 
-#%
+#% id=busy
+
 # You can interrupt long computations with Ctrl-K
 # (or use the menu)
 import time
@@ -92,9 +195,18 @@ print('Big calculation...')
 time.sleep(100)
 print('Whew')
 
+#% test id=busy
+
+pybook.sync_exec(__source['busy'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'Big calculation...\nWhew\n'}
+])
+
 #% page
 
-#%
+#% id=numpy
+
 # Pyodide has many good modules ported.
 # You can do fun things with math using Numpy
 # QR Decomposition: https://en.wikipedia.org/wiki/QR_decomposition
@@ -109,29 +221,85 @@ Q
 R
 Q @ R   # The @ is the matrix multiplication operator
 
+#% test id=numpy
+
+pybook.sync_exec(__source['numpy'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 
+'''→ array([[ 12, -51,   4],
+       [  6, 167, -68],
+       [ -4,  24, -41]])
+→ array([[-0.85714286,  0.39428571,  0.33142857],
+       [-0.42857143, -0.90285714, -0.03428571],
+       [ 0.28571429, -0.17142857,  0.94285714]])
+→ array([[ -14.,  -21.,   14.],
+       [   0., -175.,   70.],
+       [   0.,    0.,  -35.]])
+→ array([[ 12., -51.,   4.],
+       [  6., 167., -68.],
+       [ -4.,  24., -41.]])
+'''
+    }
+])
+
 #% page
 
-#%
+#% id=write_file
+
 # Files can be used, but the "filesystem" is just memory in the interpreter
 # In particular, it will be reset every time you restart the interpreter.
 
 with open('poem.txt', 'w') as f:
-  f.write('roses are red')
+    f.write('roses are red')
 
-#%
+#% test id=write_file
+
+pybook.sync_exec(__source['write_file'], state=state)
+with open('poem.txt') as f:
+    pybook.assertEqual(f.read(), 'roses are red')
+
+#% id=read_file
+
 # But file contents do persist between cells
 
 with open('poem.txt') as f:
-  print(f.read())
+    print(f.read())
 
-#%
+#% test id=read_file
+
+pybook.sync_exec(__source['read_file'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'roses are red\n'}
+])
+
+#% id=pybook
+
 # The pybook module is a special module that lets you do more things
 
 import pybook
-pybook.output_text_content('text/plain', 'violets are blue')
+pybook.output_text_content('text/plain', 'violets are blue\n')
 
-#%
+#% test id=pybook
+
+pybook.sync_exec(__source['pybook'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'name': 'stdout', 'text/plain': 'violets are blue\n'}
+])
+
+#% id=html
+
 # The first argument to output_text_content is the content type, which lets you do HTML
 
 import pybook
-pybook.output_text_content('text/html', 'Hearts are <b>wonderful</b>')
+pybook.output_text_content('text/html', 'Hearts are <b>wonderful</b>\n')
+
+#% test id=html
+
+pybook.sync_exec(__source['html'], state=state)
+pybook.assertEqual(pybook.get_outputs(),
+[
+    {'text/html': 'Hearts are <b>wonderful</b>\n'}
+])

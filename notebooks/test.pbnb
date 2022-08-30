@@ -14,7 +14,7 @@ state = pybook.fresh_state()
 None
 4
 
-#% test id=test_intro
+#% test id=intro
 
 pybook.sync_exec(__source['intro'], state=state)
 pybook.assertEqual(pybook.get_outputs(),
@@ -27,7 +27,7 @@ pybook.assertEqual(pybook.get_outputs(),
 # You can also print to stdout, which shows up in the output area.
 print("Hello from PyBook")
 
-#% test id=test_print
+#% test id=print
 
 pybook.sync_exec(__source['print'], state=state)
 pybook.assertEqual(pybook.get_outputs(),
@@ -43,7 +43,7 @@ x = 1
 y = 2
 x, y
 
-#% test id=test_xystate
+#% test id=xystate
 
 pybook.sync_exec(__source['xystate'], state=state)
 pybook.assertEqual(pybook.get_outputs(),
@@ -58,7 +58,7 @@ x += 1
 y += 3
 x, y
 
-#% test id=test_xystate_use
+#% test id=xystate_use
 
 pybook.sync_exec(__source['xystate_use'], state=state)
 pybook.assertEqual(pybook.get_outputs(),
@@ -89,7 +89,7 @@ Enter something here
 
 print(f"You typed {__input}")
 
-#% test id=test_submit1
+#% test id=submit1
 
 pybook.sync_exec(__source['submit1'], user=__cell['submit1']['user'], state=state)
 pybook.assertEqual(pybook.get_outputs(),

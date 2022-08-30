@@ -131,6 +131,8 @@ def parse(text):
                 cell[spl[0]] = spl[1]
             else:
                 cell[spl[0]] = True
+        if cell['cell_type'] == 'test':
+            cell['id'] = f"test_{cell['id']}"
         if cell['id'] in ids:
             raise Exception(f"Identifier is not unique '{cell['id']}'")
         ids.add(cell['id'])
@@ -313,7 +315,7 @@ async def run_tests(notebook, test_page):
     state['__source'] = source
     for cell in test_page:
         cell_src = cell['source']
-        filename = f'test id={cell["id"]}'
+        filename = cell["id"]
         code = compile(cell_src, filename=filename, mode='exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
         sys.stdout.write(f'{filename} ')
         sys.stdout.write('\033[33mRUNNING\033[0m\033[1m\n')

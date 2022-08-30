@@ -33,6 +33,14 @@ def output_stdout(msg):
 def output_stderr(msg):
     _add_output({ 'name': 'stderr', 'text/plain': msg })
 
+def output_text_content(content_type, content_data):
+    if content_type == 'text/html':
+        _add_output({ 'text/html': content_data })
+    elif content_type == 'text/plain':
+        _add_output({ 'name': 'stdout', 'text/plain': content_data })
+    elif content_type == 'image/svg+xml':
+        _add_output({ 'image/svg+xml': content_data })
+
 def input_stdin():
     pass
 
