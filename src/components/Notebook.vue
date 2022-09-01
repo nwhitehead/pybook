@@ -251,7 +251,7 @@ function cellEval (state) {
         } else if (content_type === 'text/plain') {
           addOutput(cell, { name: 'stdout', 'text/plain': msg });
         } else if (content_type === 'image/svg+xml') {
-          addOutput(cell, { name: 'stdout', 'text/svg+xml': msg });
+          addOutput(cell, { 'image/svg+xml': msg });
         }
       },
       onResponse: function () {

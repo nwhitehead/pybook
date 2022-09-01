@@ -29,7 +29,7 @@
   "type": "module",
   "scripts": {
     "build": "node src/build.cjs",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest && pytest -vv src/parser.py",
     "serve": "cd server && go run main.go"
   }
 }

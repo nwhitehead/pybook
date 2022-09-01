@@ -36,25 +36,15 @@ This will create a wheel file that needs to be copied to `lib/pyodide`.
 
 ## Unit Testing
 
-Unit testing requires Jest. The project uses ES6 modules, so you need a recent Node.
+Unit testing requires Jest. The project uses ES6 modules, so you need a recent Node. It also requires PyTest, the local Python must be present and have appropriate packages installed.
 
 Do:
 
     npm install jest --global
 
-To run tests in `src/` do:
+To run tests do:
 
     npm run test
-
-## Rebuild pbexec
-
-There is a Python package `pbexec` that is needed inside Pyodide. To rebuild the module so it can be included, run:
-
-    ./generate_exec.sh
-
-This requires a working copy of EMSDK to be installed and the environment variable `EMSDK` to be pointing to the right location.
-The only tool required is the `file_packager.py` module. There are other ways to install pure Python in Pyodide, this just
-seemed to be easiest to be consistent with other Pyodide packages.
 
 ## Demo
 
