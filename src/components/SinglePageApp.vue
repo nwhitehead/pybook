@@ -57,7 +57,7 @@ async function handleSave () {
         // Get notebook state as standard JS object without reactivity
         const unreactiveState = JSON.parse(JSON.stringify(nbstate));
         try {
-            const res = await axios.post(`/notebook/${id}`, unreactiveState);
+            //const res = await axios.post(`/notebook/${id}`, unreactiveState);
             mutated.value = false;
         }
         finally {
