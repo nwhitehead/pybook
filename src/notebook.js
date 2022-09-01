@@ -160,7 +160,7 @@ export function insertCellBefore (state) {
   let cellIndex = findCell(state, state.page, state.select);
   const cell = newCell();
   nbpage.splice(cellIndex, 0, cell );
-  state.selection = cell.id;
+  state.select = cell.id;
 }
 
 //! Insert new cell after selected cell
@@ -169,7 +169,7 @@ export function insertCellAfter (state) {
   let cellIndex = findCell(state, state.page, state.select);
   const cell = newCell();
   nbpage.splice(cellIndex + 1, 0, cell );
-  state.selection = cell.id;
+  state.select = cell.id;
 }
 
 //! Delete selected cell

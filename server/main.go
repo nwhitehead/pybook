@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"fmt"
+	"os/exec"
+	"path/filepath"
 )
 
 type contents map[string]interface{}
@@ -20,21 +22,9 @@ type notebook struct {
 
 // Unmarshall needs a result area, so wrap this in a function that returns parsed result
 func emptyNotebook() contents {
-	var result contents;
+	var result contents
 	json.Unmarshal([]byte(`{"select":0,"page":0,"cells":[[{"id":0,"source":"","cell_type":"code","language":"python","evalstate":"","outputs":[]}]]}`), &result);
 	return result;	
-}
-
-func getFiles() {
-	files, err := ioutil.ReadDir("../notebooks")
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, file := range files {
-		if !file.IsDir() {
-			fmt.Println(file.Name())
-		}
-	}
 }
 
 // Demo data
@@ -43,9 +33,50 @@ var notebooks = []notebook{
 	{Identifier:"1235", Title:"Test Notebook 2", Author:"Nathan", Contents:emptyNotebook()},
 }
 
+func getFiles() {
+	dir := "../notebooks"
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range files {
+		if !file.IsDir() {
+			fmt.Println(file.Name())
+			name := filepath.Join(dir, file.Name())
+
+			// Run python script to convert ipnb to json format
+			// First lookup python location
+			path, errpath := exec.LookPath("python")
+			if errpath != nil {
+				log.Fatal(errpath)
+			}
+			// Setup command to run
+			cmd := exec.Command(path, "../src/parser.py", "--infile=" + name)
+			out, cmderr := cmd.Output()
+			if cmderr != nil {
+				log.Fatal(cmderr)
+			}
+
+			// Parse JSON output
+			var result contents
+			jsonerr := json.Unmarshal([]byte(out), &result)
+			if jsonerr != nil {
+				log.Fatal(jsonerr)
+			}
+
+			// Store in array
+			notebooks = append(notebooks, notebook{
+				Identifier:file.Name(),
+				Title:file.Name(),
+				Author:"Nathan",
+				Contents:result})
+		}
+	}
+}
+
 // Get single notebook
 func getNotebookByIdentifier(c *gin.Context) {
-	id := c.Param("identifier");
+	id := c.Param("identifier")
 	for _, notebook := range notebooks {
 		if notebook.Identifier == id {
 			c.IndentedJSON(http.StatusOK, notebook)
@@ -60,7 +91,7 @@ func getNotebookByIdentifier(c *gin.Context) {
 
 // Set contents of single notebook
 func setNotebookByIdentifier(c *gin.Context) {
-	id := c.Param("identifier");
+	id := c.Param("identifier")
 	var json contents
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -120,7 +151,7 @@ func middleware() gin.HandlerFunc {
 func main() {
 	getFiles()
     router := gin.Default()
-	router.Use(middleware());
+	router.Use(middleware())
     router.GET("/notebooks", getNotebooks)
     router.GET("/notebook/:identifier", getNotebookByIdentifier)
     router.POST("/notebook/:identifier", setNotebookByIdentifier)

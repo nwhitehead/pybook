@@ -38,7 +38,7 @@
             <Cell
                 :modelValue="computeModelValue(element)"
                 :output="element.outputs"
-                :id="element.id"
+                :id="''+element.id"
                 :type="computeType(element)"
                 :subtype="computeSubtype(element)"
                 :selected="isSelected(element.id)"
@@ -97,11 +97,13 @@ function computeModelValue (content) {
 
 function computeType (content) {
     if (content.cell_type === 'code' && content.language === 'python') return 'python';
+    if (content.cell_type === 'code') return 'python'; // No language code cells are python
     if (content.cell_type === 'markdown') return 'markdown';
     if (content.cell_type === 'checkpoint') return 'checkpoint';
     if (content.cell_type === 'submit' && content.subtype === 'edit') return 'python';
     if (content.cell_type === 'submit' && content.subtype === 'view' && content.language === 'python') return 'python';
     if (content.cell_type === 'submit' && content.subtype === 'view' && content.language === 'text') return 'text';
+    if (content.cell_type === 'submit' && content.subtype === 'view') return 'python'; // Assume submit areas for user are python by default
     throw "Illegal content type";
 }
 

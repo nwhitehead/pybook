@@ -333,7 +333,13 @@ async def main():
     with open(args.infile, 'r') as f_in:
         text = f_in.read()
         parsed = parse(text)
-        out = json.dumps(parsed['pages'], sort_keys=True, indent=4)
+        cells = parsed['pages']
+        try:
+            selection = cells[0][0]['id']
+        except:
+            selection = 0
+        notebook = { 'select': selection, 'page': 0, 'cells': cells}
+        out = json.dumps(notebook, sort_keys=True, indent=4)
         # Test flow
         if args.test:
             test_page = parsed['test_page']

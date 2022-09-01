@@ -58,7 +58,7 @@ async function handleSave () {
         const unreactiveState = JSON.parse(JSON.stringify(nbstate));
         try {
             //const res = await axios.post(`/notebook/${id}`, unreactiveState);
-            mutated.value = false;
+            //mutated.value = false;
         }
         finally {
             identifier.value = id;
@@ -70,6 +70,7 @@ async function handleChooserClick (item) {
     await handleSave();
     const res = await axios.get(`/notebook/${item.identifier}`);
     const newnbstate = res.data.contents;
+    console.log(newnbstate);
     freshId(newnbstate);
     // Setup autosave variables
     identifier.value = item.identifier;
@@ -77,7 +78,7 @@ async function handleChooserClick (item) {
     Object.assign(nbstate, newnbstate);
     // Update mutated last since previous changes will trigger it
     nextTick(() => {
-        mutated.value = false;
+        //mutated.value = false;
     });
 }
 
