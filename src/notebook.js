@@ -85,7 +85,7 @@ export function getPage (state, page) {
 export function findCell (state, page, id) {
   const nbpage = getPage(state, page);
   for (let i = 0; i < nbpage.length; i++) {
-    if (nbpage[i].id === id) {
+    if ('' + nbpage[i].id === '' + id) {
       return i;
     }
   }

@@ -1,7 +1,5 @@
-#% startup
-#% end
-
 #%%
+
 # What's a Closure?
 
 Ever wonder what closures are and how they work?  
@@ -9,7 +7,9 @@ You can learn about this advanced programming concept right now through
 interactive lessons in Python.
 
 Let's get started!
+
 #%%
+
 Here's an example of some Python code. Doesn't it look pretty?
 
     def f(x):
@@ -27,10 +27,17 @@ assigns `x` the value `5`.
 
 Now you try. Write code to assign the variable `y` the value `7`. 
 Click "Submit" when you think you have it.
-#% submit
+
+#% user
+
 y = 
-#% end
+
+#% submit
+
+print(f"You typed {__input}")
 
 #% page
+
 #%%
+
 # Second Page

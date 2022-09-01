@@ -70,7 +70,6 @@ async function handleChooserClick (item) {
     await handleSave();
     const res = await axios.get(`/notebook/${item.identifier}`);
     const newnbstate = res.data.contents;
-    console.log(newnbstate);
     freshId(newnbstate);
     // Setup autosave variables
     identifier.value = item.identifier;

@@ -35,8 +35,6 @@ pybook.assertEqual(pybook.get_outputs(),
 
 #%%
 
-#%%
-
 Internally PyBook uses Pyodide for the Python interpreter.
 
 #% id=versions

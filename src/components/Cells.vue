@@ -90,8 +90,9 @@ function computeModelValue (content) {
     // Submit type cells have two edit areas, the "source" area that will be evaluated when the submit button is clicked,
     // and the "user" area that the user fills out. The source presumably looks at the content of the user area to do things.
     // Users can edit both areas by flipping 'edit'/'view' subtype for the submit.
-    if (content.cell_type === 'submit' && content.subtype === 'view') return content.user;
-    // Handle submit - edit as normal fallthrough
+    if (content.cell_type === 'submit' && content.subtype === 'edit') return content.source;
+    if (content.cell_type === 'submit') return content.user; // In case subtype is not declared default to "view"
+    // Everything else (non-submit) is just source
     return content.source;
 }
 
@@ -104,6 +105,7 @@ function computeType (content) {
     if (content.cell_type === 'submit' && content.subtype === 'view' && content.language === 'python') return 'python';
     if (content.cell_type === 'submit' && content.subtype === 'view' && content.language === 'text') return 'text';
     if (content.cell_type === 'submit' && content.subtype === 'view') return 'python'; // Assume submit areas for user are python by default
+    if (content.cell_type === 'submit') return 'python';
     throw "Illegal content type";
 }
 
@@ -111,14 +113,17 @@ function computeSubtype (content) {
     if (content.cell_type === 'code') return '';
     if (content.cell_type === 'markdown' && content.subtype === 'view') return 'view';
     if (content.cell_type === 'markdown' && content.subtype === 'edit') return 'edit';
+    if (content.cell_type === 'markdown') return 'view';
     if (content.cell_type === 'checkpoint' && content.subtype === 'save') return 'save';
     if (content.cell_type === 'checkpoint' && content.subtype === 'use') return 'use';
     if (content.cell_type === 'submit' && content.subtype === 'view') return 'view';
     if (content.cell_type === 'submit' && content.subtype === 'edit') return 'edit';
+    if (content.cell_type === 'submit') return 'view';
     throw "Illegal content subtype";
 }
-function isSelected (index) {
-    return index === props.select;
+
+function isSelected (id) {
+    return '' + id === '' + props.select;
 }
 
 function isHidden (content) {
