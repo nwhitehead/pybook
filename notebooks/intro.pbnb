@@ -5,7 +5,6 @@ import pybook
 state = pybook.fresh_state()
 
 #%%
-
 # Introduction to PyBook
 
 Welcome to *PyBook*!

@@ -29,20 +29,20 @@ func getFile(filename string, displayName string) {
 	// First lookup python location
 	path, errpath := exec.LookPath("python")
 	if errpath != nil {
-		log.Fatal(errpath)
+		log.Println(errpath)
 	}
 	// Setup command to run
 	cmd := exec.Command(path, "../src/parser.py", "--infile=" + filename)
 	out, cmderr := cmd.Output()
 	if cmderr != nil {
-		log.Fatal(cmderr)
+		log.Println(cmderr)
 	}
 
 	// Parse JSON output
 	var result contents
 	jsonerr := json.Unmarshal([]byte(out), &result)
 	if jsonerr != nil {
-		log.Fatal(jsonerr)
+		log.Println(jsonerr)
 	}
 
 	// Store in array
@@ -57,7 +57,7 @@ func getFile(filename string, displayName string) {
 func getFiles(dir string) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	for _, file := range files {
 		if !file.IsDir() {
@@ -149,7 +149,7 @@ func main() {
 	dir := "../notebooks"
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal("NewWatcher failed: ", err)
+		log.Println("fsnotify NewWatcher failed: ", err)
 	}
 	defer watcher.Close()
 
@@ -158,13 +158,17 @@ func main() {
 		defer close(done)
 
 		for {
-			log.Printf("Hi\n")
 			select {
 			case event, ok := <-watcher.Events:
 				if !ok {
 					return
 				}
-				log.Printf("%s %s\n", event.Name, event.Op)
+				if event.Op == fsnotify.Write {
+					log.Printf("Updating notebook file %s\n", event.Name)
+					filename := event.Name
+					base := filepath.Base(event.Name)
+					getFile(filename, base)
+				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
 					return
@@ -176,7 +180,7 @@ func main() {
 	}()
 	err = watcher.Add(dir)
 	if err != nil {
-		log.Fatal("Add failed:", err)
+		log.Println("fsnotify add failed:", err)
 	}
 	getFiles(dir)
     router := gin.Default()
