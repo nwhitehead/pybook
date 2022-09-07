@@ -1,12 +1,13 @@
 package main
 
 import (
-    "net/http"
-    "github.com/gin-gonic/gin"
 	"encoding/json"
+	"fmt"
+	"github.com/fsnotify/fsnotify"
+    "github.com/gin-gonic/gin"
 	"io/ioutil"
 	"log"
-	"fmt"
+    "net/http"
 	"os/exec"
 	"path/filepath"
 )
@@ -20,18 +21,40 @@ type notebook struct {
 	Contents contents `json:"contents"`
 }
 
-// Unmarshall needs a result area, so wrap this in a function that returns parsed result
-func emptyNotebook() contents {
+// Notebook data
+var notebooks = map[string]notebook{}
+
+func getFile(filename string, displayName string) {
+	// Run python script to convert ipnb to json format
+	// First lookup python location
+	path, errpath := exec.LookPath("python")
+	if errpath != nil {
+		log.Fatal(errpath)
+	}
+	// Setup command to run
+	cmd := exec.Command(path, "../src/parser.py", "--infile=" + filename)
+	out, cmderr := cmd.Output()
+	if cmderr != nil {
+		log.Fatal(cmderr)
+	}
+
+	// Parse JSON output
 	var result contents
-	json.Unmarshal([]byte(`{"select":0,"page":0,"cells":[[{"id":0,"source":"","cell_type":"code","language":"python","evalstate":"","outputs":[]}]]}`), &result);
-	return result;	
+	jsonerr := json.Unmarshal([]byte(out), &result)
+	if jsonerr != nil {
+		log.Fatal(jsonerr)
+	}
+
+	// Store in array
+	notebooks[filename] = notebook{
+		Identifier:displayName,
+		Title:displayName,
+		Author:"Nathan",
+		Contents:result}
+
 }
 
-// Demo data
-var notebooks = []notebook{}
-
-func getFiles() {
-	dir := "../notebooks"
+func getFiles(dir string) {
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		log.Fatal(err)
@@ -40,33 +63,7 @@ func getFiles() {
 		if !file.IsDir() {
 			fmt.Println(file.Name())
 			name := filepath.Join(dir, file.Name())
-
-			// Run python script to convert ipnb to json format
-			// First lookup python location
-			path, errpath := exec.LookPath("python")
-			if errpath != nil {
-				log.Fatal(errpath)
-			}
-			// Setup command to run
-			cmd := exec.Command(path, "../src/parser.py", "--infile=" + name)
-			out, cmderr := cmd.Output()
-			if cmderr != nil {
-				log.Fatal(cmderr)
-			}
-
-			// Parse JSON output
-			var result contents
-			jsonerr := json.Unmarshal([]byte(out), &result)
-			if jsonerr != nil {
-				log.Fatal(jsonerr)
-			}
-
-			// Store in array
-			notebooks = append(notebooks, notebook{
-				Identifier:file.Name(),
-				Title:file.Name(),
-				Author:"Nathan",
-				Contents:result})
+			getFile(name, file.Name())
 		}
 	}
 }
@@ -97,9 +94,12 @@ func setNotebookByIdentifier(c *gin.Context) {
 		})
 		return
 	}
-	for index, notebook := range notebooks {
+	for key, notebook := range notebooks {
 		if notebook.Identifier == id {
-			notebooks[index].Contents = json;
+			if entry, ok := notebooks[key]; ok {
+				entry.Contents = json
+				notebooks[key] = entry
+			}
 			c.IndentedJSON(http.StatusOK, gin.H{
 				"message": "Notebook updated",
 				"identifier": id,
@@ -146,7 +146,39 @@ func middleware() gin.HandlerFunc {
 }
 
 func main() {
-	getFiles()
+	dir := "../notebooks"
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal("NewWatcher failed: ", err)
+	}
+	defer watcher.Close()
+
+	done := make(chan bool)
+	go func() {
+		defer close(done)
+
+		for {
+			log.Printf("Hi\n")
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				log.Printf("%s %s\n", event.Name, event.Op)
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Println("error:", err)
+			}
+		}
+
+	}()
+	err = watcher.Add(dir)
+	if err != nil {
+		log.Fatal("Add failed:", err)
+	}
+	getFiles(dir)
     router := gin.Default()
 	router.Use(middleware())
     router.GET("/notebooks", getNotebooks)
@@ -154,4 +186,5 @@ func main() {
     router.POST("/notebook/:identifier", setNotebookByIdentifier)
 	router.Static("/static", "../")
 	router.Run("localhost:8080")
+	<-done
 }
