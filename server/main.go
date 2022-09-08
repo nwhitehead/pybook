@@ -21,6 +21,14 @@ type notebook struct {
 	Contents contents `json:"contents"`
 }
 
+func errorContents(msg string) contents {
+	var result contents
+	str := fmt.Sprintf(`{"select":0,"page":0,"cells":[[{"id":0,"source":"# Error\n","cell_type":"markdown","outputs":[]}]]}`)
+	json.Unmarshal([]byte(str), &result)
+	result["cells"].([]interface{})[0].([]interface{})[0].(map[string]interface{})["source"] = "# Parse Error\n```" + msg + "```"
+	return result
+}
+
 // Notebook data
 var notebooks = map[string]notebook{}
 
@@ -29,13 +37,21 @@ func getFile(filename string, displayName string) {
 	// First lookup python location
 	path, errpath := exec.LookPath("python")
 	if errpath != nil {
-		log.Println(errpath)
+		log.Println("Error with looking up path for python:", errpath)
 	}
 	// Setup command to run
 	cmd := exec.Command(path, "../src/parser.py", "--infile=" + filename)
-	out, cmderr := cmd.Output()
+	out, cmderr := cmd.CombinedOutput()
 	if cmderr != nil {
-		log.Println(cmderr)
+		log.Println("Error with running command:", cmderr)
+		log.Println("Output of script was:", string(out[:]))
+		// Put error notebook for that identifier
+		notebooks[filename] = notebook{
+			Identifier:displayName,
+			Title:displayName,
+			Author:"Nathan",
+			Contents:errorContents(string(out[:]))}
+		return
 	}
 
 	// Parse JSON output
@@ -161,6 +177,7 @@ func main() {
 			select {
 			case event, ok := <-watcher.Events:
 				if !ok {
+					log.Println("Error getting event from watcher")
 					return
 				}
 				if event.Op == fsnotify.Write {
@@ -171,6 +188,7 @@ func main() {
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
+					log.Println("Error getting watcher error")
 					return
 				}
 				log.Println("error:", err)

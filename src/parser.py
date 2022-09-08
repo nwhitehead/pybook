@@ -92,7 +92,7 @@ def test_parse_special_delimiter_line():
     assert parse_special_delimiter_line(r'#% md') == { 'type': 'markdown', 'options': []}
     assert parse_special_delimiter_line(r'#% hidden auto') == { 'type': 'code', 'options': ['hidden', 'auto']}
 
-def parse(text):
+def parse(text, filename='<notebook>'):
     ''' Given PyBook format text described in FileSpec.md, return dictionary object representing JSON notebook and test page '''
     # Strategy is to accumulate lines into latest item, and items into latest page, etc.
     idnum = 1
@@ -165,29 +165,33 @@ def parse(text):
         page = []
 
     lines = split_by_lines(text)
-    for line in lines:
-        if is_special_delimiter(line):
-            delim = parse_special_delimiter_line(line)
-            if delim['type'] == 'markdown':
-                finish_item()
-                current_type = delim['type']
-                current_options = delim['options']
-            elif delim['type'] == 'code' or delim['type'] == 'submit' or delim['type'] == 'user':
-                finish_item()
-                current_type = delim['type']
-                current_options = delim['options']
-            elif delim['type'] == 'page':
-                finish_page()
-            elif delim['type'] == 'end':
-                finish_item()
-            elif delim['type'] == 'test':
-                finish_item()
-                current_type = delim['type']
-                current_options = delim['options']
+    for linenum, line in enumerate(lines):
+        try:
+            if is_special_delimiter(line):
+                delim = parse_special_delimiter_line(line)
+                if delim['type'] == 'markdown':
+                    finish_item()
+                    current_type = delim['type']
+                    current_options = delim['options']
+                elif delim['type'] == 'code' or delim['type'] == 'submit' or delim['type'] == 'user':
+                    finish_item()
+                    current_type = delim['type']
+                    current_options = delim['options']
+                elif delim['type'] == 'page':
+                    finish_page()
+                elif delim['type'] == 'end':
+                    finish_item()
+                elif delim['type'] == 'test':
+                    finish_item()
+                    current_type = delim['type']
+                    current_options = delim['options']
+                else:
+                    raise Exception('Unexpected delimiter: ' + delim['type'])
             else:
-                raise Exception('Unexpected delimiter: ' + delim['type'])
-        else:
-            item.append(line)
+                item.append(line)
+        except Exception as e:
+            raise Exception(f'{filename}:{linenum + 1} Error parsing line {linenum + 1}') from e
+
     finish_page()
     return {'pages':pages, 'test_page':test_page}
 
@@ -332,7 +336,7 @@ async def main():
     args = argparser.parse_args()
     with open(args.infile, 'r') as f_in:
         text = f_in.read()
-        parsed = parse(text)
+        parsed = parse(text, filename=args.infile)
         cells = parsed['pages']
         try:
             selection = cells[0][0]['id']
