@@ -86,38 +86,21 @@ It would be nice to not have to evaluate starting from the beginning every time 
 the state at that point (between cells) in memory. If you invalidate a green bar after the checkpoint, the green is invalidated
 back to the checkpoint but no further back. This lets you try alternatives after doing annoying load / preprocess steps.
 
-For implementation, need to expand Pyodide functionality a bit. Normally there is just one interpreter state. That is ok
-with checkpoints, need to work on pyexec.run_cell function to allow arbitrary state as input.
+For implementation, states are kept at Python dictionaries and passed as the globals/locals arguments to the exec commands used
+when evaluating cells. The main difficulty is that states often need to be duplicated to support changing them and keeping a copy of
+the original state. This requires care since the main Python globals dictionary has all types of objects that may or may not support
+copying.
 
-### Choice point
+### Using checkpoints
 
-What about history? Might want to keep previous runs, but also try new things. Enter the idea of "choice point". A choice point
-is a checkpoint that contains more than 1 alternate continuation. The alternates are stacks of cells that appear after the choice
-point. So a normal checkpoint is a choice point with 1 alternate (the normal cells that come after the checkpoint in the notebook).
+Cells can be "checkpoints" with a name, and then either a "save" or a "use" of that checkpoint. The idea is that you do a bunch of
+commands, then do a "save" checkpoint. Then you can "use" that checkpoint again and again. You can also "use" the old checkpoint,
+do some commands, then "save" a new checkpoint.
 
-Turning a checkpoint into a choice point is an action. The default action is to copy all the cells in the existing notebook after
-the choice point into a duplicate alternate. Of course they will be invalidated, evaluation will be at the choice point. Then you
-can edit values and re-evaluate to see what happens. Clicking the choice point swaps between all available alternates in the
-choice point.
-
-Important point: what happens to choice points below a choice point when a new alternate is added at the top? Some possibilities:
-
-1) The cells below the upper choice point are copied into a new alternate of the upper choice point. Choice points below the upper
-choice point are ignored. Cells chosen below the lower choice point are from the currently selected alternate at that point.
-
-2) Cells below the upper choice point are copied into the new alternate of the upper choice point. Choice points below the upper
-choice point are copied but flattened to only have one alternate, the currently selected alternate at that point.
-
-3) Everything below the upper choice point is copied into the new alternate of the upper choice point. Choice points and all
-alternates are copied into the new alternate of the upper choice point.
-
-Choice (3) is somewhat logical, but leads to an exponential explosion of alternates. It's also not clear if the alternates make
-sense once the history getting there is altered. This might be a special command.
-
-Of the shallow copies, I think (2) makes more sense. That keeps the fact there was a checkpoint there, which probably does make
-sense. It's easy to delete a choice point, it's harder to add one at the right spot (requires remembering where it was).
-
-Implementing choice points is mostly a UI issue once arbitrary states are supported in interpreter.
+By default, each page of a notebook is a fresh state. That makes the most sense to me since visually each page starts at the top and
+you can't see what was on earlier pages. If you want to keep state between pages, you do a "save" checkpoint at the end of page and
+then a "use" checkpoint at the start of new pages. This allows things like setting up support functions and tests, then reusing
+them for different problems without too much interference between exercises.
 
 ### State explorer
 
@@ -126,9 +109,6 @@ indicated. But the state itself could have a window where you can explore values
 have a "query" that is a custom command that user can set to show values of interest. Can involve code execution (helper functions etc.)
 but the results of the query function do not affect the state (original state is unmodified). Default query function dumps local
 state using pretty printer.
-
-Can also just show list of names of checkpoint states, that would be useful in itself. Make it easy to start a new page based on
-an existing saved state.
 
 ## Implementation Notes
 
@@ -209,6 +189,14 @@ Maybe also need to store in state some type of hash of the cell that was last ev
 at the previous cell that supposedly was evaluated most recently, and verify that the hash of that cell is indeed the one in the state. Hash could
 include source and cell position in notebook.
 
+For keeping things consistent, we can keep an array of commands used for each state. Then we can look through the notebook to find all "save" checkpoints
+and all live ends of evaluations, and double check that the actual Python state history there matches the recorded array of commands that is
+supposed to have been used.
+
+### Chaining
+
+Each cell has "evalstate" which can be "" (unevaluated), "working", or "evaluated".
+
 ## Student Thoughts
 
 Some features useful for interactive tutorials and quizzes:
@@ -220,10 +208,5 @@ Some features useful for interactive tutorials and quizzes:
 
 # What I'm Working On
 
-Refactoring from one big HTML with JS in it, with Vue components defined inline, to actual separated out components in different files.
+Getting linear evaluation working.
 
-Big HTML file is: src/pybook.html
-Components go in: src/components
-JavaScript functions go in: src/
-
-Writing tests for everything.

@@ -92,6 +92,7 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
             traceback.print_exception(exc_type, exc_value, exc_tb.tb_next.tb_next)
         if propagate_exception:
             raise err
+        return
     if func is not None:
         # Replace all expressions with calls to __expr_callback to process values
         statements = node.body

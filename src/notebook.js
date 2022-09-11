@@ -96,7 +96,7 @@ export function findCell (state, page, id) {
 //! Cell may be modified directly after return
 export function getCell (state, page, id) {
   const nbpage = getPage(state, page);
-  const cellIndex = findCell (state, page, id);
+  const cellIndex = findCell(state, page, id);
   return nbpage[cellIndex];
 }
 
@@ -338,4 +338,16 @@ export function pageNext (state) {
     state.page += 1;
     selectFirst(state);
   }
+}
+
+//! Invalidate cell evalstate (and any following cells on the page that depend on it)
+export function invalidateCell (page, cellIndex) {
+
+}
+
+//! Invalidate state at selected cell (and any following that depend on it)
+export function invalidateSelection (state) {
+  const nbpage = getPage(state, state.page);
+  let cellIndex = findCell(state, state.page, state.select);
+  invalidateCell(nbpage, cellIndex);
 }

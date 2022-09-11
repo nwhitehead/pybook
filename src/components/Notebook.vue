@@ -129,7 +129,7 @@ let status = ref('Initializing');
 let command = ref(false);
 // Actual notebook state
 let state = props.modelValue;
-
+// This event bus is for communicating with the console
 const customBus = mitt();
 
 function handleUpdateModelCellValue (newValue) {
