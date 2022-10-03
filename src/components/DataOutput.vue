@@ -122,7 +122,8 @@ function isSVG (value) {
 
 function dataURI (value) {
     // btoa is a builtin web API function converting bytes to base64 encoded values
-    return 'data:image/svg+xml;base64,' + btoa(value);
+    // Need to encodeURI then unescape to workaround characters outside latin1 range
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(value)));
 }
 
 </script>
