@@ -62,14 +62,12 @@ async function configure(config) {
         output_stderr: function(data) {
             postMessage({ type:'stderr', data:data });
         },
-        output_text_content: function(content_type, content_data) {
-            postMessage({ type:'output', subtype:'text', content_type:content_type, data:content_data });
-        },
-        output_binary_content: function(content_type, content_data) {
-            // Caller in Python needs to do:
-            //     import pyodide
-            //     output_binary_content('image/png', pyodide.to_js(b'...'))
-            postMessage({ type:'output', subtype:'binary', content_type:content_type, data:content_data });
+        output_content: function(content_type, content_data) {
+            if (typeof(content_data) === 'string') {
+                postMessage({ type:'output', subtype:'text', content_type:content_type, data:content_data });
+            } else {
+                postMessage({ type:'output', subtype:'binary', content_type:content_type, data:content_data.toJs() });
+            }
         },
         input_stdin: function() {
             return inputGet();

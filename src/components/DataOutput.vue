@@ -32,7 +32,8 @@
         <div v-if="isHtml(value)" :class="getClass(value)">
             <div class="content" v-html="htmlMarkdown" ref="htmlContent" />
         </div>
-        <img v-if="isSVG(value)" :src="dataURI(value['image/svg+xml'])" />
+        <img v-if="isSVG(value)" :src="dataURI('image/svg+xml', value)" />
+        <img v-if="isPNG(value)" :src="dataURI('image/png', value)" />
     </div>
 </template>
 
@@ -65,10 +66,16 @@ const convert = new Convert();
 const htmlContent = ref(null);
 const props = defineProps(['value']);
 const htmlMarkdown = computed(() => {
-    return DOMPurify.sanitize(props.value['text/html']);
+    if (props.value['text/html']) {
+        return DOMPurify.sanitize(props.value['text/html']);
+    }
+    return '';
 });
 const preContent = computed(() => {
-    return DOMPurify.sanitize(convert.toHtml(escapeHtml(props.value['text/plain'])));
+    if (props.value['text/plain']) {
+        return DOMPurify.sanitize(convert.toHtml(escapeHtml(props.value['text/plain'])));
+    }
+    return '';
 });
 
 function escapeHtml (unsafe) {
@@ -102,6 +109,7 @@ function getClass (value) {
     }
     if (isHtml(value)) return 'html';
     if (isSVG(value)) return 'svg';
+    if (isPNG(value)) return 'png';
     return 'stdout';
 }
 
@@ -120,10 +128,67 @@ function isSVG (value) {
     return value['image/svg+xml'] !== undefined;
 }
 
-function dataURI (value) {
-    // btoa is a builtin web API function converting bytes to base64 encoded values
-    // Need to encodeURI then unescape to workaround characters outside latin1 range
-    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(value)));
+function isPNG (value) {
+    if (value === undefined) return false;
+    return value['image/png'] !== undefined;
+}
+
+
+// Following 2 functions from:
+// https://developer.mozilla.org/en-US/docs/Glossary/Base64#Solution_.232_.E2.80.93_rewriting_atob%28%29_and_btoa%28%29_using_TypedArrays_and_UTF-8
+
+/* Base64 string to array encoding */
+function uint6ToB64(nUint6) {
+  return nUint6 < 26
+    ? nUint6 + 65
+    : nUint6 < 52
+    ? nUint6 + 71
+    : nUint6 < 62
+    ? nUint6 - 4
+    : nUint6 === 62
+    ? 43
+    : nUint6 === 63
+    ? 47
+    : 65;
+}
+
+function base64EncArr(aBytes) {
+  let nMod3 = 2;
+  let sB64Enc = "";
+
+  const nLen = aBytes.length;
+  let nUint24 = 0;
+  for (let nIdx = 0; nIdx < nLen; nIdx++) {
+    nMod3 = nIdx % 3;
+    if (nIdx > 0 && ((nIdx * 4) / 3) % 76 === 0) {
+      sB64Enc += "\r\n";
+    }
+
+    nUint24 |= aBytes[nIdx] << ((16 >>> nMod3) & 24);
+    if (nMod3 === 2 || aBytes.length - nIdx === 1) {
+      sB64Enc += String.fromCodePoint(
+        uint6ToB64((nUint24 >>> 18) & 63),
+        uint6ToB64((nUint24 >>> 12) & 63),
+        uint6ToB64((nUint24 >>> 6) & 63),
+        uint6ToB64(nUint24 & 63)
+      );
+      nUint24 = 0;
+    }
+  }
+  return (
+    sB64Enc.substr(0, sB64Enc.length - 2 + nMod3) +
+    (nMod3 === 2 ? "" : nMod3 === 1 ? "=" : "==")
+  );
+}
+
+function dataURI (type, value, textmode) {
+    // Would just use btoa for everything, but this function doesn't work in JavaScript
+    // Need to encodeURI then unescape to workaround characters outside latin1 range for text mode
+    if (textmode) {
+        return 'data:' + type + ';base64,' + btoa(unescape(encodeURIComponent(value[type])));
+    }
+    // Binary mode has Uint8Array coming in
+    return 'data:' + type + ';base64,' + base64EncArr(value[type]);
 }
 
 </script>

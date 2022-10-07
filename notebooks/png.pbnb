@@ -1,0 +1,21 @@
+#%
+
+import micropip
+await micropip.install('pypng')
+import png
+
+width = 100
+height = 100
+img = []
+for y in range(height):
+    row = ()
+    for x in range(width):
+        row = row + (255, 0, 0)
+    img.append(row)
+with open('test.png', 'wb') as f:
+    w = png.Writer(width, height, greyscale=False)
+    w.write(f, img)
+
+import pybook
+data = open('test.png', 'rb').read()
+pybook.output_content('image/png', data)
