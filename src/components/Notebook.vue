@@ -253,7 +253,9 @@ function cellEval (state) {
                 } else if (content_type === 'image/svg+xml') {
                     addOutput(cell, { 'image/svg+xml': msg });
                 } else if (content_type === 'image/png') {
-                    addOutput(cell, { 'image/png': msg })
+                    addOutput(cell, { 'image/png': msg });
+                } else if (content_type === 'audio/wav') {
+                    addOutput(cell, { 'audio/wav': msg });
                 }
             },
             onResponse: function () {

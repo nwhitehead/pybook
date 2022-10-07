@@ -34,6 +34,7 @@
         </div>
         <img v-if="isSVG(value)" :src="dataURI('image/svg+xml', value)" />
         <img v-if="isPNG(value)" :src="dataURI('image/png', value)" />
+        <audio v-if="isWAV(value)" controls autoplay :src="dataURI('audio/wav', value)" />
     </div>
 </template>
 
@@ -131,6 +132,11 @@ function isSVG (value) {
 function isPNG (value) {
     if (value === undefined) return false;
     return value['image/png'] !== undefined;
+}
+
+function isWAV (value) {
+    if (value === undefined) return false;
+    return value['audio/wav'] !== undefined;
 }
 
 
