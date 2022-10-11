@@ -59,11 +59,11 @@ To run tests do:
     ax.plot([1, 2, 3, 4], [1, 4, 2, 3])
     plt.savefig('test.svg')
     with open('test.svg') as f:
-        pybook.output_text_content('image/svg+xml', f.read())
+        pybook.output_content('image/svg+xml', f.read())
 
 ## Versions
 
-Pyodide
+Pyodide XXX
 
 ## Ideas
 
@@ -205,8 +205,30 @@ Some features useful for interactive tutorials and quizzes:
 * Pages of notebook can be individual "problems" with explanation and questions. Nice to have some sort of "scoring" between pages outside of eval state.
 * Nice to have notebook pages that are skipped by default, but can be shown if requested by clicking on button for help.
 
+# Rust Server
+
+To make notebooks useful, there needs to be a backend server. I tried to work on some audio demos. If every change is auto-saved to a file on disk,
+it is annoying to not have a "canonical" version. If changes are not saved, I lose work. I have to copy changes to the source file in a separate
+editor, loses the "experimental" nature of notebooks.
+
+What is really needed is a version controlled backend. You click a notebook, it shows it. You make local changes, they are saved permanently but
+are not tagged as the canonical version of the notebook. When you load you can click the canonical version, or old versions, or the latest version.
+
+After thinking about versioning and files, I think the right solution is to:
+* Keep a hash of notebook text files (source of truth)
+* Database keeps track of users, documents, and the array of hashes for versions of the document (with timestamps, audits of who has access to change etc.)
+* A separate service maps hash values to contents for publishing the notebook
+* Content server has public instance and logged in instance. Public instance for published notebooks, logged in instance requires login and checks permissions.
+
+The separate hash service allows serving published notebooks, even if there are problems with user authentication or the database server is down or whatever.
+The content server can be agressively cached, sharded, etc. to deal with web traffic.
+
+For initial implementation, there is just one rust program that does all serving. Use single file sqlite database for keeping track of users,
+hashes of content, history of hashes for reversions, permissions. Actual files for content, with filenames based on hashes.
 
 # What I'm Working On
 
 Getting linear evaluation working.
+
+Rust server for CRUD and versioning of notebook data.
 

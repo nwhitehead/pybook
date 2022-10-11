@@ -4,3 +4,4 @@ build/
 .vscode
 lib/pyodide/
 pylib/dist/
+rustserver/target/
