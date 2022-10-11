@@ -1,27 +1,29 @@
 
-#[macro_use] extern crate rocket;
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 
-use rocket::http::{Header, ContentType};
-
-#[derive(Responder)]
-#[response()]
-struct JavaScriptApplication {
-    text: &'static str
+#[get("/")]
+async fn hello() -> impl Responder {
+    HttpResponse::Ok().body("Hello world!")
 }
 
-#[rocket::get("/")]
-fn index() -> JavaScriptApplication {
-    JavaScriptApplication { text: "Hello, world!\n" }
+#[post("/echo")]
+async fn echo(req_body: String) -> impl Responder {
+    HttpResponse::Ok().body(req_body)
 }
 
-struct Wrapping<R>(R);
+async fn manual_hello() -> impl Responder {
+    HttpResponse::Ok().body("Hey there!")
+}
 
-// struct JavaScriptFile(&'static str);
-
-// impl rocket::response::Responder for JavaScriptFile {}
-
-#[rocket::launch]
-fn rocket() -> _ {
-    rocket::build().mount("/", rocket::routes![index])
-        .mount("/static", rocket::fs::FileServer::from(".."))
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .service(hello)
+            .service(echo)
+            .route("/hey", web::get().to(manual_hello))
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }
