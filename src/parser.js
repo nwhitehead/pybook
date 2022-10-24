@@ -5,7 +5,7 @@
 //!
 
 //! Split a long text string into array of lines
-function splitByLines(txt) {
+export function splitByLines(txt) {
     // Remove single trailing newline if exists
     if (txt.length > 0 && txt.slice(-1) === '\n') {
         txt = txt.slice(0, txt.length - 1);
@@ -14,7 +14,7 @@ function splitByLines(txt) {
 }
 
 //! Determine if a line starts with special "#%" marks
-function isSpecialDelimiter(txt) {
+export function isSpecialDelimiter(txt) {
     if (txt.length < 2) {
         return false;
     }
@@ -51,6 +51,9 @@ export function parseSpecialDelimiterLine(txt) {
         'md': 'markdown',
         'page': 'page',
         'end': 'end',
+        'submit': 'submit',
+        'user': 'user',
+        'test': 'test',
     };
     Object.entries(types).forEach(([k, v]) => {
         if (options.includes(k)) {
@@ -58,11 +61,26 @@ export function parseSpecialDelimiterLine(txt) {
             type = v;
         }
     });
+    const legal_options = ['hidden', 'noexec', 'auto', 'nooutput', 'readonly', 'startup'];
+    const legal_key_options = ['id', 'language'];
+    for (let i = 0; i < options.length; i++) {
+        const option = options[i];
+        const spl = option.split('=');
+        if (spl.length === 2) {
+            if (!legal_key_options.includes(spl[0])) {
+                throw new Error(`Illegal key option ${option}`);
+            }
+        } else {
+            if (!legal_options.includes(option)) {
+                throw new Error(`Illegal option ${option}`);
+            }
+        }
+    }
     return { type, options };
 }
 
-//! Given PyBook format text described in FileSpec.md, return JS Notebook object
-export function parse(text) {
+//! Given PyBook format text described in FileSpec.md, return JS Notebook object for array of all pages
+export function parsePages(text) {
     // Strategy is to accumulate lines into latest item, and items into latest page, etc.
     let pages = []; // Array of pages
     let page = []; // Array of items
@@ -139,6 +157,20 @@ export function parse(text) {
     return pages;
 }
 
+//! Given PyBook format text described in FileSpec.md, return JS Notebook object for entire notebook
+export function parseNotebook(text) {
+    const pages = parsePages(text);
+    return {
+        select: pages[0][0].id,
+        page: 0,
+        cells: pages,
+    }
+}
+
+export function parse(text) {
+    return parseNotebook(text);
+}
+
 function unparseCell(cell) {
     let open = '#%%';
     let options = [];
@@ -164,13 +196,21 @@ function unparseCell(cell) {
 function unparsePage(page) {
     const cells = page;
     const cellsTxt = cells.map(unparseCell);
-    return cellsTxt.join('')
+    return cellsTxt.join('');
 }
 
-//! Given PyBook notebook object, return string in FileSpec.md format
-export function unparse(data) {
+//! Given PyBook notebook array of pages, return string in FileSpec.md format
+export function unparsePages(data) {
     // Currently ignores output
     const pages = data;
     const pagesTxt = pages.map(unparsePage);
-    return pagesTxt.join('#% page\n')
+    return pagesTxt.join('#% page\n');
+}
+
+export function unparseNotebook(data) {
+    return unparsePages(data.cells);
+}
+
+export function unparse(data) {
+    return unparseNotebook(data);
 }

@@ -16,6 +16,7 @@ import Notebook from "./Notebook.vue";
 import Chooser from "./Chooser.vue";
 import { blankState } from "../notebook.js";
 import { freshId } from "../fresh.js";
+import { parse } from "../parser.js";
 import axios from 'axios';
 
 onMounted(async () => {
@@ -69,7 +70,9 @@ async function handleSave () {
 async function handleChooserClick (item) {
     await handleSave();
     const res = await axios.get(`/notebook/${item.identifier}`);
-    const newnbstate = res.data.contents;
+    console.log('Got new nb with source: ', res.data.contents);
+    const newnbstate = parse(res.data.contents);
+    console.log('Parsed is: ', newnbstate);
     freshId(newnbstate);
     // Setup autosave variables
     identifier.value = item.identifier;
