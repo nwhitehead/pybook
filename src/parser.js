@@ -27,11 +27,7 @@ export function parseSpecialDelimiterLine(txt) {
     if (!isSpecialDelimiter(txt)) {
         return null;
     }
-    const parts = txt.split(' ');
-    // Remove empty parts from multiple spaces in a row
-    parts.filter(function(el) {
-        return el !== "";
-    });
+    const parts = txt.split(' ').filter((el) => el !== '');
     const options = parts.slice(1);
     const delim = parts[0];
     let type = '';
@@ -80,13 +76,20 @@ export function parseSpecialDelimiterLine(txt) {
 }
 
 //! Given PyBook format text described in FileSpec.md, return JS Notebook object for array of all pages
-export function parsePages(text) {
+export function parsePages(text, filename) {
+    if (filename === undefined) {
+        filename = '<notebook>';
+    }
     // Strategy is to accumulate lines into latest item, and items into latest page, etc.
     let pages = []; // Array of pages
     let page = []; // Array of items
+    let test_page = [];
     let item = []; // Array of lines
     let currentType = 'start'; // Assume we start in unknown type
     let currentOptions = [];
+    let idnum = 1;
+    let ids = {};
+
     function finishItem() {
         if (currentType === 'start') {
             // Ignore things before first delim
@@ -99,16 +102,45 @@ export function parsePages(text) {
             item = [];
             return; // No item to finish
         }
-        const itemStr = item.join('\n');
-        let metadata = {};
+        // trim off newlines at start and end
+        const itemStr = item.join('\n').replace(/^\s+|\s+$/g, '');
+        let cell = { id:idnum, cell_type:currentType, source:itemStr, outputs:[] };
         for (let j = 0; j < currentOptions.length; j++) {
-            metadata[currentOptions[j]] = true;
+            const option = currentOptions[j];
+            const spl = option.split('=');
+            if (spl.length === 2) {
+                cell[spl[0]] = spl[1];
+            } else {
+                cell[option] = true;
+            }
         }
-        let cell = { cell_type:currentType, metadata, source:itemStr, outputs:[] };
-        if (currentType === 'markdown') {
-            cell.metadata.subtype = 'view';
+        if (cell['cell_type'] === 'test') {
+            cell['id'] = `test_${cell['id']}`
         }
-        page.push(cell);
+        if (ids[cell['id']]) {
+            throw new Error(`Identifier is not unique ${cell['id']}`);
+        }
+        ids[cell['id']] = true;
+        idnum += 1
+        if (currentType == 'markdown' && cell['subtype'] === undefined) {
+            cell['subtype'] = 'view';
+        }
+        if (cell['cell_type'] === 'submit') {
+            cell['user'] = '';
+            if (page.length > 0) {
+                const last = page[page.length - 1];
+                if (last['cell_type'] === 'user') {
+                    cell['user'] = last['source'];
+                    cell['id'] = last['id'];
+                    page.pop();
+                }
+            }
+        }
+        if (cell['cell_type'] == 'test') {
+            test_page.push(cell);
+        } else {
+            page.push(cell);
+        }
         item = [];
         currentType = '';
         currentOptions = [];
@@ -122,35 +154,27 @@ export function parsePages(text) {
         page = [];
     }
     const lines = splitByLines(text);
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        if (isSpecialDelimiter(line)) {
-            const delim = parseSpecialDelimiterLine(line);
-            const matches = {
-                'markdown': () => {
+    for (let linenum = 0; linenum < lines.length; linenum++) {
+        const line = lines[linenum];
+        try {
+            if (isSpecialDelimiter(line)) {
+                const delim = parseSpecialDelimiterLine(line);
+                if (delim.type === 'markdown' || delim.type === 'code' || delim.type === 'submit' || delim.type === 'user' || delim.type === 'test') {
                     finishItem();
                     currentType = delim.type;
                     currentOptions = delim.options;
-                },
-                'code': () => {
-                    finishItem();
-                    currentType = delim.type;
-                    currentOptions = delim.options;
-                },
-                'page': () => {
+                } else if (delim.type === 'page') {
                     finishPage();
-                },
-                'end': () => {
+                } else if (delim.type === 'end') {
                     finishItem();
-                },
-            };
-            if (matches[delim.type] !== undefined) {
-                matches[delim.type]();
+                } else {
+                    throw new Error(`Unexpected delimiter type ${delim.type}`);
+                }
             } else {
-                throw new Error('Unexpected delimiter: ' + delim.type);
+                item.push(line);
             }
-        } else {
-            item.push(line);
+        } catch (error) {
+            throw new Error(`${filename}:${linenum + 1} Error parsing line ${linenum + 1}\n${error}`);
         }
     }
     finishPage();
@@ -172,37 +196,32 @@ export function parse(text) {
 }
 
 function unparseCell(cell) {
-    let open = '#%%';
-    let options = [];
-    if (cell.cell_type === 'code') {
-        open = '#%';
-    }
-    if (cell.metadata.hidden) {
+    let options = [ '' ]; // This will generate leading space when joined
+    if (cell.hidden) {
         options.push('hidden');
     }
-    if (cell.metadata.startup) {
+    if (cell.startup) {
         options.push('startup');
     }
-    if (cell.metadata.submit) {
-        options.push('submit');
+    const optiontxt = options.join(' ');
+    if (cell['cell_type'] === 'markdown') {
+        return `#%%${optiontxt}\n${cell['source']}\n`;
+    } else if (cell['cell_type'] === 'code') {
+        return `#%${optiontxt}\n${cell['source']}\n`;
+    } else if (cell['cell_type'] === 'submit') {
+        return `#% user${optiontxt}\n${cell['user']}\n#% submit ${optiontxt}\n${cell['source']}\n`;
     }
-    for (let i = 0; i < options.length; i++) {
-        open += ' ' + options[i];
-    }
-    const contents = cell.source;
-    return open + '\n' + contents + '\n';
+    throw new Error(`Unknown cell type ${cell['cell_type']}`);
 }
 
-function unparsePage(page) {
-    const cells = page;
+function unparsePage(cells) {
     const cellsTxt = cells.map(unparseCell);
     return cellsTxt.join('');
 }
 
 //! Given PyBook notebook array of pages, return string in FileSpec.md format
-export function unparsePages(data) {
+export function unparsePages(pages) {
     // Currently ignores output
-    const pages = data;
     const pagesTxt = pages.map(unparsePage);
     return pagesTxt.join('#% page\n');
 }

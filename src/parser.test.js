@@ -47,15 +47,25 @@ test('parser1', () => {
 print(42)
 `;
     const res = parsePages(tst);
-    expect(res.length).toBe(1);
-    expect(res[0].length).toBe(2);
-    expect(res[0][0].cell_type).toBe('markdown');
-    expect(res[0][0].metadata).toStrictEqual({hidden:true, subtype:'view'});
-    expect(res[0][0].source).toBe('# Headline');
-    expect(res[0][1].cell_type).toBe('code');
-    expect(res[0][1].metadata).toStrictEqual({});
-    expect(res[0][1].source).toBe('print(42)');
-    expect(unparse(parse(tst))).toBe(tst);
+    expect(parsePages(tst)).toStrictEqual(
+        [[
+            {
+                'id': 1,
+                'cell_type': 'markdown',
+                'hidden': true,
+                'subtype': 'view',
+                'source': '# Headline',
+                'outputs': [],
+            },
+            {
+                'id': 2,
+                'cell_type': 'code',
+                'source': 'print(42)',
+                'outputs': [],
+            },
+        ]]
+    );
+    expect(unparse(parse(tst))).toStrictEqual(tst);
     expect(parse(unparse(parse(tst)))).toStrictEqual(parse(tst));
 });
 
@@ -77,21 +87,39 @@ hello
 #% submit
 # hi
 `;
-    // const res = parsePages(tst);
-    // expect(res.length).toBe(2);
-    // expect(res[0].length).toBe(2);
-    // expect(res[0][0].cell_type).toBe('markdown');
-    // expect(res[0][0].metadata).toStrictEqual({subtype:'view'});
-    // expect(res[0][0].source).toBe('# Title\nmore');
-    // expect(res[0][1].cell_type).toBe('code');
-    // expect(res[0][1].metadata).toStrictEqual({startup:true});
-    // expect(res[0][1].source).toBe('print(42)');
-    // expect(res[1].length).toBe(2);
-    // expect(res[1][0].cell_type).toBe('markdown');
-    // expect(res[1][0].metadata).toStrictEqual({subtype:'view'});
-    // expect(res[1][0].source).toBe('hello');
-    // expect(res[1][1].cell_type).toBe('code');
-    // expect(res[1][1].metadata).toStrictEqual({submit:true});
-    // expect(res[1][1].source).toBe('# hi');
-    // expect(parse(unparse(parse(tst)))).toStrictEqual(parse(tst));
+    expect(parsePages(tst)).toStrictEqual(
+    [
+        [
+            {
+                'id': 1,
+                'cell_type': 'markdown',
+                'subtype': 'view',
+                'source': '# Title\nmore',
+                'outputs': [],
+            },
+            {
+                'id': 2,
+                'cell_type': 'code',
+                'startup': true,
+                'source': 'print(42)',
+                'outputs': [],
+            },
+        ], [
+            {
+                'id': 3,
+                'cell_type': 'markdown',
+                'subtype': 'view',
+                'source': 'hello',
+                'outputs': [],
+            },
+            {
+                'id': 4,
+                'cell_type': 'submit',
+                'source': '# hi',
+                'user': '',
+                'outputs': [],
+            },
+        ]
+    ]);
+    expect(parse(unparse(parse(tst)))).toStrictEqual(parse(tst));
 });
