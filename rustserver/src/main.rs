@@ -43,9 +43,12 @@ async fn notebook(data: web::Data<std::sync::Mutex<Database>>, path: web::Path<i
     web::Json(full_notebook_entry)
 }
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
+#[post("/notebook/{identifier}")]
+async fn notebook_update(data: web::Data<std::sync::Mutex<Database>>, path: web::Path<i64>, req_body: String) -> impl Responder {
+    let db = data.lock().unwrap();
+    let identifier = path.into_inner();
+    db.set_notebook(identifier, req_body).unwrap();
+    HttpResponse::Ok()
 }
 
 impl Database {
@@ -104,7 +107,7 @@ impl Database {
             result.push(NotebookEntry{identifier, name, version});
         }
         result.sort_by(|a, b| a.name.cmp(&b.name));
-        return Ok(result)/* Err(CustomError {}) */
+        return Ok(result);
     }
 
     fn get_notebook(&self, id: i64) -> Result<FullNotebookEntry, CustomError> {
@@ -121,7 +124,22 @@ impl Database {
             let current = stmt.read::<String>(3).unwrap();
             return Ok(FullNotebookEntry{identifier, name, version, contents:current});
         }
-        return Err(CustomError {})
+        return Err(CustomError {});
+    }
+
+    fn set_notebook(&self, id: i64, contents: String) -> Result<(), CustomError> {
+        let connection = &self.connection;
+        let mut stmt = connection.prepare(
+            "UPDATE documents SET current = ?2 WHERE id = ?1"
+        ).unwrap()
+        .bind(1, id)
+        .unwrap()
+        .bind(2, contents.as_str())
+        .unwrap();
+        if stmt.next().unwrap() == sqlite::State::Done {
+            return Ok({});
+        }
+        return Err(CustomError {});
     }
 }
 
@@ -141,6 +159,7 @@ async fn main() -> std::io::Result<()> {
             .service(fs::Files::new("/static", "..", ))
             .service(notebooks)
             .service(notebook)
+            .service(notebook_update)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
