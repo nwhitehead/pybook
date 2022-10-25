@@ -12,16 +12,13 @@
 <script setup>
 
 import { onMounted, reactive, ref, watch, nextTick, onBeforeMount, onBeforeUnmount } from "vue";
-import Notebook from "./Notebook.vue";
-import Chooser from "./Chooser.vue";
-import { blankState } from "../notebook.js";
-import { freshId } from "../fresh.js";
-import { parse, unparse } from "../parser.js";
-import axios from "axios";
+import Notebook from './Notebook.vue';
+import Chooser from './Chooser.vue';
+import { blankState } from '../notebook.js';
+import { get_notebooks, get_notebook, set_notebook } from '../storage.js';
 
 onMounted(async () => {
-    const res = await axios.get(`/notebooks`);
-    choices.value = res.data;
+    choices.value = await get_notebooks();
 });
 
 let choices = ref([]);
@@ -52,35 +49,30 @@ onBeforeUnmount(() => {
 
 async function handleSave () {
     if (identifier.value !== null && mutated.value) {
-        const id = identifier.value;
+        const item = identifier.value;
         // Prevent nested saves while waiting for this save to finish
         identifier.value = null;
-        // Get notebook state as standard JS object without reactivity
-        const unreactiveState = JSON.parse(JSON.stringify(nbstate));
-        // Convert from JSON format to PBNB format with unparse
-        const unparsed = unparse(unreactiveState);
         try {
-            const res = await axios.post(`/notebook/${id}`, unparsed);
+            await set_notebook(item, nbstate);
             mutated.value = false;
         }
         finally {
-            identifier.value = id;
+            identifier.value = item;
         }
     }
 }
 
 async function handleChooserClick (item) {
+    // Try to save any existing changes to previously chosen notebook we are replacing as needed
     await handleSave();
-    const res = await axios.get(`/notebook/${item.identifier}`);
-    const newnbstate = parse(res.data.contents);
-    freshId(newnbstate);
+    const newnbstate = await get_notebook(item);
     // Setup autosave variables
-    identifier.value = item.identifier;
+    identifier.value = item;
     // Assign all fields of nbstate (can't just use = to assign because it will lose the reactivity)
     Object.assign(nbstate, newnbstate);
     // Update mutated last since previous changes will trigger it
     nextTick(() => {
-        //mutated.value = false;
+        mutated.value = false;
     });
 }
 
