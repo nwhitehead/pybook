@@ -11,3 +11,14 @@ require('esbuild').build({
         "process.env.NODE_ENV": JSON.stringify("development"),
     },
 });
+
+require('esbuild').build({
+    entryPoints: ['src/worker.js'],
+    bundle: true,
+    outfile: 'build/worker.js',
+    sourcemap: true,
+    plugins: [vuePlugin()],
+    define: {
+        "process.env.NODE_ENV": JSON.stringify("development"),
+    },
+});

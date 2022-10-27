@@ -1,0 +1,22 @@
+- hosts: all
+  vars:
+    server_name: "{{ ansible_default_ipv4.address }}"
+    document_root: /var/www/app
+  tasks:
+    - name: Synchronize static library files
+      synchronize:
+        src: lib/
+        dest: /var/www/app/lib
+    - name: Synchronize build files
+      synchronize:
+        src: build/
+        dest: /var/www/app/build
+    - name: Synchronize root files
+      synchronize:
+        src: approot/
+        dest: /var/www/app
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

@@ -1,0 +1,15 @@
+- hosts: all
+  vars:
+    acme_email: nwhitehe@gmail.com
+  tasks:
+    - name: Make sure snap installed
+      shell: |
+        apt remove certbot
+        snap install core
+        snap refresh core
+        snap install --classic certbot
+        ln -s -f /snap/bin/certbot /usr/bin/certbot
+
+    - name: Get certs
+      shell: |
+        certbot --nginx --redirect -n -d {{ inventory_hostname }} -d www.{{ inventory_hostname }} -m {{ acme_email }} --agree-tos
