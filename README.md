@@ -232,3 +232,11 @@ Getting linear evaluation working.
 
 Rust server for CRUD and versioning of notebook data.
 
+# Deployment
+
+Deploy to server using Ansible. Setup host in `/etc/ansible/hosts`. Update `acme_email` in the `server_letsencrypt.yml` file
+to get reminders about renewing SSL certificates. I'm using Vultr for server. Once Ansible is installed and you can ping your
+server via ansible, then run the playbook `server_setup.yml` to setup nginx. Run `server_deploy.yml` to sync over files
+for the website. This uses `rsync` so should just sync changes. Pyodide in `/lib` is the biggest part of the transfer, should
+not change with PyBook development. Then do the playbook `server_letsencrypt.yml` to setup the SSL certificate. This is required
+for the various headers needed for WASM serving with SharedArrayBuffer enabled.

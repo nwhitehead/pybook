@@ -6,10 +6,14 @@ server {
 
     root {{ document_root }};
 
-    index index.html index.nginx-debian.html;
+    index index.html;
 
     add_header Cross-Origin-Embedder-Policy 'require-corp' always;
     add_header Cross-Origin-Opener-Policy 'same-origin' always;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080/;
+    }
 
     location / {
         # Get default MIME types

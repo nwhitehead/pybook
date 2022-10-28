@@ -3,6 +3,18 @@
     server_name: "{{ inventory_hostname }}"
     document_root: /var/www/app
   tasks:
+    - name: Create app directory
+      file:
+        path: /app
+        state: directory
+    - name: Create rust service
+      copy:
+        src: pybook-rustserver.service
+        dest: /etc/systemd/system/pybook-rustserver.service
+    - name: Enable PyBook rust service
+      service:
+        name: pybook-rustserver.service
+        enabled: yes
     - name: Ensure Nginx is at the latest version
       apt: name=nginx state=latest
     - name: Start Nginx

@@ -21,7 +21,7 @@ export async function set_local_notebooks(notebooks) {
 }
 
 async function get_server_notebooks() {
-    const res = await axios.get(`/notebooks`);
+    const res = await axios.get(`/api/notebooks`);
     let results = res.data;
     // From server, results is now [ { identifier, name } ]
     // Convert to [ { identifier, name, title, location } ]
@@ -44,7 +44,7 @@ export async function get_notebooks() {
 // info is entry from get_notebooks with same fields { identifier, name, title, location }
 export async function get_notebook(item) {
     if (item.location === 'server') {
-        const res = await axios.get(`/notebook/${item.identifier}`);
+        const res = await axios.get(`/api/notebook/${item.identifier}`);
         const newnbstate = parse(res.data.contents);
         // Make sure new cells added to this notebook don't ever overlap existing cells
         freshId(newnbstate);
@@ -62,7 +62,7 @@ export async function set_notebook(item, state) {
         // FIXME
         // Currently disable saving to server, let front-end copy server notebooks to make changes
         return false;
-        // await axios.post(`/notebook/${id}`, unparsed);
+        // await axios.post(`/api/notebook/${id}`, unparsed);
         // return true;
     }
     if (item.location === 'local') {

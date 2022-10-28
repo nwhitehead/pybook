@@ -1,0 +1,16 @@
+[Unit]
+Description=PyBook backend service for keeping track of notebooks
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/app/pybook-rustserver
+WorkingDirectory=/app
+Restart=always
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=%n

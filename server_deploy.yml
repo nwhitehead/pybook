@@ -15,8 +15,15 @@
       synchronize:
         src: approot/
         dest: /var/www/app
-  handlers:
-    - name: Restart Nginx
+    - name: Synchronize executable files
+      synchronize:
+        src: rustserver/target/release/pybook-rustserver
+        dest: /app/pybook-rustserver
+    - name: Synchronize demo notebooks
+      synchronize:
+        src: notebooks/
+        dest: /app/notebooks
+    - name: Restart rust server
       service:
-        name: nginx
+        name: pybook-rustserver
         state: restarted

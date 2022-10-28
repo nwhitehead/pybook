@@ -3,8 +3,8 @@ use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Respo
 use actix_files as fs;
 use serde::{Serialize};
 
-const DB_FILENAME : &'static str = "../build/pybookdb.sql";
-const NOTEBOOK_DIR : &'static str = "../notebooks";
+const DB_FILENAME : &'static str = "./pybookdb.sql";
+const NOTEBOOK_DIR : &'static str = "./notebooks";
 
 struct Database {
     connection : sqlite::Connection,
