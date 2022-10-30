@@ -2,7 +2,6 @@
 import SinglePageApp from './components/SinglePageApp.vue';
 import VueCodemirror from 'vue-codemirror';
 import { createApp } from 'vue';
-import axios from 'axios';
 import { marked } from 'marked';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism.css';

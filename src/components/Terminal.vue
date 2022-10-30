@@ -1,3 +1,10 @@
+//!
+//! Terminal
+//!
+//! A Vue component representing a text terminal. The terminal keeps track of it's own state. To communicate with the
+//! terminal you set up an event bus and set it to the property 'eventBus'.
+//!
+
 <template>
     <div ref="terminal"></div>
 </template>

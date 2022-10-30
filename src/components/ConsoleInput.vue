@@ -1,19 +1,15 @@
 //!
 //! CellInput
 //!
-//! This is a Vue component that represents a cell input area. It is built using CodeMirror. The cell can have
-//! syntax highlighting for Python or Markdown.
-//!
-//! With multiple cells in a notebook, normal situation is that one CellInput has canFocus true, other have false.
-//! In command mode everything has canFocus set to false.
+//! This is a Vue component that represents a multiline console input area. It is built using CodeMirror. The cell can have
+//! syntax highlighting for Python (optional).
 //!
 //! Props:
 //! - modelValue - This is the main text contents inside the cell input.
-//! - id - This is set by creator
 //! - options - This is a dict of options related to the editor
 //!     indent - Number of spaces per indent level (default 4)
 //!     readonly - True if the editor should be readonly (default false)
-//!     type - Can be "python" or "markdown" (undefined will be generic text editor)
+//!     type - Can be "python" or undefined (generic text editor)
 //!     lineNumbers - Set to true to get line numbers (default false)
 //!     highlightLine - Set to true to get horizontal line highlight (default false)
 //!     folding - Set to true to allow folding of subsections (default false)
@@ -30,7 +26,7 @@
 //!
 
 <template>
-  <div :class="{ cellinput:true, python:isPython, markdown:isMarkdown }">
+  <div :class="{ consoleinput:true, python:isPython }">
     <codemirror
       v-model="modelValue"
       :style="{ maxHeight: '600px' }"
@@ -46,10 +42,10 @@
 </template>
 
 <style>
-div.cellinput {
+div.consoleinput {
     height: auto;
     width: 100%;
-    background-color: #f6f6f6;
+    background-color: #f6faff;
     padding: 5px 8px 5px 10px;
     margin: 10px 0 10px 0;
     border: 1px solid #f0f4ff;
@@ -57,32 +53,25 @@ div.cellinput {
     height: auto;
     z-index: 0;
 }
-div.cellinput.python {
-    background-color: #f6faff;
-}
-div.cellinput.markdown {
-    background-color: #fffaf6;
-}
 .cm-editor.cm-focused { outline: none !important }
 </style>
 
 <script setup>
 
-import { computed, ref, watch, nextTick } from "vue";
-import { Codemirror } from "vue-codemirror";
-import { python } from "@codemirror/lang-python";
-import { markdown } from "@codemirror/lang-markdown";
+import { computed, ref, watch, nextTick } from 'vue';
+import { Codemirror } from 'vue-codemirror';
+import { python } from '@codemirror/lang-python';
 import { keymap, highlightSpecialChars, drawSelection, highlightActiveLine, dropCursor,
         rectangularSelection, crosshairCursor,
-        lineNumbers, highlightActiveLineGutter } from "@codemirror/view"
-import { EditorState } from "@codemirror/state"
+        lineNumbers, highlightActiveLineGutter } from '@codemirror/view';
+import { EditorState } from '@codemirror/state';
 import { defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatching,
-        foldGutter, foldKeymap } from "@codemirror/language"
-import { defaultKeymap, history, historyKeymap } from "@codemirror/commands"
-import { searchKeymap, highlightSelectionMatches } from "@codemirror/search"
-import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete"
+        foldGutter, foldKeymap } from '@codemirror/language';
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
+import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
-const props = defineProps([ 'modelValue', 'id', 'options' ]);
+const props = defineProps([ 'modelValue', 'options' ]);
 const emit = defineEmits([ 'update:modelValue' ]);
 
 let cmElement = ref(null);
@@ -172,9 +161,6 @@ const extensions = computed(() => {
   if (opts.type === 'python') {
     ext.push(python());
   }
-  if (opts.type === 'markdown') {
-    ext.push(markdown());
-  }
   // For single line mode, filter out any transaction that increases lines past 1
   if (opts.singleLine) {
     ext.push(EditorState.transactionFilter.of(tr => tr.newDoc.lines > 1 ? [] : tr));
@@ -185,11 +171,6 @@ const extensions = computed(() => {
 const isPython = computed(() => {
   const opts = props.options ? props.options : {};
   return opts.type === 'python';
-});
-
-const isMarkdown = computed(() => {
-  const opts = props.options ? props.options : {};
-  return opts.type === 'markdown';
 });
 
 const disabled = computed(() => {
