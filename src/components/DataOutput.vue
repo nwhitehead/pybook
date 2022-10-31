@@ -74,7 +74,8 @@ const htmlMarkdown = computed(() => {
 });
 const preContent = computed(() => {
     if (props.value['text/plain']) {
-        return DOMPurify.sanitize(convert.toHtml(escapeHtml(props.value['text/plain'])));
+        let result = DOMPurify.sanitize(convert.toHtml(escapeHtml(props.value['text/plain'])));
+        return result.endsWith('\n') ? result + '\n' : result;
     }
     return '';
 });

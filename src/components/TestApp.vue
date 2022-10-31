@@ -5,18 +5,22 @@
 //!
 
 <template>
-    <div class="consoleoutputholder" ref="holder">
-        <ConsoleOutput :values="outputs" />
+    <div class="testappholder">
+        <div class="consoleoutputholder" ref="holder">
+            <ConsoleOutput :values="outputs" />
+        </div>
+        <div class="consoleinputholder">
+            <ConsoleInput v-model="entry" :options="options" @evaluate="clickEvaluate()" />
+        </div>
+        <button class="button" @click="clickEvaluate()"><span>Evaluate</span></button>
     </div>
-    <div class="consoleinputholder">
-        <ConsoleInput v-model="entry" :options="options" @evaluate="clickEvaluate()" />
-    </div>
-    <button class="button" @click="clickEvaluate()"><span>Evaluate</span></button>
 </template>
 
 <style>
+div.testappholder {
+    background-color: #eee;
+}
 div.consoleoutputholder {
-    background-color:#eee;
     min-height: 60px;
     max-height: 600px;
     overflow: auto;
@@ -61,11 +65,17 @@ function addOutput (out) {
   nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
 }
 
+onMounted(() => {
+    addOutput({
+        name: 'stdout',
+        'text/plain': 'Loading Python from Pyodide\n',
+    });
+});
+
 const options = computed(() => {
     return {
         type:'python',
         ready: status.value === 'Ready',
-        readOnly: status.value !== 'Ready',
     };
 });
 

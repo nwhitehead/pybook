@@ -48,18 +48,12 @@
 div.consoleinput {
     height: auto;
     width: 100%;
-    /* background-color: #f6f6f6; */
     padding: 5px 8px 5px 10px;
     margin: 10px 0 10px 0;
-    border: 1px solid #f0f4ff;
-    border-radius: 4px;
     height: auto;
     z-index: 0;
 }
 .cm-editor.cm-focused { outline: none !important }
-div.consoleinput.ready {
-    /* background-color: #f6faff; */
-}
 </style>
 
 <script setup>
