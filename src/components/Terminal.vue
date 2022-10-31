@@ -11,7 +11,7 @@
 
 <script setup>
 
-import { reactive, ref, watch, onMounted } from "vue";
+import { reactive, ref, watch, onMounted } from 'vue';
 import { Terminal } from 'xterm';
 import { Prompt } from '../prompt.js';
 

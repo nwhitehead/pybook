@@ -28,7 +28,6 @@
 
 import { reactive, ref, watch, onMounted } from 'vue';
 import { Terminal } from 'xterm';
-import mitt from 'mitt';
 
 const props = defineProps([ 'eventBus' ]);
 

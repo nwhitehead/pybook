@@ -21,6 +21,7 @@
 //!
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
+//! - evaluate - Emitted when user requests text to be evaluated/passed as input
 //!
 //! NOTE: This component requires clearing the VueCodemirror global extensions.
 //!
@@ -37,6 +38,7 @@
       :disabled="disabled"
       ref="cmElement"
       @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
+      @keydown.enter.ctrl.exact.prevent="$emit('evaluate', modelValue);"
     />
   </div>
 </template>
@@ -72,7 +74,7 @@ import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
 const props = defineProps([ 'modelValue', 'options' ]);
-const emit = defineEmits([ 'update:modelValue' ]);
+const emit = defineEmits([ 'update:modelValue', 'evaluate' ]);
 
 let cmElement = ref(null);
 
