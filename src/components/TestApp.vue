@@ -46,7 +46,8 @@ import { signalMap,
                  isBusy,
                  isStarting, setStarting,
                  setInterrupt, clearInterrupt,
-                 inputPut
+                 inputPut,
+                 isInputWaiting
              } from '../signal.js';
 
 const holder = ref(null);
@@ -118,8 +119,24 @@ function fancy_indent(txt, first_prefix, prefix) {
 function clickEvaluate() {
     const src = entry.value;
     entry.value = '';
+    if (isInputWaiting()) {
+        // Convert string from CodeMirror into byte array
+        // Use UTF-8 since CodeMirror might have advanced unicode characters
+        const utf8Encoder = new TextEncoder();
+        const bytes = utf8Encoder.encode(src);
+        // Send bytes one by one using inputPut
+        // Receiver will handle flipping isInputWaiting flag as appropriate
+        for (let i = 0; i < bytes.length; i++) {
+            inputPut(bytes[i]);
+        }
+        // Empty input needs to be distinguished from EOF (like pressing Ctrl-D)
+        if (bytes.length === 0) {
+            inputPut(10);
+        }
+        inputPut(0);
+        return;
+    }
     if (status.value === 'Initializing' || status.value === 'Working') {
-        console.log('Python is not ready yet');
         entry.value = src;
         return;
     }
