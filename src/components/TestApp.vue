@@ -10,7 +10,10 @@
             <ConsoleOutput :values="outputs" />
         </div>
         <div class="consoleinputholder">
-            <ConsoleInput v-model="entry" :options="options" @evaluate="clickEvaluate()" />
+            <ConsoleInput v-model="entry" :options="options"
+                @evaluate="clickEvaluate()"
+                @interrupt="interrupt()"
+            />
         </div>
         <button class="button" @click="clickEvaluate()"><span>Evaluate</span></button>
     </div>
@@ -145,16 +148,20 @@ function clickEvaluate() {
             addOutput(item);
         },
         onResponse: function () {
-            // Check that status was previously working in case there was an interrupt
+            addOutput({
+                name: 'stdout',
+                'text/plain': prompt,
+            });
             if (status.value === 'Working') {
                 status.value = 'Ready';
-                addOutput({
-                    name: 'stdout',
-                    'text/plain': prompt,
-                });
             }
         }
     });
+}
+
+function interrupt() {
+    status.value = 'Interrupt';
+    setInterrupt();
 }
 
 </script>

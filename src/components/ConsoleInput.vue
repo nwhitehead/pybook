@@ -39,7 +39,8 @@
       :disabled="disabled"
       ref="cmElement"
       @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
-      @keydown.enter.ctrl.exact.prevent="$emit('evaluate', modelValue);"
+      @keydown.enter.ctrl.exact.prevent="$emit('evaluate');"
+      @keydown.c.ctrl.exact.prevent="$emit('interrupt');"
     />
   </div>
 </template>
@@ -72,7 +73,7 @@ import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
 const props = defineProps([ 'modelValue', 'options' ]);
-const emit = defineEmits([ 'update:modelValue', 'evaluate' ]);
+const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt' ]);
 
 let cmElement = ref(null);
 
