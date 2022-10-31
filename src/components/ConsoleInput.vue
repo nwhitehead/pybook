@@ -18,6 +18,7 @@
 //!     highlightSelectionMatches - Show matching selections (default false)
 //!     singleLine - Force editor to only allow single line of input (default false)
 //!     canFocus - Allow input area to be focused by user (default true)
+//!     ready - Is state ready for submitting input (default true)
 //!
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
@@ -27,7 +28,7 @@
 //!
 
 <template>
-  <div :class="{ consoleinput:true, python:isPython }">
+  <div :class="{ consoleinput:true, python:isPython, ready:isReady }">
     <codemirror
       v-model="modelValue"
       :style="{ maxHeight: '600px' }"
@@ -47,7 +48,7 @@
 div.consoleinput {
     height: auto;
     width: 100%;
-    background-color: #f6faff;
+    background-color: #f6f6f6;
     padding: 5px 8px 5px 10px;
     margin: 10px 0 10px 0;
     border: 1px solid #f0f4ff;
@@ -56,6 +57,9 @@ div.consoleinput {
     z-index: 0;
 }
 .cm-editor.cm-focused { outline: none !important }
+div.consoleinput.ready {
+    background-color: #f6faff;
+}
 </style>
 
 <script setup>
@@ -183,6 +187,11 @@ const disabled = computed(() => {
 const indent = computed(() => {
   const opts = props.options ? props.options : {};
   return opts.indent ? opts.indent : 4; // default to 4 if none set
+});
+
+const isReady = computed(() => {
+    const opts = props.options ? props.options : {};
+    return opts.ready;
 });
 
 watch(disabled, (newValue, oldValue) => {
