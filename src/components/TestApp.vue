@@ -42,6 +42,10 @@ import { signalMap,
                  inputPut
              } from '../signal.js';
 
+import Prism from 'prismjs';
+import 'prismjs/themes/prism.css';
+import 'prismjs/components/prism-python.js';
+
 const holder = ref(null);
 
 let entry = ref('');
@@ -115,6 +119,9 @@ function clickEvaluate() {
         name: 'stdout',
         'text/plain': fancy_indent(src, '', '... ') + '\n',
     });
+    // addOutput({
+    //     'text/html': '<pre><code>' + Prism.highlight(src, Prism.languages.python, 'python') + '</code></pre>',
+    // });
     python.evaluate(src, normalstate, {
         onStdout: function (msg) {
             addOutput({

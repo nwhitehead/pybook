@@ -2,6 +2,25 @@
 import App from './components/TestApp.vue';
 import VueCodemirror from 'vue-codemirror';
 import { createApp } from 'vue';
+import { marked } from 'marked';
+import Prism from 'prismjs';
+import 'prismjs/themes/prism.css';
+import 'prismjs/components/prism-python.js';
+
+marked.setOptions({
+    highlight: (code, lang) => {
+        if (Prism.languages[lang]) {
+            return Prism.highlight(code, Prism.languages[lang], lang);
+        } else {
+            return code;
+        }
+    },
+    gfm: true,
+    breaks: false,
+    sanitize: false,
+    smartLists: true,
+    smartypants: true,
+});
 
 const app = createApp(App);
 app.use(VueCodemirror, {
