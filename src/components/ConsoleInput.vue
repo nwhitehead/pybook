@@ -76,7 +76,7 @@ import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
 const props = defineProps([ 'modelValue', 'options' ]);
-const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext' ]);
+const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext', 'multiline' ]);
 
 //! Function to call when up key pressed
 //! Check if moving off the top of editor, if so do historyPrevious
@@ -86,7 +86,9 @@ function up(editorView) {
     const info = state.doc.lineAt(selection);
     if (info.number === 1) {
         emit('historyPrevious');
+        return true;
     }
+    return false;
 }
 
 //! Function to call when down key pressed
@@ -98,10 +100,28 @@ function down(editorView) {
     const maxlines = state.doc.lines;
     if (info.number === maxlines) {
         emit('historyNext');
+        return true;
     }
+    return false;
 }
 
 let cmElement = ref(null);
+
+function enterMultiline() {
+    emit('multiline');
+}
+
+//! Function to call when Enter is pressed
+//! If we are in multiline mode, pass through as normal
+//! If we are in single line mode, this is equivalent to evaluate (Ctrl-Enter)
+function enter(editorView) {
+    const lines = props.modelValue.split('\n').length;
+    if (lines <= 1) {
+        emit('evaluate');
+        return true;
+    }
+    return false;
+}
 
 function nop(target) {
     return true;
@@ -110,6 +130,8 @@ function nop(target) {
 const blankKeymap = [
     { key:'ArrowUp', run: up },
     { key:'ArrowDown', run: down },
+    { key:'Ctrl-m', run: enterMultiline },
+    { key:'Enter', run: enter },
     { key:'Ctrl-ArrowUp', run: nop },
     { key:'Ctrl-ArrowDown', run: nop },
     { key:'Ctrl-ArrowLeft', run: nop },

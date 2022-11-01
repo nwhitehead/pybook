@@ -19,6 +19,7 @@
                     @clear="clear()"
                     @historyPrevious="historyPrevious()"
                     @historyNext="historyNext()"
+                    @multiline="multiline()"
                 />
             </div>
         </div>
@@ -26,11 +27,13 @@
     <div class="content">
         <p>Quick controls:</p>
         <ul>
-            <li>Ctrl-Enter to evaluate</li>
+            <li>Enter to evaluate</li>
             <li>Ctrl-C to interrupt</li>
             <li>Ctrl-L to clear output</li>
             <li>Up for previous history</li>
             <li>Down for next history</li>
+            <li>Ctrl-M to enter multiline editing</li>
+            <li>Ctrl-Enter to evaluate multiline entry</li>
         </ul>
     </div>
 </template>
@@ -75,7 +78,7 @@ div.iconholder {
 	}
 
 	50% {
-		color: #888;
+		color: #88888800;
 	}
 
 	100% {
@@ -237,6 +240,14 @@ function historyNext() {
         } else {
             entry.value = history[historyPosition];
         }
+    }
+}
+
+//! Make input entry multiline for multiline editing
+function multiline() {
+    const lines = entry.value.split('\n').length;
+    if (lines <= 1) {
+        entry.value = entry.value + '\n';
     }
 }
 
