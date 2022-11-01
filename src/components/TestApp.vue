@@ -265,6 +265,10 @@ function clickEvaluate() {
         }
         inputPut(0);
         historyRegister(src);
+        addOutput({
+            name: 'stdout',
+            'text/plain': src + '\n',
+        });
         return;
     }
     if (status.value === 'Initializing' || status.value === 'Working') {
