@@ -17,6 +17,8 @@
                     @evaluate="clickEvaluate()"
                     @interrupt="interrupt()"
                     @clear="clear()"
+                    @historyPrevious="historyPrevious()"
+                    @historyNext="historyNext()"
                 />
             </div>
         </div>
@@ -27,6 +29,8 @@
             <li>Ctrl-Enter to evaluate</li>
             <li>Ctrl-C to interrupt</li>
             <li>Ctrl-L to clear output</li>
+            <li>Up for previous history</li>
+            <li>Down for next history</li>
         </ul>
     </div>
 </template>
@@ -208,6 +212,39 @@ function fancy_indent(txt, first_prefix, prefix) {
     return result.join('\n');
 }
 
+// Keep track of history
+let history = [];
+let historyPosition = 0;
+// Keep track of temporary currentEntry when scrolling through history
+let historySavedCurrent = '';
+
+function historyPrevious() {
+    if (historyPosition > 0 && history.length > 0) {
+        if (historyPosition === history.length) {
+            // save current entry
+            historySavedCurrent = entry.value;
+        }
+        historyPosition--;
+        entry.value = history[historyPosition];
+    }
+}
+
+function historyNext() {
+    if (historyPosition < history.length) {
+        historyPosition++;
+        if (historyPosition === history.length) {
+            entry.value = historySavedCurrent;
+        } else {
+            entry.value = history[historyPosition];
+        }
+    }
+}
+
+function historyRegister(entry) {
+    history.push(entry);
+    historyPosition = history.length;
+}
+
 function clickEvaluate() {
     const src = entry.value;
     entry.value = '';
@@ -227,13 +264,16 @@ function clickEvaluate() {
             inputPut(10);
         }
         inputPut(0);
+        historyRegister(src);
         return;
     }
     if (status.value === 'Initializing' || status.value === 'Working') {
         entry.value = src;
+        // Don't register any history, not submitted
         return;
     }
     status.value = 'Working';
+    historyRegister(src);
     addOutput({
         name: 'stdout',
         'text/plain': fancy_indent(src, '', '... ') + '\n',

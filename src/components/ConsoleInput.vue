@@ -42,6 +42,8 @@
       @keydown.enter.ctrl.exact.prevent="$emit('evaluate');"
       @keydown.c.ctrl.exact.prevent="$emit('interrupt');"
       @keydown.l.ctrl.exact.prevent="$emit('clear');"
+      @keydown.up.ctrl.exact.prevent="$emit('historyPrevious');"
+      @keydown.down.ctrl.exact.prevent="$emit('historyNext');"
     />
   </div>
 </template>
@@ -74,26 +76,51 @@ import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
 const props = defineProps([ 'modelValue', 'options' ]);
-const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear' ]);
+const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext' ]);
+
+//! Function to call when up key pressed
+//! Check if moving off the top of editor, if so do historyPrevious
+function up(editorView) {
+    const state = editorView.viewState.state;
+    const selection = editorView.viewState.state.selection.ranges[0].from;
+    const info = state.doc.lineAt(selection);
+    if (info.number === 1) {
+        emit('historyPrevious');
+    }
+}
+
+//! Function to call when down key pressed
+//! Check if moving off the bottom of editor, if so do historyNext
+function down(editorView) {
+    const state = editorView.viewState.state;
+    const selection = editorView.viewState.state.selection.ranges[0].from;
+    const info = state.doc.lineAt(selection);
+    const maxlines = state.doc.lines;
+    if (info.number === maxlines) {
+        emit('historyNext');
+    }
+}
 
 let cmElement = ref(null);
 
 function nop(target) {
-  return true;
+    return true;
 }
 
 const blankKeymap = [
-  { key:'Ctrl-ArrowUp', run: nop },
-  { key:'Ctrl-ArrowDown', run: nop },
-  { key:'Ctrl-ArrowLeft', run: nop },
-  { key:'Ctrl-ArrowRight', run: nop },
-  { key:'Ctrl-Enter', run: nop },
-  { key:'Shift-Enter', run: nop },
-  { key:'Alt-Enter', run: nop },
-  { key:'Ctrl-k', run: nop },
-  { key:'Ctrl-Shift-k', run: nop },
-  { key:'Ctrl-i', run: nop },
-  { key:'Escape', run: nop },
+    { key:'ArrowUp', run: up },
+    { key:'ArrowDown', run: down },
+    { key:'Ctrl-ArrowUp', run: nop },
+    { key:'Ctrl-ArrowDown', run: nop },
+    { key:'Ctrl-ArrowLeft', run: nop },
+    { key:'Ctrl-ArrowRight', run: nop },
+    { key:'Ctrl-Enter', run: nop },
+    { key:'Shift-Enter', run: nop },
+    { key:'Alt-Enter', run: nop },
+    { key:'Ctrl-k', run: nop },
+    { key:'Ctrl-Shift-k', run: nop },
+    { key:'Ctrl-i', run: nop },
+    { key:'Escape', run: nop },
 ];
 
 const ignoreInputDropExtension = function () {
