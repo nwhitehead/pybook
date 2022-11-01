@@ -15,7 +15,7 @@
 //!
 
 import { signalMap, setStarting, clearInterrupt,
-         sharedArray, sharedInputArray, INPUT_BUFFER_SIZE
+         sharedArray, sharedInputArray, setIOComplete, INPUT_BUFFER_SIZE
        } from './signal.js';
 
 // Spawn the web worker thread and configure it
@@ -159,12 +159,16 @@ export function newPythonKernel(opts) {
                 findHandler('onReady', callback, opts, defaultHandler)(msg.data);
             } else if (msg.type === 'stdout') {
                 findHandler('onStdout', callback, opts, defaultHandler)(msg.data);
+                setIOComplete();
             } else if (msg.type === 'stderr') {
                 findHandler('onStderr', callback, opts, defaultHandler)(msg.data);
+                setIOComplete();
             } else if (msg.type === 'output') {
                 findHandler('onOutput', callback, opts, defaultHandler)(msg.content_type, msg.data);
+                setIOComplete();
             } else if (msg.type === 'filesystem') {
                 findHandler('onFilesystem', callback, opts, defaultHandler)();
+                setIOComplete();
             } else if (msg.type === 'response') {
                 findHandler('onResponse', callback, opts, defaultHandler)();
             } else {

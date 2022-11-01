@@ -12,7 +12,8 @@ export const signalMap = {
     'input_start':4,
     'input_end':5,
     'input_waiting':6,
-    'NUMBER':7
+    'io_complete':7,
+    'NUMBER':8
 };
 
 export const INPUT_BUFFER_SIZE = 1024;
@@ -52,6 +53,10 @@ export function setStarting() { return set('starting'); }
 export function isInputWaiting() { return check('input_waiting'); }
 export function clearInputWaiting() { return clear('input_waiting'); }
 export function setInputWaiting() { return set('input_waiting'); }
+export function isIOComplete() { return check('io_complete'); }
+export function clearIOComplete() { return clear('io_complete'); }
+export function setIOComplete() { return set('io_complete'); }
+
 
 //!
 //! Push input character to buffer

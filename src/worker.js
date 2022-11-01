@@ -48,6 +48,16 @@ async function configure(config) {
     loaded = false;
     let pyodide = await loadPyodide({indexURL : absurl + '/lib/pyodide'});
     let version = pyodide.runPython("import sys; sys.version");
+
+    function wait_io_complete() {
+        // Wait until io is complete to continue (worker is synchronous IO)
+        while (Atomics.load(sharedArray, signalMap['io_complete']) === 0) {
+            Atomics.wait(sharedArray, signalMap['io_complete'], 0, 100.0);
+        }
+        // IO is now complete, reset signal back to 0 for next time
+        Atomics.store(sharedArray, signalMap['io_complete'], 0);
+    }
+
     let pybook = {
         sleep: function(sec) {
             // Sleep, break immediately on interrupt
@@ -57,16 +67,23 @@ async function configure(config) {
             }
         },
         output_stdout: function(data) {
+            pyodide.checkInterrupt();
             postMessage({ type:'stdout', data:data });
+            wait_io_complete();
         },
         output_stderr: function(data) {
+            pyodide.checkInterrupt();
             postMessage({ type:'stderr', data:data });
+            wait_io_complete();
         },
         output_content: function(content_type, content_data) {
+            pyodide.checkInterrupt();
             if (typeof(content_data) === 'string') {
                 postMessage({ type:'output', subtype:'text', content_type:content_type, data:content_data });
+                wait_io_complete();
             } else {
                 postMessage({ type:'output', subtype:'binary', content_type:content_type, data:content_data.toJs() });
+                wait_io_complete();
             }
         },
         input_stdin: function() {

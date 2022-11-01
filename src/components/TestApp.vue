@@ -168,7 +168,6 @@ const horizontalOffset = computed(() => {
 const INPUT_INDENT_PERCHAR = 9;
 
 watch(horizontalOffset, (newValue, oldValue) => {
-    console.log('Horizontal offset changed to ', newValue);
     let newMarginLeft = newValue * INPUT_INDENT_PERCHAR;
     newMarginLeft = newMarginLeft < 35 ? 35 : newMarginLeft;
     consoleinputholder.value.style['margin-left'] = newMarginLeft + 'px';
