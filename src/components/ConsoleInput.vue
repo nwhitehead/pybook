@@ -41,6 +41,7 @@
       @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
       @keydown.enter.ctrl.exact.prevent="$emit('evaluate');"
       @keydown.c.ctrl.exact.prevent="$emit('interrupt');"
+      @keydown.l.ctrl.exact.prevent="$emit('clear');"
     />
   </div>
 </template>
@@ -73,7 +74,7 @@ import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
 const props = defineProps([ 'modelValue', 'options' ]);
-const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt' ]);
+const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear' ]);
 
 let cmElement = ref(null);
 

@@ -16,6 +16,7 @@
                 <ConsoleInput v-model="entry" :options="options"
                     @evaluate="clickEvaluate()"
                     @interrupt="interrupt()"
+                    @clear="clear()"
                 />
             </div>
         </div>
@@ -25,6 +26,7 @@
         <ul>
             <li>Ctrl-Enter to evaluate</li>
             <li>Ctrl-C to interrupt</li>
+            <li>Ctrl-L to clear output</li>
         </ul>
     </div>
 </template>
@@ -264,9 +266,20 @@ function clickEvaluate() {
     });
 }
 
+//! Trigger interrupt in python worker
 function interrupt() {
     status.value = 'Interrupt';
     setInterrupt();
+}
+
+//! Clear all output
+function clear() {
+    // Clear all outputs
+    outputs.splice(0);
+    addOutput({
+        name: 'stdout',
+        'text/plain': prompt,
+    });
 }
 
 </script>
