@@ -25,8 +25,8 @@ async function configure(config) {
             e = Atomics.load(sharedArray, signalMap['input_end']);
             // Check for keyboard interrupt to avoid infinite wait for input
             if (Atomics.load(sharedArray, signalMap['interrupt']) !== 0) {
-                pyodide.checkInterrupt();
                 Atomics.store(sharedArray, signalMap['input_waiting'], 0);
+                pyodide.checkInterrupt();
                 return null;
             }
         }

@@ -8,9 +8,11 @@
     <div class="testappholder">
         <div class="consoleoutputholder" ref="holder">
             <ConsoleOutput :values="outputs" />
-            <span class="material-icons spin" v-if="status!='Ready' && !waitingInput">autorenew</span>
-            <span class="material-icons pulse" v-if="waitingInput">pending</span>
-            <div class="consoleinputholder">
+            <div class="iconholder">
+                <span class="material-icons spin" v-if="(status==='Working' || status==='Initializing') && !waitingInput">autorenew</span>
+                <span class="material-icons pulse" v-if="waitingInput">pending</span>
+            </div>
+            <div class="consoleinputholder" ref="consoleinputholder">
                 <ConsoleInput v-model="entry" :options="options"
                     @evaluate="clickEvaluate()"
                     @interrupt="interrupt()"
@@ -39,6 +41,13 @@ div.consoleoutputholder {
 div.consoleinputholder {
     margin-top: -44px;
     margin-left: 35px;
+}
+div.iconholder {
+    position: relative;
+    width: 0;
+    height: 0;
+    left: 10px;
+    top: -20px;
 }
 @keyframes spin {
     from {
@@ -80,7 +89,7 @@ div.consoleinputholder {
 import ConsoleInput from './ConsoleInput.vue';
 import ConsoleOutput from './ConsoleOutput.vue';
 
-import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
@@ -92,6 +101,7 @@ import { signalMap,
              } from '../signal.js';
 
 const holder = ref(null);
+const consoleinputholder = ref(null);
 
 let entry = ref('');
 let outputs = reactive([]);
@@ -130,7 +140,7 @@ onBeforeUnmount(() => {
 onMounted(() => {
     addOutput({
         name: 'stdout',
-        'text/plain': 'Loading Python from Pyodide\n',
+        'text/plain': 'Loading Python...\n',
     });
 });
 
@@ -139,6 +149,29 @@ const options = computed(() => {
         type: waitingInput.value ? undefined : 'python',
         ready: status.value === 'Ready',
     };
+});
+
+//! Compute horizontal offset of last line of outputs
+const horizontalOffset = computed(() => {
+    if (outputs.length === 0) {
+        return 0;
+    }
+    const last = outputs[outputs.length - 1];
+    if (last['text/plain'] === undefined) {
+        // If the last part of output is not plain text, give up computing horizontal offset
+        return 0;
+    }
+    const split = last['text/plain'].split('\n');
+    return split[split.length - 1].length;
+});
+
+const INPUT_INDENT_PERCHAR = 9;
+
+watch(horizontalOffset, (newValue, oldValue) => {
+    console.log('Horizontal offset changed to ', newValue);
+    let newMarginLeft = newValue * INPUT_INDENT_PERCHAR;
+    newMarginLeft = newMarginLeft < 35 ? 35 : newMarginLeft;
+    consoleinputholder.value.style['margin-left'] = newMarginLeft + 'px';
 });
 
 const normalstate = 'state';
@@ -177,6 +210,7 @@ function fancy_indent(txt, first_prefix, prefix) {
 function clickEvaluate() {
     const src = entry.value;
     entry.value = '';
+    clearInterrupt();
     if (isInputWaiting()) {
         // Convert string from CodeMirror into byte array
         // Use UTF-8 since CodeMirror might have advanced unicode characters
@@ -198,7 +232,6 @@ function clickEvaluate() {
         entry.value = src;
         return;
     }
-    clearInterrupt();
     status.value = 'Working';
     addOutput({
         name: 'stdout',
