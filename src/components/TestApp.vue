@@ -9,7 +9,7 @@
         <div class="consoleoutputholder" ref="holder">
             <ConsoleOutput :values="outputs" />
             <span class="material-icons spin" v-if="status!='Ready' && !waitingInput">autorenew</span>
-            <span class="material-icons" v-if="waitingInput">pending</span>
+            <span class="material-icons pulse" v-if="waitingInput">pending</span>
             <div class="consoleinputholder">
                 <ConsoleInput v-model="entry" :options="options"
                     @evaluate="clickEvaluate()"
@@ -54,7 +54,25 @@ div.consoleinputholder {
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
+@keyframes pulse {
+	0% {
+		color: #000;
+	}
 
+	50% {
+		color: #888;
+	}
+
+	100% {
+		color: #000;
+	}
+}
+.pulse {
+  animation-name: pulse;
+  animation-duration: 2000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
 </style>
 
 <script setup>
