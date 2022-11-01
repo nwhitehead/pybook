@@ -8,14 +8,22 @@
     <div class="testappholder">
         <div class="consoleoutputholder" ref="holder">
             <ConsoleOutput :values="outputs" />
+            <span class="material-icons spin" v-if="status!='Ready' && !waitingInput">autorenew</span>
+            <span class="material-icons" v-if="waitingInput">pending</span>
+            <div class="consoleinputholder">
+                <ConsoleInput v-model="entry" :options="options"
+                    @evaluate="clickEvaluate()"
+                    @interrupt="interrupt()"
+                />
+            </div>
         </div>
-        <div class="consoleinputholder">
-            <ConsoleInput v-model="entry" :options="options"
-                @evaluate="clickEvaluate()"
-                @interrupt="interrupt()"
-            />
-        </div>
-        <button class="button" @click="clickEvaluate()"><span>Evaluate</span></button>
+    </div>
+    <div class="content">
+        <p>Quick controls:</p>
+        <ul>
+            <li>Ctrl-Enter to evaluate</li>
+            <li>Ctrl-C to interrupt</li>
+        </ul>
     </div>
 </template>
 
@@ -32,6 +40,21 @@ div.consoleinputholder {
     margin-top: -44px;
     margin-left: 35px;
 }
+@keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}
+.spin {
+  animation-name: spin;
+  animation-duration: 2000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
 </style>
 
 <script setup>
@@ -39,7 +62,7 @@ div.consoleinputholder {
 import ConsoleInput from './ConsoleInput.vue';
 import ConsoleOutput from './ConsoleOutput.vue';
 
-import { computed, reactive, ref, onMounted, nextTick } from 'vue';
+import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
@@ -69,6 +92,23 @@ function addOutput (out) {
   nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
 }
 
+// Time is used to trigger watcher on SharedArrayBuffer for waiting for stdin (Vue doesn't know when value changes there)
+let timer = null;
+// Vue reactive variable keeping track of whether we are waiting for stdin
+let waitingInput = ref(false);
+// Time interval to check for waiting on stdin
+const STDIN_CHECK_INTERVAL = 100;
+
+onMounted(() => {
+    timer = setInterval(() => {
+        waitingInput.value = isInputWaiting();
+    }, STDIN_CHECK_INTERVAL);
+});
+
+onBeforeUnmount(() => {
+    clearInterval(timer);
+});
+
 onMounted(() => {
     addOutput({
         name: 'stdout',
@@ -78,7 +118,7 @@ onMounted(() => {
 
 const options = computed(() => {
     return {
-        type:'python',
+        type: waitingInput.value ? undefined : 'python',
         ready: status.value === 'Ready',
     };
 });
@@ -169,9 +209,7 @@ function clickEvaluate() {
                 name: 'stdout',
                 'text/plain': prompt,
             });
-            if (status.value === 'Working') {
-                status.value = 'Ready';
-            }
+            status.value = 'Ready';
         }
     });
 }
