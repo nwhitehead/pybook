@@ -276,39 +276,52 @@ function fancy_indent(txt, first_prefix, prefix) {
 }
 
 // Keep track of history
-let history = [];
-let historyPosition = 0;
-// Keep track of temporary currentEntry when scrolling through history
-let historySavedCurrent = '';
+// History variables are split for python and stdin (separate histories)
+// savedCurrent is current new entry (not yet evaluated) in case we went to history then go back to current edit
+let history = {
+    'python': {
+        entries: [],
+        position: 0,
+        savedCurrent: '',
+    },
+    'stdin': {
+        entries: [],
+        position: 0,
+        savedCurrent: '',
+    },
+};
 
 function historyPrevious() {
-    if (historyPosition > 0 && history.length > 0) {
-        if (historyPosition === history.length) {
+    const mode = waitingInput.value ? 'stdin' : 'python';
+    if (history[mode].position > 0 && history[mode].entries.length > 0) {
+        if (history[mode].position === history[mode].entries.length) {
             // save current entry
-            historySavedCurrent = entry.value;
+            history[mode].savedCurrent = entry.value;
         }
-        historyPosition--;
-        entry.value = history[historyPosition];
+        history[mode].position--;
+        entry.value = history[mode].entries[history[mode].position];
         nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
     }
 }
 
 function historyNext() {
-    if (historyPosition < history.length) {
-        historyPosition++;
-        if (historyPosition === history.length) {
-            entry.value = historySavedCurrent;
+    const mode = waitingInput.value ? 'stdin' : 'python';
+    if (history[mode].position < history[mode].entries.length) {
+        history[mode].position++;
+        if (history[mode].position === history[mode].entries.length) {
+            entry.value = history[mode].savedCurrent;
             nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
         } else {
-            entry.value = history[historyPosition];
+            entry.value = history[mode].entries[history[mode].position];
             nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
         }
     }
 }
 
 function historyRegister(entry) {
-    history.push(entry);
-    historyPosition = history.length;
+    const mode = waitingInput.value ? 'stdin' : 'python';
+    history[mode].entries.push(entry);
+    history[mode].position = history[mode].entries.length;
 }
 
 function clickEvaluate() {
