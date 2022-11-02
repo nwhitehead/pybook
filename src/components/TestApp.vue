@@ -9,34 +9,32 @@
         <div class="container">
             <div class="columns">
                 <div class="column is-four-fifths">
-                    <div class="testappholder">
-                        <div class="consoleoutputholder" ref="holder">
-                            <ConsoleOutput :values="outputs" />
-                            <div class="iconholder">
-                                <span class="material-icons spin" v-if="(status==='Working' || status==='Initializing') && !waitingInput">autorenew</span>
-                                <span class="material-icons pulse" v-if="waitingInput">pending</span>
-                            </div>
-                            <div class="consoleinputholder" ref="consoleinputholder">
-                                <ConsoleInput v-model="entry" :options="options"
-                                    @evaluate="clickEvaluate()"
-                                    @interrupt="interrupt()"
-                                    @clear="clear()"
-                                    @historyPrevious="historyPrevious()"
-                                    @historyNext="historyNext()"
-                                    @reset="reset()"
-                                />
+                    <div class="box">
+                        <div class="testappholder">
+                            <div class="consoleoutputholder" ref="holder">
+                                <ConsoleOutput :values="outputs" />
+                                <div class="iconholder">
+                                    <span class="material-icons spin" v-if="(status==='Working' || status==='Initializing') && !waitingInput">autorenew</span>
+                                    <span class="material-icons pulse" v-if="waitingInput">pending</span>
+                                </div>
+                                <div class="consoleinputholder" ref="consoleinputholder">
+                                    <ConsoleInput v-model="entry" :options="options"
+                                        @evaluate="clickEvaluate()"
+                                        @interrupt="interrupt()"
+                                        @clear="clear()"
+                                        @historyPrevious="historyPrevious()"
+                                        @historyNext="historyNext()"
+                                        @reset="reset()"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="column is-one-fifth">
-                    <div class="card">
-                        <header class="card-header">
-                            <p class="card-header-title">
-                                Configuration
-                            </p>
-                        </header>
-                        <div class="card-content">
+                    <div class="box">
+                        <div class="content">
+                            <p class="subtitle is-4">Configuration</p>
                             <p>
                                 <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
                                 <label for="evalSingleLineId"> <span class="tag">Enter</span> evaluates single line input</label>
@@ -53,7 +51,7 @@
                     </div>
                     <div class="box">
                         <div class="content">
-                            <p>Quick controls:</p>
+                            <p class="subtitle is-4">Keyboard controls</p>
                             <p><span class="tag">Ctrl</span>-<span class="tag">Enter</span> to evaluate</p>
                             <p><span class="tag">Shift</span>-<span class="tag">Enter</span> to insert newline in input</p>
                             <p v-if="evalSingleLine" ><span class="tag">Enter</span> to evaluate single line input</p>
@@ -63,6 +61,7 @@
                             <p><span class="tag">Down</span> for next history</p>
                             <p><span class="tag">Ctrl</span>-<span class="tag">L</span> to clear all output</p>
                             <p><span class="tag">Ctrl</span>-<span class="tag">Shift</span>-<span class="tag">L</span> to clear Python state and clear all outputs</p>
+                            <p><a href="hint.html" target="_blank">Python Hints</a></p>
                         </div>
                     </div>
                 </div>
