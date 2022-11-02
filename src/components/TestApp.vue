@@ -5,40 +5,59 @@
 //!
 
 <template>
-    <div class="testappholder">
-        <div class="consoleoutputholder" ref="holder">
-            <ConsoleOutput :values="outputs" />
-            <div class="iconholder">
-                <span class="material-icons spin" v-if="(status==='Working' || status==='Initializing') && !waitingInput">autorenew</span>
-                <span class="material-icons pulse" v-if="waitingInput">pending</span>
-            </div>
-            <div class="consoleinputholder" ref="consoleinputholder">
-                <ConsoleInput v-model="entry" :options="options"
-                    @evaluate="clickEvaluate()"
-                    @interrupt="interrupt()"
-                    @clear="clear()"
-                    @historyPrevious="historyPrevious()"
-                    @historyNext="historyNext()"
-                />
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-four-fifths">
+                    <div class="testappholder">
+                        <div class="consoleoutputholder" ref="holder">
+                            <ConsoleOutput :values="outputs" />
+                            <div class="iconholder">
+                                <span class="material-icons spin" v-if="(status==='Working' || status==='Initializing') && !waitingInput">autorenew</span>
+                                <span class="material-icons pulse" v-if="waitingInput">pending</span>
+                            </div>
+                            <div class="consoleinputholder" ref="consoleinputholder">
+                                <ConsoleInput v-model="entry" :options="options"
+                                    @evaluate="clickEvaluate()"
+                                    @interrupt="interrupt()"
+                                    @clear="clear()"
+                                    @historyPrevious="historyPrevious()"
+                                    @historyNext="historyNext()"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-one-fifth">
+                    <div class="card">
+                        <header class="card-header">
+                            <p class="card-header-title">
+                                Configuration
+                            </p>
+                        </header>
+                        <div class="card-content">
+                            <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
+                            <label for="evalSingleLineId"> 'Enter' evaluates single line input</label>
+                        </div>
+                    </div>
+                    <div class="box">
+                        <div class="content">
+                            <p>Quick controls:</p>
+                            <ul>
+                                <li>Ctrl-Enter to evaluate</li>
+                                <li>Shift-Enter to insert newline in input</li>
+                                <li>Enter to evaluate for single line (configuration option to always insert newline)</li>
+                                <li>Ctrl-C to interrupt Python</li>
+                                <li>Ctrl-L to clear all output</li>
+                                <li>Up for previous history</li>
+                                <li>Down for next history</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="config">
-        <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
-        <label for="evalSingleLineId"> 'Enter' evaluates single line input {{ evalSingleLine }}</label>
-    </div>
-    <div class="content">
-        <p>Quick controls:</p>
-        <ul>
-            <li>Ctrl-Enter to evaluate</li>
-            <li>Shift-Enter to insert newline in input</li>
-            <li>Enter to evaluate for single line (configuration option to always insert newline)</li>
-            <li>Ctrl-C to interrupt Python</li>
-            <li>Ctrl-L to clear all output</li>
-            <li>Up for previous history</li>
-            <li>Down for next history</li>
-        </ul>
-    </div>
+    </section>
 </template>
 
 <style>
@@ -102,7 +121,6 @@ import ConsoleInput from './ConsoleInput.vue';
 import ConsoleOutput from './ConsoleOutput.vue';
 
 import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
-import localforage from 'localforage';
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
