@@ -230,10 +230,11 @@ const horizontalOffset = computed(() => {
 });
 
 const INPUT_INDENT_PERCHAR = 9;
+const MIN_MARGIN_LEFT = 35; // Keeps cursor from overlapping busy icon on left
 
 watch(horizontalOffset, (newValue, oldValue) => {
     let newMarginLeft = newValue * INPUT_INDENT_PERCHAR;
-    newMarginLeft = newMarginLeft < 35 ? 35 : newMarginLeft;
+    newMarginLeft = newMarginLeft < MIN_MARGIN_LEFT ? MIN_MARGIN_LEFT : newMarginLeft;
     consoleinputholder.value.style['margin-left'] = newMarginLeft + 'px';
 });
 
