@@ -24,8 +24,8 @@
         </div>
     </div>
     <div class="config">
-        <input type="checkbox" id="evalSingleLine" v-model="evalSingleLine" />
-        <label for="evalSingleLine"> 'Enter' evaluates single line input</label>
+        <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
+        <label for="evalSingleLineId"> 'Enter' evaluates single line input {{ evalSingleLine }}</label>
     </div>
     <div class="content">
         <p>Quick controls:</p>
@@ -160,10 +160,14 @@ onMounted(() => {
     });
 });
 
-let evalSingleLine = ref(true);
+function getLocalStorage(tag, defaultValue) {
+    const stored = localStorage.getItem(tag);
+    return stored === null ? defaultValue : stored;
+}
 
-onMounted(() => {
-
+const evalSingleLine = ref(getLocalStorage('evalSingleLine', 'true') === 'true');
+watch(evalSingleLine, (newValue) => {
+    localStorage.setItem('evalSingleLine', newValue);
 });
 
 const options = computed(() => {
