@@ -13,8 +13,10 @@
                         <div class="testappholder">
                             <div class="consoleoutputholder" ref="holder">
                                 <ConsoleOutput :values="outputs" />
-                                <div class="iconholder">
+                                <div class="busyiconholder">
                                     <span class="material-icons spin" v-if="(status==='Working' || status==='Initializing') && !waitingInput">autorenew</span>
+                                </div>
+                                <div class="inputiconholder">
                                     <span class="material-icons pulse" v-if="waitingInput">pending</span>
                                 </div>
                                 <div class="consoleinputholder" ref="consoleinputholder">
@@ -83,20 +85,22 @@ div.consoleinputholder {
     margin-top: -44px;
     margin-left: 35px;
 }
-div.iconholder {
+div.busyiconholder {
     position: relative;
     width: 0;
     height: 0;
     left: 10px;
     top: -20px;
 }
+div.inputiconholder {
+    position: relative;
+    height: 0;
+    top: -20px;
+    float: right;
+}
 @keyframes spin {
-    from {
-        transform:rotate(0deg);
-    }
-    to {
-        transform:rotate(360deg);
-    }
+    from { transform:rotate(0deg); }
+    to { transform:rotate(360deg); }
 }
 .spin {
   animation-name: spin;
@@ -105,17 +109,9 @@ div.iconholder {
   animation-timing-function: linear;
 }
 @keyframes pulse {
-	0% {
-		color: #000;
-	}
-
-	50% {
-		color: #88888800;
-	}
-
-	100% {
-		color: #000;
-	}
+	0% { color: #00000080; }
+	50% { color: #88888800; }
+	100% { color: #00000080; }
 }
 .pulse {
   animation-name: pulse;
@@ -213,6 +209,7 @@ const options = computed(() => {
         ready: status.value === 'Ready',
         // Always set evalSingleLine if it is stdin input, otherwise use user setting
         evalSingleLine: waitingInput.value ? true : evalSingleLine.value,
+        singleLine: waitingInput.value ? true : false,
         lineNumbers: waitingInput.value ? false : (numLines > 1 ? lineNumbers.value : false),
         closeBrackets: waitingInput.value ? false : closeBrackets.value,
     };
