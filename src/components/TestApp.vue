@@ -46,7 +46,8 @@
                             <p>Quick controls:</p>
                             <p><span class="tag">Ctrl</span>-<span class="tag">Enter</span> to evaluate</p>
                             <p><span class="tag">Shift</span>-<span class="tag">Enter</span> to insert newline in input</p>
-                            <p><span class="tag">Enter</span> to evaluate for single line (configuration option to always insert newline)</p>
+                            <p v-if="evalSingleLine" ><span class="tag">Enter</span> to evaluate single line input</p>
+                            <p v-if="!evalSingleLine" ><span class="tag">Enter</span> to insert newline in input</p>
                             <p><span class="tag">Ctrl</span>-<span class="tag">C</span> to interrupt Python</p>
                             <p><span class="tag">Up</span> for previous history</p>
                             <p><span class="tag">Down</span> for next history</p>
@@ -192,7 +193,8 @@ const options = computed(() => {
     return {
         type: waitingInput.value ? undefined : 'python',
         ready: status.value === 'Ready',
-        evalSingleLine: evalSingleLine.value,
+        // Always set evalSingleLine if it is stdin input, otherwise use user setting
+        evalSingleLine: waitingInput.value ? true : evalSingleLine.value,
     };
 });
 
