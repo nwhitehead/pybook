@@ -45,6 +45,14 @@
                                 <input type="checkbox" id="lineNumbersId" v-model="lineNumbers" />
                                 <label for="lineNumbersId"> Show line numbers in multiline input</label>
                             </p>
+                            <p>
+                                <input type="checkbox" id="closeBracketsId" v-model="closeBrackets" />
+                                <label for="closeBracketsId"> Automatically close brackets while typing</label>
+                            </p>
+                            <p>
+                                <input type="checkbox" id="foldingId" v-model="folding" />
+                                <label for="foldingId"> Allow code folding in multiline input</label>
+                            </p>
                         </div>
                     </div>
                     <div class="box">
@@ -198,6 +206,14 @@ const lineNumbers = ref(getLocalStorage('lineNumbers', 'false') === 'true');
 watch(lineNumbers, (newValue) => {
     localStorage.setItem('lineNumbers', newValue);
 });
+const closeBrackets = ref(getLocalStorage('closeBrackets', 'false') === 'true');
+watch(closeBrackets, (newValue) => {
+    localStorage.setItem('closeBrackets', newValue);
+});
+const folding = ref(getLocalStorage('folding', 'false') === 'true');
+watch(folding, (newValue) => {
+    localStorage.setItem('folding', newValue);
+});
 
 const options = computed(() => {
     const numLines = entry.value.split('\n').length;
@@ -207,6 +223,8 @@ const options = computed(() => {
         // Always set evalSingleLine if it is stdin input, otherwise use user setting
         evalSingleLine: waitingInput.value ? true : evalSingleLine.value,
         lineNumbers: waitingInput.value ? false : (numLines > 1 ? lineNumbers.value : false),
+        closeBrackets: waitingInput.value ? false : closeBrackets.value,
+        folding: waitingInput.value ? false : folding.value,
     };
 });
 
