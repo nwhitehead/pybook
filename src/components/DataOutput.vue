@@ -43,7 +43,7 @@ div.dataoutput pre.stdout {
     background-color: transparent;
 }
 div.dataoutput pre.stderr {
-    background-color: #ff0;
+    background-color: #f5ed9d;
 }
 .dataoutput pre {
     white-space: pre-wrap;
