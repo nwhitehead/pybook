@@ -117,6 +117,9 @@ let status = ref('Initializing');
 
 const MAX_LENGTH = 4096;
 
+const ansi_bold = '\x1b[1m';
+const ansi_normal = '\x1b[0m';
+
 function addOutput (out) {
   if (outputs.length === 0) {
     outputs.push(out);
@@ -186,7 +189,7 @@ const prompt = '>>> ';
 
 const python_opts = {
     onReady: function (version) {
-        version = 'Python ' + version;
+        version = '🐍 Python ' + version;
         status.value = 'Ready';
         console.log(version);
         addOutput({
@@ -228,6 +231,7 @@ function historyPrevious() {
         }
         historyPosition--;
         entry.value = history[historyPosition];
+        nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
     }
 }
 
@@ -236,8 +240,10 @@ function historyNext() {
         historyPosition++;
         if (historyPosition === history.length) {
             entry.value = historySavedCurrent;
+            nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
         } else {
             entry.value = history[historyPosition];
+            nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
         }
     }
 }
@@ -269,7 +275,7 @@ function clickEvaluate() {
         historyRegister(src);
         addOutput({
             name: 'stdout',
-            'text/plain': src + '\n',
+            'text/plain': ansi_bold + src + ansi_normal + '\n',
         });
         return;
     }
@@ -282,7 +288,7 @@ function clickEvaluate() {
     historyRegister(src);
     addOutput({
         name: 'stdout',
-        'text/plain': fancy_indent(src, '', '... ') + '\n',
+        'text/plain': ansi_bold + fancy_indent(src, '', '... ') + ansi_normal + '\n',
     });
     python.evaluate(src, normalstate, {
         onStdout: function (msg) {
