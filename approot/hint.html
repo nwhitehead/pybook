@@ -71,6 +71,46 @@ You can examine state, continue execution, or quit.</p>
 factorial(2)</code></pre>
 <p>To debug the example, try entering <tt>c</tt> four times when the interactive debugger starts.
 Then try <tt>p n</tt> to see the value of <tt>n</tt>. Try <tt>bt</tt> to get a backtrace. Enter <tt>q</tt> to quit.</p>
+
+<p class="subtitle is-5">HTML</p>
+<p>Using the <tt>pybook</tt> package you can output sanitized HTML. Here is an example showing an
+icon from Google Material Icons.</p>
+
+<pre><code>import pybook
+pybook.output_content('text/html', '&lt;span class="material-icons"&gt;sailing&lt;/span&gt;')
+</code></pre>
+
+<p>Allowed content types include <tt>text/plain</tt>, <tt>text/html</tt>, <tt>image/png</tt>, <tt>image/svg+xml</tt>, and <tt>audio/wav</tt>. HTML output
+is sanitized through DOMPurify which only allows a subset of content.</p>
+
+<p>Here is example showing generation of an audio clip.</p>
+<pre><code>import wave
+import struct
+import math
+
+sampleRate = 44100.0 # hertz
+duration = 4.0 # seconds
+frequency = 120.0 # hertz
+phase_delta = 1.0 / sampleRate * frequency * math.tau
+phase = 0.0
+feedback = 0.8
+N = int(sampleRate * duration)
+obj = wave.open('sound.wav','wb')
+obj.setnchannels(1) # mono
+obj.setsampwidth(2)
+obj.setframerate(sampleRate)
+output = 0
+for i in range(N):
+    phase += phase_delta
+    ramp = (N - i) / N
+    output = math.sin(phase + 10 * ramp * math.sin(phase) + ramp * feedback * output)
+    obj.writeframesraw(struct.pack('&lt;h', int(output * 32767.0)))
+obj.close()
+
+import pybook
+data = open('sound.wav', 'rb').read()
+pybook.output_content('audio/wav', data)
+</code></pre>
                     </div>
                 </div>
             </div>
