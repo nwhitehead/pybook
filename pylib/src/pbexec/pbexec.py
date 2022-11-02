@@ -55,7 +55,7 @@ def default_func(value):
     if value is not None:
         sys.stdout.write(f'→ {repr(value)}\n')
 
-async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True, print_exception=True, propagate_exception=False):
+async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True, print_exception=True, propagate_exception=False, strip=2):
     """
     Run script with given globals and locals environment
     
@@ -73,6 +73,8 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
 
     Default is for print_exception to be True and propagate_exception to be False.
 
+    Strip is number of backtrace levels to strip off top to simplify backtraces.
+
     """
     if globals_ is None:
         globals_ = globals()
@@ -83,13 +85,22 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
         globals_['__expr_callback'] = func
     # Append actual text passed to history (even if parsing etc. fails it is part of history)
     globals_.setdefault('__history', []).append(script)
-    cell = script
+    # Write file if specified
+    filename = '<eval>'
+    if write:
+        tmpfile = tempfile.NamedTemporaryFile(mode='w+t', encoding='utf-8', prefix='cell_', delete=True)
+        tmpfile.write(script)
+        filename = tmpfile.name
+        tmpfile.flush()
     try:
-        node = ast.parse(cell)
+        node = ast.parse(script, filename=filename, mode='exec')
     except SyntaxError as err:
         if print_exception:
             exc_type, exc_value, exc_tb = sys.exc_info()
-            traceback.print_exception(exc_type, exc_value, exc_tb.tb_next.tb_next)
+            # Skip a few levels to simplify backtrace
+            for i in range(strip):
+                exc_tb = exc_tb.tb_next
+            sys.excepthook(exc_type, exc_value.with_traceback(exc_tb), exc_tb)
         if propagate_exception:
             raise err
         return
@@ -102,13 +113,6 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
                 node.body[index] = ast.Expr(ast.Call(ast.Name('__expr_callback', ast.Load()), args=[value], keywords=[]))
         # Fill in line/col numbers for programmatically modified nodes
         ast.fix_missing_locations(node)
-    # Write file if specified
-    filename = '<eval>'
-    if write:
-        tmpfile = tempfile.NamedTemporaryFile(mode='w+t', encoding='utf-8', prefix='cell_', delete=True)
-        tmpfile.write(script)
-        filename = tmpfile.name
-        tmpfile.flush()
     # Compile wrapped script, run wrapper definition
     try:
         code = compile(node, filename=filename, mode='exec', flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT)
@@ -118,7 +122,9 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
     except BaseException as err:
         if print_exception:
             exc_type, exc_value, exc_tb = sys.exc_info()
-            traceback.print_exception(exc_type, exc_value, exc_tb.tb_next)
+            for i in range(strip):
+                exc_tb = exc_tb.tb_next
+            sys.excepthook(exc_type, exc_value.with_traceback(exc_tb), exc_tb)
         if propagate_exception:
             raise err
     finally:
