@@ -37,8 +37,14 @@
                             </p>
                         </header>
                         <div class="card-content">
-                            <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
-                            <label for="evalSingleLineId"> <span class="tag">Enter</span> evaluates single line input</label>
+                            <p>
+                                <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
+                                <label for="evalSingleLineId"> <span class="tag">Enter</span> evaluates single line input</label>
+                            </p>
+                            <p>
+                                <input type="checkbox" id="lineNumbersId" v-model="lineNumbers" />
+                                <label for="lineNumbersId"> Show line numbers in multiline input</label>
+                            </p>
                         </div>
                     </div>
                     <div class="box">
@@ -188,13 +194,19 @@ const evalSingleLine = ref(getLocalStorage('evalSingleLine', 'true') === 'true')
 watch(evalSingleLine, (newValue) => {
     localStorage.setItem('evalSingleLine', newValue);
 });
+const lineNumbers = ref(getLocalStorage('lineNumbers', 'false') === 'true');
+watch(lineNumbers, (newValue) => {
+    localStorage.setItem('lineNumbers', newValue);
+});
 
 const options = computed(() => {
+    const numLines = entry.value.split('\n').length;
     return {
         type: waitingInput.value ? undefined : 'python',
         ready: status.value === 'Ready',
         // Always set evalSingleLine if it is stdin input, otherwise use user setting
         evalSingleLine: waitingInput.value ? true : evalSingleLine.value,
+        lineNumbers: waitingInput.value ? false : (numLines > 1 ? lineNumbers.value : false),
     };
 });
 
