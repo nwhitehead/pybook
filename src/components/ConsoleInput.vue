@@ -72,7 +72,7 @@ import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
 const props = defineProps([ 'modelValue', 'options' ]);
-const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext' ]);
+const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext', 'reset' ]);
 
 //! Function to call when up key pressed
 //! Check if moving off the top of editor, if so do historyPrevious
@@ -131,6 +131,7 @@ const blankKeymap = [
     { key:'Ctrl-Enter', run: () => { emit('evaluate'); return true; } },
     { key:'Ctrl-c', run: () => { emit('interrupt'); return true; } },
     { key:'Ctrl-l', run: () => { emit('clear'); return true; } },
+    { key:'Ctrl-Shift-l', run: () => { emit('reset'); return true; } },
 ];
 
 const ignoreInputDropExtension = function () {

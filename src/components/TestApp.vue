@@ -23,6 +23,7 @@
                                     @clear="clear()"
                                     @historyPrevious="historyPrevious()"
                                     @historyNext="historyNext()"
+                                    @reset="reset()"
                                 />
                             </div>
                         </div>
@@ -37,21 +38,20 @@
                         </header>
                         <div class="card-content">
                             <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
-                            <label for="evalSingleLineId"> 'Enter' evaluates single line input</label>
+                            <label for="evalSingleLineId"> <span class="tag">Enter</span> evaluates single line input</label>
                         </div>
                     </div>
                     <div class="box">
                         <div class="content">
                             <p>Quick controls:</p>
-                            <ul>
-                                <li>Ctrl-Enter to evaluate</li>
-                                <li>Shift-Enter to insert newline in input</li>
-                                <li>Enter to evaluate for single line (configuration option to always insert newline)</li>
-                                <li>Ctrl-C to interrupt Python</li>
-                                <li>Ctrl-L to clear all output</li>
-                                <li>Up for previous history</li>
-                                <li>Down for next history</li>
-                            </ul>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">Enter</span> to evaluate</p>
+                            <p><span class="tag">Shift</span>-<span class="tag">Enter</span> to insert newline in input</p>
+                            <p><span class="tag">Enter</span> to evaluate for single line (configuration option to always insert newline)</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">C</span> to interrupt Python</p>
+                            <p><span class="tag">Up</span> for previous history</p>
+                            <p><span class="tag">Down</span> for next history</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">L</span> to clear all output</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">Shift</span>-<span class="tag">L</span> to clear Python state and clear all outputs</p>
                         </div>
                     </div>
                 </div>
@@ -220,15 +220,16 @@ watch(horizontalOffset, (newValue, oldValue) => {
 
 const normalstate = 'state';
 const prompt = '>>> ';
+let python_version = '';
 
 const python_opts = {
     onReady: function (version) {
-        version = '🐍 Python ' + version;
+        python_version = '🐍 Python ' + version;
         status.value = 'Ready';
         console.log(version);
         addOutput({
             name: 'stdout',
-            'text/plain': version + '\n' + prompt,
+            'text/plain': python_version + '\n' + prompt,
         });
         python.freshstate(normalstate, {
             onResponse: function() {
@@ -365,6 +366,25 @@ function clear() {
     addOutput({
         name: 'stdout',
         'text/plain': prompt,
+    });
+}
+
+//! Reset interpreter state
+function reset() {
+    // First clear all outputs
+    outputs.splice(0);
+    python.deletestate(normalstate, {
+        onResponse: function() {
+            python.freshstate(normalstate, {
+                onResponse: function() {
+                    status.value = 'Ready';
+                    addOutput({
+                        name: 'stdout',
+                        'text/plain': python_version + '\n' + prompt,
+                    });
+                },
+            });
+        } 
     });
 }
 
