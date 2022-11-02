@@ -23,16 +23,20 @@
             </div>
         </div>
     </div>
+    <div class="config">
+        <input type="checkbox" id="evalSingleLine" v-model="evalSingleLine" />
+        <label for="evalSingleLine"> 'Enter' evaluates single line input</label>
+    </div>
     <div class="content">
         <p>Quick controls:</p>
         <ul>
-            <li>Enter to evaluate</li>
-            <li>Ctrl-C to interrupt</li>
-            <li>Ctrl-L to clear output</li>
+            <li>Ctrl-Enter to evaluate</li>
+            <li>Shift-Enter to insert newline in input</li>
+            <li>Enter to evaluate for single line (configuration option to always insert newline)</li>
+            <li>Ctrl-C to interrupt Python</li>
+            <li>Ctrl-L to clear all output</li>
             <li>Up for previous history</li>
             <li>Down for next history</li>
-            <li>Shift-Enter to start multiline editing</li>
-            <li>Ctrl-Enter to evaluate multiline entry</li>
         </ul>
     </div>
 </template>
@@ -98,6 +102,7 @@ import ConsoleInput from './ConsoleInput.vue';
 import ConsoleOutput from './ConsoleOutput.vue';
 
 import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import localforage from 'localforage';
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
@@ -155,10 +160,17 @@ onMounted(() => {
     });
 });
 
+let evalSingleLine = ref(true);
+
+onMounted(() => {
+
+});
+
 const options = computed(() => {
     return {
         type: waitingInput.value ? undefined : 'python',
         ready: status.value === 'Ready',
+        evalSingleLine: evalSingleLine.value,
     };
 });
 

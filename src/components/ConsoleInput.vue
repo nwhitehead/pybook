@@ -19,6 +19,7 @@
 //!     singleLine - Force editor to only allow single line of input (default false)
 //!     canFocus - Allow input area to be focused by user (default true)
 //!     ready - Is state ready for submitting input (default true)
+//!     evalSingleLine - If true then pressing Enter on single line will evaluate (default true)
 //!
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
@@ -66,7 +67,7 @@ import { keymap, highlightSpecialChars, drawSelection, highlightActiveLine, drop
 import { EditorState } from '@codemirror/state';
 import { defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatching,
         foldGutter, foldKeymap } from '@codemirror/language';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { defaultKeymap, history, historyKeymap, insertNewlineAndIndent } from '@codemirror/commands';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
@@ -108,8 +109,10 @@ let cmElement = ref(null);
 function enter(editorView) {
     const lines = props.modelValue.split('\n').length;
     if (lines <= 1) {
-        emit('evaluate');
-        return true;
+        if (evalSingleLine.value) {
+            emit('evaluate');
+            return true;
+        }
     }
     return false;
 }
@@ -122,6 +125,7 @@ const blankKeymap = [
     { key:'ArrowUp', run: up },
     { key:'ArrowDown', run: down },
     { key:'Enter', run: enter },
+    { key:'Shift-Enter', run: insertNewlineAndIndent },
     { key:'Ctrl-ArrowUp', run: () => { emit('historyPrevious'); return true; } },
     { key:'Ctrl-ArrowDown', run: () => { emit('historyNext'); return true; } },
     { key:'Ctrl-Enter', run: () => { emit('evaluate'); return true; } },
@@ -221,6 +225,11 @@ const indent = computed(() => {
 const isReady = computed(() => {
     const opts = props.options ? props.options : {};
     return opts.ready;
+});
+
+const evalSingleLine = computed(() => {
+    const opts = props.options ? props.options : {};
+    return !(opts.evalSingleLine === false);  // default true if not present
 });
 
 watch(disabled, (newValue, oldValue) => {
