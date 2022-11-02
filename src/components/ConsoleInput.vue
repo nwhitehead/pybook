@@ -39,11 +39,6 @@
       :disabled="disabled"
       ref="cmElement"
       @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
-      @keydown.enter.ctrl.exact.prevent="$emit('evaluate');"
-      @keydown.c.ctrl.exact.prevent="$emit('interrupt');"
-      @keydown.l.ctrl.exact.prevent="$emit('clear');"
-      @keydown.up.ctrl.exact.prevent="$emit('historyPrevious');"
-      @keydown.down.ctrl.exact.prevent="$emit('historyNext');"
     />
   </div>
 </template>
@@ -76,7 +71,7 @@ import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
 const props = defineProps([ 'modelValue', 'options' ]);
-const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext', 'multiline' ]);
+const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext' ]);
 
 //! Function to call when up key pressed
 //! Check if moving off the top of editor, if so do historyPrevious
@@ -107,10 +102,6 @@ function down(editorView) {
 
 let cmElement = ref(null);
 
-function enterMultiline() {
-    emit('multiline');
-}
-
 //! Function to call when Enter is pressed
 //! If we are in multiline mode, pass through as normal
 //! If we are in single line mode, this is equivalent to evaluate (Ctrl-Enter)
@@ -130,19 +121,12 @@ function nop(target) {
 const blankKeymap = [
     { key:'ArrowUp', run: up },
     { key:'ArrowDown', run: down },
-    { key:'Ctrl-m', run: enterMultiline },
     { key:'Enter', run: enter },
-    { key:'Ctrl-ArrowUp', run: nop },
-    { key:'Ctrl-ArrowDown', run: nop },
-    { key:'Ctrl-ArrowLeft', run: nop },
-    { key:'Ctrl-ArrowRight', run: nop },
-    { key:'Ctrl-Enter', run: nop },
-    { key:'Shift-Enter', run: nop },
-    { key:'Alt-Enter', run: nop },
-    { key:'Ctrl-k', run: nop },
-    { key:'Ctrl-Shift-k', run: nop },
-    { key:'Ctrl-i', run: nop },
-    { key:'Escape', run: nop },
+    { key:'Ctrl-ArrowUp', run: () => { emit('historyPrevious'); return true; } },
+    { key:'Ctrl-ArrowDown', run: () => { emit('historyNext'); return true; } },
+    { key:'Ctrl-Enter', run: () => { emit('evaluate'); return true; } },
+    { key:'Ctrl-c', run: () => { emit('interrupt'); return true; } },
+    { key:'Ctrl-l', run: () => { emit('clear'); return true; } },
 ];
 
 const ignoreInputDropExtension = function () {

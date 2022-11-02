@@ -19,7 +19,6 @@
                     @clear="clear()"
                     @historyPrevious="historyPrevious()"
                     @historyNext="historyNext()"
-                    @multiline="multiline()"
                 />
             </div>
         </div>
@@ -32,7 +31,7 @@
             <li>Ctrl-L to clear output</li>
             <li>Up for previous history</li>
             <li>Down for next history</li>
-            <li>Ctrl-M to enter multiline editing</li>
+            <li>Shift-Enter to enter multiline editing</li>
             <li>Ctrl-Enter to evaluate multiline entry</li>
         </ul>
     </div>
@@ -240,14 +239,6 @@ function historyNext() {
         } else {
             entry.value = history[historyPosition];
         }
-    }
-}
-
-//! Make input entry multiline for multiline editing
-function multiline() {
-    const lines = entry.value.split('\n').length;
-    if (lines <= 1) {
-        entry.value = entry.value + '\n';
     }
 }
 
