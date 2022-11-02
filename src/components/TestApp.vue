@@ -31,7 +31,7 @@
             <li>Ctrl-L to clear output</li>
             <li>Up for previous history</li>
             <li>Down for next history</li>
-            <li>Shift-Enter to enter multiline editing</li>
+            <li>Shift-Enter to start multiline editing</li>
             <li>Ctrl-Enter to evaluate multiline entry</li>
         </ul>
     </div>
