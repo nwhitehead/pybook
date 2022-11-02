@@ -99,6 +99,7 @@ async function configure(config) {
     // Install pbexec
     await pyodide.runPythonAsync('await micropip.install("' + absurl + '/lib/pyodide/pbexec_nwhitehead-0.0.1-py3-none-any.whl' + '")');
     pyodide.runPython('from pbexec import pbexec');
+    pyodide.runPython('import sys; sys.setrecursionlimit(150)');
     // Start with fresh state as base
     states = { 
         base:pyodide.globals.get('pbexec').fresh_state()
