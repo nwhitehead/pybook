@@ -49,6 +49,10 @@
                                 <input type="checkbox" id="closeBracketsId" v-model="closeBrackets" />
                                 <label for="closeBracketsId"> Automatically close brackets while typing</label>
                             </p>
+                            <p>
+                                <input type="checkbox" id="disableFeedbackId" v-model="disableFeedback" />
+                                <label for="disableFeedbackId"> Disable feedback tag</label>
+                            </p>
                         </div>
                     </div>
                     <div class="box">
@@ -69,7 +73,7 @@
                 </div>
             </div>
             <Feedback :active="feedback" @close="feedback=false" @send="sendFeedback" />
-            <div class="fixed"><button class="feedbackbutton" @click="feedback=true"><span>Feedback</span></button></div>
+            <div v-if="!disableFeedback" class="fixed"><button class="feedbackbutton" @click="feedback=true"><span>Feedback</span></button></div>
         </div>
     </section>
 </template>
@@ -234,6 +238,10 @@ watch(lineNumbers, (newValue) => {
 const closeBrackets = ref(getLocalStorage('closeBrackets', 'false') === 'true');
 watch(closeBrackets, (newValue) => {
     localStorage.setItem('closeBrackets', newValue);
+});
+const disableFeedback = ref(getLocalStorage('disableFeedback', 'false') === 'true');
+watch(disableFeedback, (newValue) => {
+    localStorage.setItem('disableFeedback', newValue);
 });
 
 const options = computed(() => {
