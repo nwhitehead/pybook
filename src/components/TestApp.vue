@@ -68,6 +68,7 @@
                     </div>
                 </div>
             </div>
+            <Feedback />
         </div>
     </section>
 </template>
@@ -125,6 +126,7 @@ div.inputiconholder {
 
 import ConsoleInput from './ConsoleInput.vue';
 import ConsoleOutput from './ConsoleOutput.vue';
+import Feedback from './Feedback.vue';
 
 import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 
