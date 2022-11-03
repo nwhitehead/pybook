@@ -68,12 +68,37 @@
                     </div>
                 </div>
             </div>
-            <Feedback />
+            <Feedback :active="feedback" @close="feedback=false" @send="sendFeedback" />
+            <div class="fixed"><button class="feedbackbutton" @click="feedback=true"><span>Feedback</span></button></div>
         </div>
     </section>
 </template>
 
 <style>
+.fixed {
+    position: fixed;
+    top: 30vh;
+    left: 0;
+}
+.feedbackbutton {
+    display: inline-block;
+    border: 2px solid #000;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-left: none;
+    border-right: none;
+    border-bottom: 5px solid #000;
+    padding: 7px;
+    margin: 0px;
+    background-color: #000;
+    color: #fff;
+    transform-origin: bottom left;
+    transform: rotate(90deg) translate(0px, 5px);
+    font-size: 1em;
+}
+.feedbackbutton:hover {
+    transform: rotate(90deg);
+}
 div.testappholder {
     background-color: #eee;
 }
@@ -145,6 +170,13 @@ const consoleinputholder = ref(null);
 let entry = ref('');
 let outputs = reactive([]);
 let status = ref('Initializing');
+
+let feedback = ref(false); // Controls feedback modal display
+
+function sendFeedback(evt) {
+    console.log('Feedback', evt);
+    feedback.value = false; // Close
+}
 
 const MAX_LENGTH = 4096;
 
