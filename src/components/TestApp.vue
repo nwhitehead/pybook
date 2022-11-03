@@ -63,7 +63,7 @@
                             <p><span class="tag">Down</span> for next history</p>
                             <p><span class="tag">Ctrl</span>-<span class="tag">L</span> to clear all output</p>
                             <p><span class="tag">Ctrl</span>-<span class="tag">Shift</span>-<span class="tag">L</span> to clear Python state and clear all outputs</p>
-                            <p><a href="hint.html" target="_blank">Python Hints</a></p>
+                            <p><a href="hint.html" target="_blank">Usage Hints</a></p>
                         </div>
                     </div>
                 </div>
@@ -78,11 +78,11 @@ div.testappholder {
 }
 div.consoleoutputholder {
     min-height: 60px;
-    max-height: 600px;
+    max-height: 80vh;
     overflow: auto;
 }
 div.consoleinputholder {
-    margin-top: -44px;
+    margin-top: -43px;
     margin-left: 35px;
 }
 div.busyiconholder {
@@ -229,7 +229,7 @@ const horizontalOffset = computed(() => {
     return split[split.length - 1].length;
 });
 
-const INPUT_INDENT_PERCHAR = 9;
+const INPUT_INDENT_PERCHAR = 8.5;
 const MIN_MARGIN_LEFT = 35; // Keeps cursor from overlapping busy icon on left
 
 watch(horizontalOffset, (newValue, oldValue) => {
