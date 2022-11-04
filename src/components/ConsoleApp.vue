@@ -1,7 +1,7 @@
 //!
-//! TestApp
+//! ConsoleApp
 //!
-//! A Vue component representing the top level single-page test app.
+//! A Vue component representing the top level single-page console app.
 //!
 
 <template>
@@ -10,7 +10,7 @@
             <div class="columns">
                 <div class="column is-four-fifths">
                     <div class="box">
-                        <div class="testappholder">
+                        <div class="consoleappholder">
                             <div class="consoleoutputholder" ref="holder">
                                 <ConsoleOutput :values="outputs" />
                                 <div class="busyiconholder">
@@ -102,7 +102,7 @@
 .feedbackbutton:hover {
     transform: rotate(-90deg);
 }
-div.testappholder {
+div.consoleappholder {
     background-color: #eee;
 }
 div.consoleoutputholder {

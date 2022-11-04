@@ -1,13 +1,22 @@
 
 use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Responder};
 use actix_files as fs;
-use serde::{Serialize};
+use serde::{Serialize, Deserialize};
 
 const DB_FILENAME : &'static str = "./pybookdb.sql";
 const NOTEBOOK_DIR : &'static str = "./notebooks";
+const FEEDBACK_FILE : &'static str = "./feedback.log";
 
 struct Database {
     connection : sqlite::Connection,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Feedback {
+    choice: String,
+    message: String,
+    email: String,
+    timestamp: String,
 }
 
 #[derive(Serialize, Debug)]
@@ -48,6 +57,18 @@ async fn notebook_update(data: web::Data<std::sync::Mutex<Database>>, path: web:
     let db = data.lock().unwrap();
     let identifier = path.into_inner();
     db.set_notebook(identifier, req_body).unwrap();
+    HttpResponse::Ok()
+}
+
+#[post("/feedback")]
+async fn feedback(form: web::Form<Feedback>) -> impl Responder {
+    let _file = std::fs::OpenOptions::new()
+        .write(true)
+        .append(true)
+        .open(FEEDBACK_FILE)
+        .unwrap();
+    let logline = format!("Feedback choice:{} message:{} email:{} timestamp:{}", form.choice, form.message, form.email, form.timestamp);
+    print!("{}", logline);
     HttpResponse::Ok()
 }
 

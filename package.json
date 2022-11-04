@@ -31,6 +31,7 @@
   "scripts": {
     "build": "node src/build.cjs",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest && pytest -vv src/parser.py",
-    "serve": "python3 server/server.py"
+    "serve_setup": "ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 server_setup.yml --become",
+    "serve": "ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 server_deploy.yml --become"
   }
 }
