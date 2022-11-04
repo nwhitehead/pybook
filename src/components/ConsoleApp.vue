@@ -261,6 +261,7 @@ watch(horizontalOffset, (newValue, oldValue) => {
 function send(evt) {
     // Fire off post request and ignore any errors at this point
     axios.post('/api/feedback', evt);
+    // Need thank you...
 }
 
 const normalstate = 'state';
