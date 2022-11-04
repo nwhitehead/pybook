@@ -81,27 +81,27 @@
 <style>
 .fixed {
     position: fixed;
-    top: 30vh;
+    top: 40vh;
     left: 0;
 }
 .feedbackbutton {
     display: inline-block;
     border: 2px solid #000;
-    border-top-right-radius: 10px;
-    border-top-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
     border-left: none;
     border-right: none;
-    border-bottom: 5px solid #000;
+    border-top: 5px solid #000;
     padding: 7px;
     margin: 0px;
     background-color: #000;
     color: #fff;
-    transform-origin: bottom left;
-    transform: rotate(90deg) translate(0px, 5px);
+    transform-origin: top left;
+    transform: rotate(-90deg) translate(0px, -5px);
     font-size: 1em;
 }
 .feedbackbutton:hover {
-    transform: rotate(90deg);
+    transform: rotate(-90deg);
 }
 div.testappholder {
     background-color: #eee;
