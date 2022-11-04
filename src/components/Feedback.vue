@@ -157,7 +157,7 @@ function send() {
     active.value = false;
     nextTick(() => {
         html2canvas(document.body).then((canvas) => {
-            const base64image = canvas.toDataURL('image/jpeg', 0.5);
+            const base64image = canvas.toDataURL('image/png');
             const payload = { choice:choice.value, message:message.value, email:email.value, location:document.location.href, screenshot:base64image };
             emit('send', payload);
             choice.value = '';
