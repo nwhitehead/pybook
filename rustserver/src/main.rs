@@ -2,6 +2,7 @@
 use actix_web::{get, middleware, post, web, App, HttpResponse, HttpServer, Responder};
 use actix_files as fs;
 use serde::{Serialize, Deserialize};
+use std::io::Write;
 
 const DB_FILENAME : &'static str = "./pybookdb.sql";
 const NOTEBOOK_DIR : &'static str = "./notebooks";
@@ -61,14 +62,15 @@ async fn notebook_update(data: web::Data<std::sync::Mutex<Database>>, path: web:
 }
 
 #[post("/feedback")]
-async fn feedback(form: web::Form<Feedback>) -> impl Responder {
-    let _file = std::fs::OpenOptions::new()
+async fn feedback(req_body: String) -> impl Responder {
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
         .write(true)
         .append(true)
         .open(FEEDBACK_FILE)
         .unwrap();
-    let logline = format!("Feedback choice:{} message:{} email:{} timestamp:{}", form.choice, form.message, form.email, form.timestamp);
-    print!("{}", logline);
+    file.write_all(req_body.as_bytes()).unwrap();
+    file.write_all(b"\n").unwrap();
     HttpResponse::Ok()
 }
 
@@ -181,6 +183,7 @@ async fn main() -> std::io::Result<()> {
             .service(notebooks)
             .service(notebook)
             .service(notebook_update)
+            .service(feedback)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

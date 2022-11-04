@@ -71,37 +71,12 @@
                     </div>
                 </div>
             </div>
-            <Feedback :active="feedback" @close="feedback=false" @send="sendFeedback" />
-            <div v-if="!disableFeedback" class="fixed"><button class="feedbackbutton" @click="feedback=true"><span>Feedback</span></button></div>
+            <Feedback :disable="disableFeedback" @send="send" />
         </div>
     </section>
 </template>
 
 <style>
-.fixed {
-    position: fixed;
-    top: 40vh;
-    left: 0;
-}
-.feedbackbutton {
-    display: inline-block;
-    border: 2px solid #000;
-    border-bottom-right-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border-left: none;
-    border-right: none;
-    border-top: 5px solid #000;
-    padding: 7px;
-    margin: 0px;
-    background-color: #000;
-    color: #fff;
-    transform-origin: top left;
-    transform: rotate(-90deg) translate(0px, -5px);
-    font-size: 1em;
-}
-.feedbackbutton:hover {
-    transform: rotate(-90deg);
-}
 div.consoleappholder {
     background-color: #eee;
 }
@@ -157,6 +132,7 @@ import ConsoleOutput from './ConsoleOutput.vue';
 import Feedback from './Feedback.vue';
 
 import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import axios from 'axios';
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
@@ -173,13 +149,6 @@ const consoleinputholder = ref(null);
 let entry = ref('');
 let outputs = reactive([]);
 let status = ref('Initializing');
-
-let feedback = ref(false); // Controls feedback modal display
-
-function sendFeedback(evt) {
-    console.log('Feedback', evt);
-    feedback.value = false; // Close
-}
 
 const MAX_LENGTH = 4096;
 
@@ -288,6 +257,11 @@ watch(horizontalOffset, (newValue, oldValue) => {
     newMarginLeft = newMarginLeft < MIN_MARGIN_LEFT ? MIN_MARGIN_LEFT : (newMarginLeft > MAX_MARGIN_LEFT ? MAX_MARGIN_LEFT : newMarginLeft);
     consoleinputholder.value.style['margin-left'] = newMarginLeft + 'px';
 });
+
+function send(evt) {
+    // Fire off post request and ignore any errors at this point
+    axios.post('/api/feedback', evt);
+}
 
 const normalstate = 'state';
 const prompt = '>>> ';

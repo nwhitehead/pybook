@@ -2,14 +2,15 @@
 //! Feedback component
 //!
 //! Props:
-//! - active - Set to true to let feedback form take over all content
+//! - disable - Set to true to disable tag from showing at all
 //!
 //! Emits:
-//! - close - User requested to close the modal page
-//! - send - Emit when user sends feedback. Has payload:
-//!     - choice - Which category, 'issue', 'idea', 'other'
-//!     - message - What user typed into textbox
-//!     - email - Optional email address
+//! - send - Emitted when feedback is to be sent, has payload with fields:
+//!     - choice - One of 'issue', 'idea', 'other'
+//!     - message - What user typed
+//!     - email - Email address if entered (not validated)
+//!     - screenshot - data URL encoded string showing what user was looking at (hopefully)
+//!     - location - URL when feedback activated
 //!
 //! Feedback form clears itself after sending, except email stays if entered.
 //!
@@ -63,21 +64,61 @@
                     </div>
                 </div>
             </div>
-            <button class="modal-close is-large" aria-label="close" @click="$emit('close')"></button>
+            <button class="modal-close is-large" aria-label="close" @click="active=false"></button>
         </div>
     </div>
+    <div v-if="!disable" class="fixed"><button class="feedbackbutton" @click="active=true"><span>Feedback</span></button></div>
 </template>
+
+<style>
+.fixed {
+    position: fixed;
+    top: 40vh;
+    left: 0;
+}
+.feedbackbutton {
+    display: inline-block;
+    border: 2px solid #000;
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-left: none;
+    border-right: none;
+    border-top: 5px solid #000;
+    padding: 7px;
+    margin: 0px;
+    background-color: #000;
+    color: #fff;
+    transform-origin: top left;
+    transform: rotate(-90deg) translate(0px, -5px);
+    font-size: 1em;
+}
+.feedbackbutton:hover {
+    transform: rotate(-90deg);
+}
+</style>
 
 <script setup>
 
-import { ref } from 'vue';
+import { ref, watch, nextTick } from 'vue';
+import html2canvas from 'html2canvas';
 
-const props = defineProps([ 'active' ]);
-const emit = defineEmits([ 'send', 'close' ]);
+const props = defineProps([ 'disable' ]);
+const emit = defineEmits([ 'send' ]);
+
+let active = ref(false); // When active, modal takes over all display
 
 let choice = ref('');
 let message = ref('');
-let email = ref('');
+
+function getLocalStorage(tag, defaultValue) {
+    const stored = localStorage.getItem(tag);
+    return stored === null ? defaultValue : stored;
+}
+
+const email = ref(getLocalStorage('email', ''));
+watch(email, (newValue) => {
+    localStorage.setItem('email', newValue);
+});
 
 function placeholder() {
     if (choice.value === 'idea') {
@@ -112,9 +153,18 @@ function readyToSend() {
 }
 
 function send() {
-    emit('send', { choice:choice.value, message:message.value, email:email.value });
-    choice.value = '';
-    message.value = '';
+    // Turn off modal to get screenshot (otherwise we are screenshotting the feedback form...)
+    active.value = false;
+    nextTick(() => {
+        html2canvas(document.body).then((canvas) => {
+            const base64image = canvas.toDataURL('image/jpeg', 0.5);
+            const payload = { choice:choice.value, message:message.value, email:email.value, location:document.location.href, screenshot:base64image };
+            emit('send', payload);
+            choice.value = '';
+            message.value = '';
+            active.value = false;
+        });
+    });
 }
 
 </script>
