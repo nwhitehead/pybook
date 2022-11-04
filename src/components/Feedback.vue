@@ -20,7 +20,7 @@
         <div class="modal-background"></div>
         <div class="modal-card">
 
-            <div class="modal-card-body">
+            <div class="modal-card-body" v-if="!thanks">
                 <p class="title is-4">Send feedback</p>
 
                 <div class="tabs is-toggle is-toggle-rounded">
@@ -57,6 +57,13 @@
                         </div>
                     </div>
 
+                    <div class="field">
+                        <div class="control">
+                            <input type="checkbox" id="screenshotId" v-model="screenshot" />
+                            <label for="screenshotId"> Include screenshot</label>
+                        </div>
+                    </div>
+
                     <div class="field is-grouped">
                         <div class="control">
                             <button class="button is-link" @click="if (readyToSend()) { send(); }">Send</button>
@@ -64,7 +71,10 @@
                     </div>
                 </div>
             </div>
-            <button class="modal-close is-large" aria-label="close" @click="active=false"></button>
+            <div class="modal-card-body" v-if="thanks">
+                <p class="title is-4">Thank you for your feedback!</p>
+            </div>
+            <button class="modal-close is-large" aria-label="close" @click="active=false; thanks=false"></button>
         </div>
     </div>
     <div v-if="!disable" class="fixed"><button class="feedbackbutton" @click="active=true"><span>Feedback</span></button></div>
@@ -109,6 +119,8 @@ let active = ref(false); // When active, modal takes over all display
 
 let choice = ref('');
 let message = ref('');
+let screenshot = ref(false);
+let thanks = ref(false); // whether to show thanks screen while active or not
 
 function getLocalStorage(tag, defaultValue) {
     const stored = localStorage.getItem(tag);
@@ -152,19 +164,37 @@ function readyToSend() {
     return true;
 }
 
+function scheduleAutoClose() {
+    setTimeout(() => {
+        active.value = false;
+        thanks.value = false;
+    }, 3000);
+}
+
 function send() {
-    // Turn off modal to get screenshot (otherwise we are screenshotting the feedback form...)
-    active.value = false;
-    nextTick(() => {
-        html2canvas(document.body).then((canvas) => {
-            const base64image = canvas.toDataURL('image/png');
-            const payload = { choice:choice.value, message:message.value, email:email.value, location:document.location.href, screenshot:base64image };
-            emit('send', payload);
-            choice.value = '';
-            message.value = '';
-            active.value = false;
+    let payload = { choice:choice.value, message:message.value, email:email.value, location:document.location.href };
+    if (screenshot.value) {
+        // Turn off modal to get screenshot (otherwise we are screenshotting the feedback form...)
+        active.value = false;
+        nextTick(() => {
+            html2canvas(document.body).then((canvas) => {
+                payload.screenshot = canvas.toDataURL('image/png');
+                emit('send', payload);
+                choice.value = '';
+                message.value = '';
+                active.value = true;
+                thanks.value = true;
+                scheduleAutoClose();
+            });
         });
-    });
+    } else {
+        emit('send', payload);
+        choice.value = '';
+        message.value = '';
+        active.value = true;
+        thanks.value = true;
+        scheduleAutoClose();
+    }
 }
 
 </script>

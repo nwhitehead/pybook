@@ -258,12 +258,6 @@ watch(horizontalOffset, (newValue, oldValue) => {
     consoleinputholder.value.style['margin-left'] = newMarginLeft + 'px';
 });
 
-function send(evt) {
-    // Fire off post request and ignore any errors at this point
-    axios.post('/api/feedback', evt);
-    // Need thank you...
-}
-
 const normalstate = 'state';
 const prompt = '>>> ';
 let python_version = '';
@@ -345,6 +339,13 @@ function historyRegister(entry) {
     const mode = waitingInput.value ? 'stdin' : 'python';
     history[mode].entries.push(entry);
     history[mode].position = history[mode].entries.length;
+}
+
+function send(evt) {
+    // Fire off post request and ignore any errors at this point
+    // Include command history in feedback object
+    evt.history = history['python'].entries;
+    axios.post('/api/feedback', evt);
 }
 
 function clickEvaluate() {
