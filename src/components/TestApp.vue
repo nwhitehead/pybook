@@ -47,7 +47,7 @@
                             </p>
                             <p>
                                 <input type="checkbox" id="closeBracketsId" v-model="closeBrackets" />
-                                <label for="closeBracketsId"> Automatically close brackets while typing</label>
+                                <label for="closeBracketsId"> Close brackets while typing</label>
                             </p>
                             <p>
                                 <input type="checkbox" id="disableFeedbackId" v-model="disableFeedback" />
@@ -58,15 +58,14 @@
                     <div class="box">
                         <div class="content">
                             <p class="subtitle is-4">Keyboard controls</p>
-                            <p><span class="tag">Ctrl</span>-<span class="tag">Enter</span> to evaluate</p>
-                            <p><span class="tag">Shift</span>-<span class="tag">Enter</span> to insert newline in input</p>
-                            <p v-if="evalSingleLine" ><span class="tag">Enter</span> to evaluate single line input</p>
-                            <p v-if="!evalSingleLine" ><span class="tag">Enter</span> to insert newline in input</p>
-                            <p><span class="tag">Ctrl</span>-<span class="tag">C</span> to interrupt Python</p>
-                            <p><span class="tag">Up</span> for previous history</p>
-                            <p><span class="tag">Down</span> for next history</p>
-                            <p><span class="tag">Ctrl</span>-<span class="tag">L</span> to clear all output</p>
-                            <p><span class="tag">Ctrl</span>-<span class="tag">Shift</span>-<span class="tag">L</span> to clear Python state and clear all outputs</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">Enter</span> evaluate</p>
+                            <p><span class="tag">Shift</span>-<span class="tag">Enter</span> insert newline</p>
+                            <p v-if="evalSingleLine" ><span class="tag">Enter</span> evaluate single line input</p>
+                            <p v-if="!evalSingleLine" ><span class="tag">Enter</span> insert newline</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">C</span> interrupt Python</p>
+                            <p><span class="tag">Up</span> / <span class="tag">Down</span> history</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">L</span> clear all output</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">Shift</span>-<span class="tag">L</span> to clear Python state and clear output</p>
                             <p><a href="hint.html" target="_blank">Usage Hints</a></p>
                         </div>
                     </div>
@@ -108,7 +107,7 @@ div.testappholder {
 }
 div.consoleoutputholder {
     min-height: 60px;
-    max-height: 80vh;
+    max-height: calc(100vh - 130px);
     overflow: auto;
 }
 div.consoleinputholder {
