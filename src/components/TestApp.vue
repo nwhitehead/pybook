@@ -273,10 +273,20 @@ const horizontalOffset = computed(() => {
 
 const INPUT_INDENT_PERCHAR = 8.5;
 const MIN_MARGIN_LEFT = 35; // Keeps cursor from overlapping busy icon on left
+const MAX_MARGIN_LEFT = 400;
+const ORIGINAL_MARGIN_TOP = -43;
+const ONE_LINE = 20;
 
 watch(horizontalOffset, (newValue, oldValue) => {
     let newMarginLeft = newValue * INPUT_INDENT_PERCHAR;
-    newMarginLeft = newMarginLeft < MIN_MARGIN_LEFT ? MIN_MARGIN_LEFT : newMarginLeft;
+    if (newMarginLeft > MAX_MARGIN_LEFT) {
+        // If input is far right, then start new input on left side of next line
+        newMarginLeft = MIN_MARGIN_LEFT;
+        consoleinputholder.value.style['margin-top'] = ORIGINAL_MARGIN_TOP + ONE_LINE + 'px';
+    } else {
+        consoleinputholder.value.style['margin-top'] = ORIGINAL_MARGIN_TOP + 'px';
+    }
+    newMarginLeft = newMarginLeft < MIN_MARGIN_LEFT ? MIN_MARGIN_LEFT : (newMarginLeft > MAX_MARGIN_LEFT ? MAX_MARGIN_LEFT : newMarginLeft);
     consoleinputholder.value.style['margin-left'] = newMarginLeft + 'px';
 });
 
