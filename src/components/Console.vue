@@ -30,7 +30,7 @@
         <div class="consoleoutputholder" ref="holder">
             <ConsoleOutput :values="outputs" />
             <div class="busyiconholder">
-                <span class="material-icons spin" v-if="(status==='Working' || status==='Initializing') && !waitingInput">autorenew</span>
+                <span class="material-icons spin" v-if="busy">autorenew</span>
             </div>
             <div class="inputiconholder">
                 <span class="material-icons pulse" v-if="waitingInput">pending</span>
@@ -115,7 +115,7 @@ import { signalMap,
              } from '../signal.js';
 
 const props = defineProps([ 'eventbus', 'options' ]);
-const emit = defineEmits([ 'update:history', 'evaluate', 'interrupt', 'update:busy', 'update:stdin' ]);
+const emit = defineEmits([ 'update:history', 'evaluate', 'stdin', 'interrupt', 'update:busy', 'update:stdin' ]);
 
 const holder = ref(null);
 const consoleinputholder = ref(null);
@@ -155,6 +155,16 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     clearInterval(timer);
+});
+
+const busy = computed(() => (status.value==='Working' || status.value==='Initializing') && !waitingInput.value);
+
+watch(busy, (newValue) => {
+    emit('update:busy', newValue);
+});
+
+watch(waitingInput, (newValue) => {
+    emit('update:stdin', newValue);
 });
 
 onMounted(() => {
