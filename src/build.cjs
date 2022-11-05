@@ -24,6 +24,17 @@ require('esbuild').build({
 });
 
 require('esbuild').build({
+    entryPoints: ['src/main_code.js'],
+    bundle: true,
+    outfile: 'build/main_code.js',
+    sourcemap: true,
+    plugins: [vuePlugin()],
+    define: {
+        "process.env.NODE_ENV": JSON.stringify("development"),
+    },
+});
+
+require('esbuild').build({
     entryPoints: ['src/worker.js'],
     bundle: true,
     outfile: 'build/worker.js',
