@@ -232,7 +232,7 @@ let python_version = '';
 
 const python_opts = {
     onReady: function (version) {
-        python_version = '🐍 Python ' + version;
+        python_version = version;
         status.value = 'Ready';
         console.log(version);
         addOutput({
