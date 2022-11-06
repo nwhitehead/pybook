@@ -29,7 +29,7 @@
 //!
 
 <template>
-  <div :class="{ consoleinput:true, python:isPython, ready:isReady }">
+  <div :class="{ codeinput:true, python:isPython, ready:isReady }">
     <codemirror
       v-model="modelValue"
       :style="{ maxHeight: '600px' }"
@@ -45,7 +45,7 @@
 </template>
 
 <style>
-div.consoleinput {
+div.codeinput {
     height: auto;
     width: 100%;
     padding: 5px 8px 5px 10px;

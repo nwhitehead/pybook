@@ -186,6 +186,8 @@ class WriteCustom:
         self.handler = handler
     def write(self, data):
         self.handler(data)
+    def isatty(self):
+        return True
     def flush(self):
         pass
 
