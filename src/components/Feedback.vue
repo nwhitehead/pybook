@@ -105,6 +105,11 @@
 .feedbackbutton:hover {
     transform: rotate(-90deg);
 }
+section.dark .feedbackbutton {
+    border-top: 5px solid #444;
+    background-color: #444;
+    color: #eee;
+}
 </style>
 
 <script setup>

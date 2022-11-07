@@ -1,0 +1,61 @@
+
+@import '../node_modules/bulma/bulma.sass';
+
+body {
+    // Make transition from light/dark mode less jarring when flipping back and forth
+    height: 100vh;
+    transition: all 0.4s ease;
+}
+body.dark {
+    background-color: $black;
+}
+
+section.dark {
+    background-color: $black;
+    color: $light;
+}
+
+section.dark .box {
+    background-color: $dark;
+    color: $light;
+}
+
+section.dark .title {
+    color: $light;
+}
+section.dark .subtitle {
+    color: $light;
+}
+section .tag {
+    background-color: $grey-lighter;
+    color: $dark;
+}
+section.dark .tag {
+    background-color: $grey-dark;
+    color: $light;
+}
+section.dark a {
+    color: $cyan;
+}
+section.dark a:hover {
+    color: $light;
+}
+
+[type=checkbox] {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: solid 1px $grey-light;
+    margin-right: 8px;
+    position: relative;
+}
+
+[type=checkbox]:checked::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background-color: $blue;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+}

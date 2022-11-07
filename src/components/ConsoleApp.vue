@@ -5,7 +5,7 @@
 //!
 
 <template>
-    <section class="section">
+    <section :class="{ section, dark:darkmode }">
         <div class="container">
             <div class="columns">
                 <div class="column is-four-fifths">
@@ -32,6 +32,10 @@
                             <p>
                                 <input type="checkbox" id="disableFeedbackId" v-model="disableFeedback" />
                                 <label for="disableFeedbackId"> Disable feedback tag</label>
+                            </p>
+                            <p>
+                                <input type="checkbox" id="darkmodeId" v-model="darkmode" />
+                                <label for="darkmodeId"> Enable dark mode</label>
                             </p>
                         </div>
                     </div>
@@ -88,6 +92,10 @@ watch(closeBrackets, (newValue) => {
 const disableFeedback = ref(getLocalStorage('disableFeedback', 'false') === 'true');
 watch(disableFeedback, (newValue) => {
     localStorage.setItem('disableFeedback', newValue);
+});
+const darkmode = ref(getLocalStorage('darkmode', 'false') === 'true');
+watch(darkmode, (newValue) => {
+    localStorage.setItem('darkmode', newValue);
 });
 
 const options = computed(() => {

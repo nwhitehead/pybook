@@ -6,6 +6,7 @@ import { marked } from 'marked';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism.css';
 import 'prismjs/components/prism-python';
+import 'bulma/css/bulma.css';
 
 // Global markdown rendering options
 marked.setOptions({
