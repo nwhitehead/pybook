@@ -166,7 +166,6 @@ async function configure(config) {
                 console.log(`Error loading package ${packagename}`);
             }
         }
-        //await pyodide.loadPackagesFromImports(code);
         const eval_func = exec_module.wrapped_run_cell;
         const default_func = exec_module.default_func;
         await eval_func(code, /*globals_=*/theState, /*locals_=*/null, /*func=*/default_func, /*history=*/true, /*write=*/true, /*print_exception=*/true, /*propagate_exception=*/false, /*strip=*/1);
