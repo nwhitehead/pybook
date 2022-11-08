@@ -350,9 +350,14 @@ function historyNext() {
 
 function historyRegister(entry) {
     const mode = waitingInput.value ? 'stdin' : 'python';
-    history[mode].entries.push(entry);
-    history[mode].position = history[mode].entries.length;
-    emit('update:history', history);
+    const last = history[mode].entries.length > 0 ? history[mode].entries[history[mode].entries.length - 1] : null;
+    if (entry === last) {
+        // Ignore same entry multiple times in a row
+    } else {
+        history[mode].entries.push(entry);
+        history[mode].position = history[mode].entries.length;
+        emit('update:history', history);
+    }
 }
 
 function clickEvaluate() {
