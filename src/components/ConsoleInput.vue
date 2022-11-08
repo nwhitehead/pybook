@@ -6,6 +6,7 @@
 //!
 //! Props:
 //! - modelValue - This is the main text contents inside the cell input.
+//! - eventbus - Small eventbus for sending commands to the input area outside of prop changes (focus, blur, etc.)
 //! - options - This is a dict of options related to the editor
 //!     indent - Number of spaces per indent level (default 4)
 //!     readonly - True if the editor should be readonly (default false)
@@ -73,7 +74,7 @@ import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { consoleExtension } from './customTheme.js';
 
-const props = defineProps([ 'modelValue', 'options' ]);
+const props = defineProps([ 'modelValue', 'eventbus', 'options' ]);
 const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext', 'reset' ]);
 
 //! Function to call when up key pressed
@@ -256,6 +257,18 @@ watch(disabled, (newValue, oldValue) => {
       });
     });
   }
+});
+
+props.eventbus.on('focus', () => {
+    // We need the DOM element of the codemirror component, get it with $el
+    const cmDomElement = cmElement.value.$el;
+    // Now find the right part that accepts focus
+    const textBox = cmDomElement.querySelectorAll('[role="textbox"]');
+    // Need to wait for DOM update to do actual focus
+    // At this point we have flag changed, but DOM not updated yet
+    textBox.forEach( (el) => {
+        el.focus();
+    });
 });
 
 </script>

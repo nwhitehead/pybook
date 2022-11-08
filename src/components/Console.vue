@@ -28,7 +28,7 @@
 
 <template>
     <div :class="{ consoleappholder:true, dark }">
-        <div :class="{ consoleoutputholder:true, dark }" ref="holder" @click="clickOutput">
+        <div :class="{ consoleoutputholder:true, dark }" ref="holder">
             <ConsoleOutput :values="outputs" />
             <div class="busyiconholder">
                 <span class="material-icons spin" v-if="busy">autorenew</span>
@@ -37,7 +37,7 @@
                 <span class="material-icons pulse" v-if="waitingInput">pending</span>
             </div>
             <div class="consoleinputholder" ref="consoleinputholder">
-                <ConsoleInput v-model="entry" :options="inputOptions"
+                <ConsoleInput v-model="entry" :options="inputOptions" :eventbus="consoleInputEventbus"
                     @evaluate="clickEvaluate()"
                     @interrupt="interrupt()"
                     @clear="clear()"
@@ -132,6 +132,7 @@ import ConsoleInput from './ConsoleInput.vue';
 import ConsoleOutput from './ConsoleOutput.vue';
 
 import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
+import mitt from 'mitt';
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
@@ -145,6 +146,7 @@ import { signalMap,
 const props = defineProps([ 'eventbus', 'options', 'dark' ]);
 const emit = defineEmits([ 'update:history', 'evaluate', 'stdin', 'interrupt', 'update:busy', 'update:stdin' ]);
 
+const consoleInputEventbus = mitt(); // bus for ConsoleInput
 const holder = ref(null);
 const consoleinputholder = ref(null);
 
@@ -256,8 +258,8 @@ watch(horizontalOffset, (newValue, oldValue) => {
 });
 
 function clickOutput(evt) {
-    //console.log('Clicked output area');
-    // Idea is to focus input area, not sure best way to do that right now
+    // Focus input area
+    consoleInputEventbus.emit('focus');
 }
 
 const normalstate = 'state';
