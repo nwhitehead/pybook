@@ -321,7 +321,10 @@ function historyPrevious() {
         }
         history[mode].position--;
         entry.value = history[mode].entries[history[mode].position];
-        nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
+        nextTick(() => {
+            holder.value.scroll(0, holder.value.scrollHeight);
+            consoleInputEventbus.emit('selectend');
+        });
     }
 }
 
@@ -331,10 +334,16 @@ function historyNext() {
         history[mode].position++;
         if (history[mode].position === history[mode].entries.length) {
             entry.value = history[mode].savedCurrent;
-            nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
+            nextTick(() => {
+                holder.value.scroll(0, holder.value.scrollHeight);
+                consoleInputEventbus.emit('selectend');
+            });
         } else {
             entry.value = history[mode].entries[history[mode].position];
-            nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
+            nextTick(() => {
+                holder.value.scroll(0, holder.value.scrollHeight);
+                consoleInputEventbus.emit('selectend');
+            });
         }
     }
 }

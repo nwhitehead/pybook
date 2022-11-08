@@ -42,6 +42,7 @@
       :disabled="disabled"
       ref="cmElement"
       @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
+      @ready="handleReady"
     />
   </div>
 </template>
@@ -105,6 +106,11 @@ function down(editorView) {
 }
 
 let cmElement = ref(null);
+let cmComponent = ref(null);
+
+function handleReady(payload) {
+    cmComponent.value = payload.view;
+}
 
 //! Function to call when Enter is pressed
 //! If we are in multiline mode, pass through as normal
@@ -268,6 +274,16 @@ props.eventbus.on('focus', () => {
     // At this point we have flag changed, but DOM not updated yet
     textBox.forEach( (el) => {
         el.focus();
+    });
+});
+
+props.eventbus.on('selectend', () => {
+    const N = props.modelValue.length;
+    cmComponent.value.dispatch({
+        selection: {
+            anchor: N,
+            head: N,
+        }
     });
 });
 
