@@ -27,9 +27,9 @@ require('esbuild').build({
 require('esbuild').build({
     entryPoints: ['src/main_code.js'],
     bundle: true,
-    outfile: 'build/main_code.js',
+    outdir: 'build',
     sourcemap: true,
-    plugins: [vuePlugin()],
+    plugins: [vuePlugin(), sassPlugin()],
     define: {
         "process.env.NODE_ENV": JSON.stringify("development"),
     },

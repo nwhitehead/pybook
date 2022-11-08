@@ -5,17 +5,17 @@
 //!
 
 <template>
-    <section class="section">
+    <section :class="{ section:true, dark:darkmode }">
         <div class="container">
             <div class="columns">
                 <div class="column is-half">
                     <div class="box">
-                        <CodeInput v-model="script" :options="optionsCode" />
+                        <CodeInput v-model="script" :options="optionsCode" :dark="darkmode" />
                     </div>
                 </div>
                 <div class="column is-half">
                     <div class="box">
-                        <Console :eventbus="eventbus" :options="optionsConsole" />
+                        <Console :eventbus="eventbus" :options="optionsConsole" :dark="darkmode" />
                     </div>
                 </div>
             </div>
@@ -23,10 +23,26 @@
                 <div class="column is-half">
                     <div class="box">
                         <div class="content">
+                            <p class="subtitle is-4">Keyboard controls</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">Enter</span> evaluate</p>
+                            <p><span class="tag">Shift</span>-<span class="tag">Enter</span> insert newline</p>
+                            <p v-if="evalSingleLine" ><span class="tag">Enter</span> evaluate single line input</p>
+                            <p v-if="!evalSingleLine" ><span class="tag">Enter</span> insert newline</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">C</span> interrupt Python</p>
+                            <p><span class="tag">Up</span> / <span class="tag">Down</span> history</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">L</span> clear all output</p>
+                            <p><span class="tag">Ctrl</span>-<span class="tag">Shift</span>-<span class="tag">L</span> to clear Python state and clear output</p>
+                            <p><a href="hint.html" target="_blank">Usage Hints</a></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-half">
+                    <div class="box">
+                        <div class="content">
                             <p class="subtitle is-4">Configuration</p>
                             <p>
                                 <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
-                                <label for="evalSingleLineId"> <span class="tag">Enter</span> evaluates single line input</label>
+                                <label for="evalSingleLineId"> <span class="tag">Enter</span> evaluates single line input in console</label>
                             </p>
                             <p>
                                 <input type="checkbox" id="lineNumbersId" v-model="lineNumbers" />
@@ -40,20 +56,10 @@
                                 <input type="checkbox" id="disableFeedbackId" v-model="disableFeedback" />
                                 <label for="disableFeedbackId"> Disable feedback tag</label>
                             </p>
-                        </div>
-                    </div>
-                    <div class="box">
-                        <div class="content">
-                            <p class="subtitle is-4">Keyboard controls</p>
-                            <p><span class="tag">Ctrl</span>-<span class="tag">Enter</span> evaluate</p>
-                            <p><span class="tag">Shift</span>-<span class="tag">Enter</span> insert newline</p>
-                            <p v-if="evalSingleLine" ><span class="tag">Enter</span> evaluate single line input</p>
-                            <p v-if="!evalSingleLine" ><span class="tag">Enter</span> insert newline</p>
-                            <p><span class="tag">Ctrl</span>-<span class="tag">C</span> interrupt Python</p>
-                            <p><span class="tag">Up</span> / <span class="tag">Down</span> history</p>
-                            <p><span class="tag">Ctrl</span>-<span class="tag">L</span> clear all output</p>
-                            <p><span class="tag">Ctrl</span>-<span class="tag">Shift</span>-<span class="tag">L</span> to clear Python state and clear output</p>
-                            <p><a href="hint.html" target="_blank">Usage Hints</a></p>
+                            <p>
+                                <input type="checkbox" id="darkmodeId" v-model="darkmode" />
+                                <label for="darkmodeId"> Enable dark mode</label>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -98,6 +104,19 @@ watch(closeBrackets, (newValue) => {
 const disableFeedback = ref(getLocalStorage('disableFeedback', 'false') === 'true');
 watch(disableFeedback, (newValue) => {
     localStorage.setItem('disableFeedback', newValue);
+});
+const darkmode = ref(getLocalStorage('darkmode', 'false') === 'true');
+function updateBodyDark() {
+    const body = document.querySelector('body');
+    if (darkmode.value) {
+        body.classList.add('dark');
+    } else {
+        body.classList.remove('dark');
+    }
+}
+watch(darkmode, (newValue) => {
+    updateBodyDark();
+    localStorage.setItem('darkmode', newValue);
 });
 
 const optionsCode = computed(() => {

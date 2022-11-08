@@ -6,6 +6,7 @@
 //!
 //! Props:
 //! - modelValue - This is the main text contents inside the cell input.
+//! - eventbus - Small eventbus for sending commands to the input area outside of prop changes (focus, blur, etc.)
 //! - options - This is a dict of options related to the editor
 //!     indent - Number of spaces per indent level (default 4)
 //!     readonly - True if the editor should be readonly (default false)
@@ -20,6 +21,7 @@
 //!     canFocus - Allow input area to be focused by user (default true)
 //!     ready - Is state ready for submitting input (default true)
 //!     evalSingleLine - If true then pressing Enter on single line will evaluate (default true)
+//!     dark - Show in dark mode colors
 //!
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
@@ -40,6 +42,7 @@
       :disabled="disabled"
       ref="cmElement"
       @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
+      @ready="handleReady"
     />
   </div>
 </template>
@@ -70,11 +73,17 @@ import { defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatchi
 import { defaultKeymap, history, historyKeymap, insertNewlineAndIndent } from '@codemirror/commands';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
+import { consoleExtension } from './customTheme.js';
 
-const props = defineProps([ 'modelValue', 'options' ]);
+const props = defineProps([ 'modelValue', 'eventbus', 'options' ]);
 const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt' ]);
 
 let cmElement = ref(null);
+let cmComponent = ref(null);
+
+function handleReady(payload) {
+    cmComponent.value = payload.view;
+}
 
 function nop(target) {
     return true;
@@ -151,6 +160,10 @@ const extensions = computed(() => {
   // Put in syntax highlighting language
   if (opts.type === 'python') {
     ext.push(python());
+  }
+  // Enable dark mode if applicable (we use one-dark)
+  if (opts.dark) {
+    ext.push(consoleExtension);
   }
   return ext;
 });
