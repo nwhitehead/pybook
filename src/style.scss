@@ -4,13 +4,25 @@
 // My colors
 $blue-light: hsl(217, 71%, 70%);
 
+html {
+    overflow-y: auto;
+}
 body {
-    // Make transition from light/dark mode less jarring when flipping back and forth
     height: 100vh;
-    transition: all 0.4s ease;
+    background-color: $white;
 }
 body.dark {
     background-color: $black;
+}
+body {
+    transition: all 0.5s ease;
+}
+section {
+    transition: all 0.5s ease;
+}
+
+section.section {
+    padding-bottom: 0;
 }
 
 section.dark {

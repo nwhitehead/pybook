@@ -28,7 +28,7 @@
 
 <template>
     <div :class="{ consoleappholder:true, dark }">
-        <div class="consoleoutputholder" ref="holder">
+        <div :class="{ consoleoutputholder:true, dark }" ref="holder" @click="clickOutput">
             <ConsoleOutput :values="outputs" />
             <div class="busyiconholder">
                 <span class="material-icons spin" v-if="busy">autorenew</span>
@@ -60,6 +60,15 @@ div.consoleappholder pre {
 div.consoleappholder.dark {
     background-color: #222;
 }
+.dark::-webkit-scrollbar {
+    width: 12px;
+    background-color: #222;
+}
+.dark::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 6px;
+}
+
 div.consoleappholder.dark pre {
     color: #eee;
 }
@@ -209,7 +218,7 @@ const inputOptions = computed(() => {
         singleLine: waitingInput.value ? true : false,
         lineNumbers: waitingInput.value ? false : (numLines > 1 ? options.lineNumbers : false),
         closeBrackets: waitingInput.value ? false : options.closeBrackets,
-        dark: options.dark,
+        dark: props.dark,
     };
 });
 
@@ -245,6 +254,11 @@ watch(horizontalOffset, (newValue, oldValue) => {
     newMarginLeft = newMarginLeft < MIN_MARGIN_LEFT ? MIN_MARGIN_LEFT : (newMarginLeft > MAX_MARGIN_LEFT ? MAX_MARGIN_LEFT : newMarginLeft);
     consoleinputholder.value.style['margin-left'] = newMarginLeft + 'px';
 });
+
+function clickOutput(evt) {
+    //console.log('Clicked output area');
+    // Idea is to focus input area, not sure best way to do that right now
+}
 
 const normalstate = 'state';
 const prompt = '>>> ';

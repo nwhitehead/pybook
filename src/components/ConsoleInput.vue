@@ -71,6 +71,7 @@ import { defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatchi
 import { defaultKeymap, history, historyKeymap, insertNewlineAndIndent } from '@codemirror/commands';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
+import { consoleExtension } from './customTheme.js';
 
 const props = defineProps([ 'modelValue', 'options' ]);
 const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext', 'reset' ]);
@@ -171,9 +172,9 @@ const defaultExtensions = (() => [
     ...searchKeymap,
     ...historyKeymap,
     ...foldKeymap,
-  ]),
+  ])
   //EditorView.theme({}, { dark: props.options && props.options.dark }),
-])()
+])();
 
 const extensions = computed(() => {
   // Extensions are reactive to options, computed to avoid recomputing on every template render
@@ -206,6 +207,10 @@ const extensions = computed(() => {
   // For single line mode, filter out any transaction that increases lines past 1
   if (opts.singleLine) {
     ext.push(EditorState.transactionFilter.of(tr => tr.newDoc.lines > 1 ? [] : tr));
+  }
+  // Enable dark mode if applicable (we use one-dark)
+  if (opts.dark) {
+    ext.push(consoleExtension);
   }
   return ext;
 });

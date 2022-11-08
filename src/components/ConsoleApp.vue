@@ -94,9 +94,20 @@ watch(disableFeedback, (newValue) => {
     localStorage.setItem('disableFeedback', newValue);
 });
 const darkmode = ref(getLocalStorage('darkmode', 'false') === 'true');
+function updateBodyDark() {
+    const body = document.querySelector('body');
+    if (darkmode.value) {
+        body.classList.add('dark');
+    } else {
+        body.classList.remove('dark');
+    }
+}
 watch(darkmode, (newValue) => {
+    updateBodyDark();
     localStorage.setItem('darkmode', newValue);
 });
+
+onMounted(() => updateBodyDark());
 
 const options = computed(() => {
     return {
