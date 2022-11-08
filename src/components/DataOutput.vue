@@ -39,12 +39,6 @@
 </template>
 
 <style>
-div.dataoutput pre.stdout {
-    background-color: transparent;
-}
-div.dataoutput pre.stderr {
-    background-color: #f5ed9d;
-}
 .dataoutput pre {
     white-space: pre-wrap;
     word-break: break-all;

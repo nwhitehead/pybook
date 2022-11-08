@@ -3,6 +3,7 @@
 //!
 //! Props:
 //! - disable - Set to true to disable tag from showing at all
+//! - dark - Enable dark mode
 //!
 //! Emits:
 //! - send - Emitted when feedback is to be sent, has payload with fields:
@@ -20,7 +21,7 @@
         <div class="modal-background"></div>
         <div class="modal-card">
 
-            <div class="modal-card-body" v-if="!thanks">
+            <div :class="{ 'modal-card-body':true, dark }" v-if="!thanks">
                 <p class="title is-4">Send feedback</p>
 
                 <div class="tabs is-toggle is-toggle-rounded">
@@ -71,13 +72,13 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-card-body" v-if="thanks">
+            <div :class="{ 'modal-card-body':true, dark }" v-if="thanks">
                 <p class="title is-4">Thank you for your feedback!</p>
             </div>
             <button class="modal-close is-large" aria-label="close" @click="active=false; thanks=false"></button>
         </div>
     </div>
-    <div v-if="!disable" class="fixed"><button class="feedbackbutton" @click="active=true"><span>Feedback</span></button></div>
+    <div v-if="!disable" class="fixed"><button :class="{ feedbackbutton:true, dark }" @click="active=true"><span>Feedback</span></button></div>
 </template>
 
 <style>
@@ -105,7 +106,7 @@
 .feedbackbutton:hover {
     transform: rotate(-90deg);
 }
-section.dark .feedbackbutton {
+.feedbackbutton.dark {
     border-top: 5px solid #444;
     background-color: #444;
     color: #eee;
@@ -117,7 +118,7 @@ section.dark .feedbackbutton {
 import { ref, watch, nextTick } from 'vue';
 import html2canvas from 'html2canvas';
 
-const props = defineProps([ 'disable' ]);
+const props = defineProps([ 'disable', 'dark' ]);
 const emit = defineEmits([ 'send' ]);
 
 let active = ref(false); // When active, modal takes over all display

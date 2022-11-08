@@ -1,6 +1,9 @@
 
 @import '../node_modules/bulma/bulma.sass';
 
+// My colors
+$blue-light: hsl(217, 71%, 70%);
+
 body {
     // Make transition from light/dark mode less jarring when flipping back and forth
     height: 100vh;
@@ -35,27 +38,75 @@ section.dark .tag {
     color: $light;
 }
 section.dark a {
-    color: $cyan;
+    color: $blue-light;
 }
 section.dark a:hover {
     color: $light;
 }
 
-[type=checkbox] {
+input[type=checkbox] {
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border: solid 1px $grey-light;
     margin-right: 8px;
     position: relative;
+    vertical-align: -3px;
 }
 
-[type=checkbox]:checked::before {
+input[type=checkbox]:checked::before {
     content: "";
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     background-color: $blue;
     position: absolute;
     top: 2px;
     left: 2px;
+}
+
+section.dark input[type=checkbox]:checked::before {
+    background-color: $blue-light;
+}
+
+.modal-card-body.dark {
+    background-color: $dark;
+    color: $light;
+}
+
+.modal-card-body.dark a {
+    color:$light;
+    background-color:$dark;
+}
+
+.modal-card-body.dark a:hover {
+    color:$light;
+    background-color:$grey-dark;
+}
+
+.modal-card-body.dark li.is-active a {
+    color:$dark;
+    background-color:$blue-light;
+}
+
+.modal-card-body.dark li.is-active a:hover {
+    color:$dark;
+    background-color:$blue-light;
+}
+
+.modal-card-body.dark textarea {
+    color:$light;
+    background-color:$dark;
+}
+
+.modal-card-body.dark textarea::placeholder {
+    color:$grey;
+}
+
+.modal-card-body.dark input[type=email] {
+    color:$light;
+    background-color:$dark;
+}
+
+.modal-card-body.dark input[type=email]::placeholder {
+    color:$grey;
 }

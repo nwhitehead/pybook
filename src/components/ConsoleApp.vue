@@ -5,12 +5,12 @@
 //!
 
 <template>
-    <section :class="{ section, dark:darkmode }">
+    <section :class="{ section:true, dark:darkmode }">
         <div class="container">
             <div class="columns">
                 <div class="column is-four-fifths">
                     <div class="box">
-                        <Console :eventbus="eventbus" :options="options" />
+                        <Console :eventbus="eventbus" :options="options" :dark="darkmode" />
                     </div>
                 </div>
                 <div class="column is-one-fifth">
@@ -55,7 +55,7 @@
                     </div>
                 </div>
             </div>
-            <Feedback :disable="disableFeedback" @send="send" />
+            <Feedback :disable="disableFeedback" :dark="darkmode" @send="send" />
         </div>
     </section>
 </template>

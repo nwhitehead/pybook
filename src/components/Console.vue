@@ -13,6 +13,7 @@
 //!     - evalSingleLine - Whether to eval single line input when Enter pressed (or insert newline if false)
 //!     - lineNumbers - Show line numbers on multiline input
 //!     - closeBrackets - Automatically close brackets/quotes/etc. while typing input
+//! - dark - Whether to render in darkmode
 //!
 //! Emits:
 //! - update:history - When command history is changed this is emitted to inform parent, payload is:
@@ -26,7 +27,7 @@
 //!
 
 <template>
-    <div class="consoleappholder">
+    <div :class="{ consoleappholder:true, dark }">
         <div class="consoleoutputholder" ref="holder">
             <ConsoleOutput :values="outputs" />
             <div class="busyiconholder">
@@ -52,6 +53,15 @@
 <style>
 div.consoleappholder {
     background-color: #eee;
+}
+div.consoleappholder pre {
+    color: #444;
+}
+div.consoleappholder.dark {
+    background-color: #222;
+}
+div.consoleappholder.dark pre {
+    color: #eee;
 }
 div.consoleoutputholder {
     min-height: 60px;
@@ -96,6 +106,15 @@ div.inputiconholder {
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
+div.dataoutput pre.stdout {
+    background-color: transparent;
+}
+div.dataoutput pre.stderr {
+    background-color: #f5ed9d;
+}
+div.consoleappholder.dark pre.stderr {
+    background-color: #430;
+}
 </style>
 
 <script setup>
@@ -114,7 +133,7 @@ import { signalMap,
                  isInputWaiting
              } from '../signal.js';
 
-const props = defineProps([ 'eventbus', 'options' ]);
+const props = defineProps([ 'eventbus', 'options', 'dark' ]);
 const emit = defineEmits([ 'update:history', 'evaluate', 'stdin', 'interrupt', 'update:busy', 'update:stdin' ]);
 
 const holder = ref(null);
@@ -190,6 +209,7 @@ const inputOptions = computed(() => {
         singleLine: waitingInput.value ? true : false,
         lineNumbers: waitingInput.value ? false : (numLines > 1 ? options.lineNumbers : false),
         closeBrackets: waitingInput.value ? false : options.closeBrackets,
+        dark: options.dark,
     };
 });
 

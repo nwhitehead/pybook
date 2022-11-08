@@ -20,6 +20,7 @@
 //!     canFocus - Allow input area to be focused by user (default true)
 //!     ready - Is state ready for submitting input (default true)
 //!     evalSingleLine - If true then pressing Enter on single line will evaluate (default true)
+//!     dark - Show in dark mode colors
 //!
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
@@ -61,7 +62,7 @@ div.consoleinput {
 import { computed, ref, watch, nextTick } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { python } from '@codemirror/lang-python';
-import { keymap, highlightSpecialChars, drawSelection, highlightActiveLine, dropCursor,
+import { EditorView, keymap, highlightSpecialChars, drawSelection, highlightActiveLine, dropCursor,
         rectangularSelection, crosshairCursor,
         lineNumbers, highlightActiveLineGutter } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
@@ -170,7 +171,8 @@ const defaultExtensions = (() => [
     ...searchKeymap,
     ...historyKeymap,
     ...foldKeymap,
-  ])
+  ]),
+  //EditorView.theme({}, { dark: props.options && props.options.dark }),
 ])()
 
 const extensions = computed(() => {
