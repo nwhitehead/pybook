@@ -169,7 +169,7 @@ async function configure(config) {
         //await pyodide.loadPackagesFromImports(code);
         const eval_func = exec_module.wrapped_run_cell;
         const default_func = exec_module.default_func;
-        await eval_func(code, /*globals_=*/theState, /*locals_=*/null, /*func=*/default_func, /*history=*/true, /*write=*/true, /*print_exception=*/true, /*propagate_exception=*/false, /*strip=*/2);
+        await eval_func(code, /*globals_=*/theState, /*locals_=*/null, /*func=*/default_func, /*history=*/true, /*write=*/true, /*print_exception=*/true, /*propagate_exception=*/false, /*strip=*/1);
         Atomics.store(sharedArray, signalMap['busy'], 0);
     };
 

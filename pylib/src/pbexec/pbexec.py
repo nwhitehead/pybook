@@ -55,7 +55,7 @@ def default_func(value):
     if value is not None:
         sys.stdout.write(f'→ {repr(value)}\n')
 
-async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True, print_exception=True, propagate_exception=False, strip=2):
+async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True, print_exception=True, propagate_exception=False, strip=1):
     """
     Run script with given globals and locals environment
     
@@ -98,7 +98,7 @@ async def run_cell(script, globals_=None, locals_=None, func=default_func, histo
         if print_exception:
             exc_type, exc_value, exc_tb = sys.exc_info()
             # Skip a few levels to simplify backtrace
-            for i in range(strip):
+            for i in range(strip + 1):
                 exc_tb = exc_tb.tb_next
             sys.excepthook(exc_type, exc_value.with_traceback(exc_tb), exc_tb)
         if propagate_exception:
