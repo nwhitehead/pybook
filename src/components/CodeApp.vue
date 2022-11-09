@@ -66,6 +66,10 @@
                                 <input type="checkbox" id="darkmodeId" v-model="darkmode" />
                                 <label for="darkmodeId"> Enable dark mode</label>
                             </p>
+                            <p>
+                                <input type="checkbox" id="wrapId" v-model="wrap" />
+                                <label for="wrapId"> Wrap long lines</label>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -125,6 +129,10 @@ watch(darkmode, (newValue) => {
     updateBodyDark();
     localStorage.setItem('darkmode', newValue);
 });
+const wrap = ref(getLocalStorage('wrap', 'true') === 'true');
+watch(wrap, (newValue) => {
+    localStorage.setItem('wrap', newValue);
+});
 
 onMounted(() => updateBodyDark());
 
@@ -142,6 +150,7 @@ const optionsConsole = computed(() => {
         evalSingleLine:evalSingleLine.value,
         lineNumbers:lineNumbers.value,
         closeBrackets:closeBrackets.value,
+        wrap:wrap.value,
     };
 });
 

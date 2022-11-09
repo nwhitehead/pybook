@@ -9,10 +9,11 @@
 //!
 //! Props:
 //! - eventbus - Eventbus to communicate two ways with this component (currently unused, designed for controlling Python interpreter in future)
-//! - options - Setup for input, has:
+//! - options - Setup for input and output, has:
 //!     - evalSingleLine - Whether to eval single line input when Enter pressed (or insert newline if false)
 //!     - lineNumbers - Show line numbers on multiline input
 //!     - closeBrackets - Automatically close brackets/quotes/etc. while typing input
+//!     - wrap - Whether to wrap output long lines or not
 //! - dark - Whether to render in darkmode
 //!
 //! Emits:
@@ -29,7 +30,7 @@
 <template>
     <div :class="{ consoleappholder:true, dark }">
         <div :class="{ consoleoutputholder:true, dark }" ref="holder">
-            <ConsoleOutput :values="outputs" />
+            <ConsoleOutput :values="outputs" :wrap="options.wrap" />
             <div class="busyiconholder">
                 <span class="material-icons spin" v-if="busy">autorenew</span>
             </div>
@@ -89,6 +90,9 @@ div.consoleoutputholder {
     max-height: calc(100vh - 130px);
     overflow: auto;
 }
+div.consoleoutputholder.fullheight {
+    min-height: calc(100vh - 130px);
+}
 div.consoleinputholder {
     margin-top: -43px;
     margin-left: 35px;
@@ -135,13 +139,8 @@ div.dataoutput pre.stdout {
     background-color: transparent;
 }
 div.dataoutput pre.stderr {
-    background-color: transparent;
-    border: 8px solid;
-    border-image: repeating-linear-gradient(44deg, #888, #888 4px, #ff0 4px, #ff0 8px, #888 8px) 0 8 0 0;
-    border-width: 0px 8px 0px 0px;
-}
-div.consoleappholder.dark pre.stderr {
-    border-image: repeating-linear-gradient(44deg, transparent, transparent 4px, #ff0 4px, #ff0 8px, transparent 8px) 0 8 0 0;
+    background-color: #ff01;
+    border-left: solid 5px #ff04;
 }
 </style>
 
