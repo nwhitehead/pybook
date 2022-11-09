@@ -141,30 +141,35 @@ async function configure(config) {
         Atomics.store(sharedArray, signalMap['busy'], 1);
         const exec_module = pyodide.globals.get('pbexec');
         let theState = getState(state);
-        const imports = pyodide.pyodide_py.code.find_imports(code).toJs();
-        let packages = []; // what cannot be imported, to install with micropip
-        // micropip covers pyodide native packages and PyPI
-        for (let i = 0; i < imports.length; i++) {
-            const elem = imports[i];
-            try {
-                pyodide.pyimport(elem);
-            } catch(err) {
-                // If 'import ...' did not work, schedule the package to be loaded with micropip
-                packages.push(elem);
+        if (options.usePyPI) {
+            const imports = pyodide.pyodide_py.code.find_imports(code).toJs();
+            let packages = []; // what cannot be imported, to install with micropip
+            // micropip covers pyodide native packages and PyPI
+            for (let i = 0; i < imports.length; i++) {
+                const elem = imports[i];
+                try {
+                    pyodide.pyimport(elem);
+                } catch(err) {
+                    // If 'import ...' did not work, schedule the package to be loaded with micropip
+                    packages.push(elem);
+                }
             }
-        }
-        // Use handy function pyodide provides to map import name to package name (e.g. 'import bs4' becomes package 'beautifulsoup4')
-        const import_name_to_package_name = pyodide._api._import_name_to_package_name;
-        for (let i = 0; i < packages.length; i++) {
-            const name = packages[i];
-            let packagename = import_name_to_package_name[name] ? import_name_to_package_name[name] : name;
-            try {
-                await pyodide.runPythonAsync('await micropip.install("' + packagename + '")');
-            } catch(err) {
-                // Catch the Python exception here and ignore besides a log message
-                // When evaluating the user source, the import will fail giving correct exception at correct location to user
-                console.log(`Error loading package ${packagename}`);
+            // Use handy function pyodide provides to map import name to package name (e.g. 'import bs4' becomes package 'beautifulsoup4')
+            const import_name_to_package_name = pyodide._api._import_name_to_package_name;
+            for (let i = 0; i < packages.length; i++) {
+                const name = packages[i];
+                let packagename = import_name_to_package_name[name] ? import_name_to_package_name[name] : name;
+                try {
+                    await pyodide.runPythonAsync('await micropip.install("' + packagename + '")');
+                } catch(err) {
+                    // Catch the Python exception here and ignore besides a log message
+                    // When evaluating the user source, the import will fail giving correct exception at correct location to user
+                    console.log(`Error loading package ${packagename}`);
+                }
             }
+        } else {
+            // Don't use PyPI, just load any local Pyodide packages
+            await pyodide.loadPackagesFromImports(code);
         }
         const eval_func = exec_module.wrapped_run_cell;
         const default_func = options.no_default_func ? null : exec_module.default_func;

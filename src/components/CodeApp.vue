@@ -23,7 +23,7 @@
                 </div>
                 <div class="column is-half">
                     <div class="box console">
-                        <Console :eventbus="eventbus" :options="optionsConsole" :dark="darkmode"
+                        <Console :eventbus="eventbus" :options="optionsConsole" :pyoptions="pyoptionsConsole" :dark="darkmode"
                             @update:busy="(evt) => busy = evt"
                             @update:stdin="(evt) => stdin = evt"
                         />
@@ -85,6 +85,11 @@
                             <p>
                                 <input type="checkbox" id="editLineNumbersId" v-model="editLineNumbers" />
                                 <label for="editLineNumbersId"> Show line numbers</label>
+                            </p>
+                            <p class="subtitle is-6">Python</p>
+                            <p>
+                                <input type="checkbox" id="usePyPIid" v-model="usePyPI" />
+                                <label for="usePyPIid"> Automatically install PyPI packages when used</label>
                             </p>
                         </div>
                     </div>
@@ -157,6 +162,10 @@ const fixedHeight = ref(getLocalStorage('fixedHeight', 'false') === 'true');
 watch(fixedHeight, (newValue) => {
     localStorage.setItem('fixedHeight', newValue);
 });
+const usePyPI = ref(getLocalStorage('usePyPI', 'true') === 'true');
+watch(usePyPI, (newValue) => {
+    localStorage.setItem('usePyPI', newValue);
+});
 
 onMounted(() => updateBodyDark());
 
@@ -177,6 +186,12 @@ const optionsConsole = computed(() => {
         closeBrackets:closeBrackets.value,
         wrap:wrap.value,
         fixedHeight:fixedHeight.value,
+    };
+});
+
+const pyoptionsConsole = computed(() => {
+    return {
+        usePyPI:usePyPI.value,
     };
 });
 

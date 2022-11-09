@@ -10,7 +10,7 @@
             <div class="columns">
                 <div class="column is-four-fifths">
                     <div class="box console">
-                        <Console :eventbus="eventbus" :options="options" :dark="darkmode" />
+                        <Console :eventbus="eventbus" :options="options" :pyoptions="pyoptions" :dark="darkmode" />
                     </div>
                 </div>
                 <div class="column is-one-fifth">
@@ -40,6 +40,10 @@
                             <p>
                                 <input type="checkbox" id="lineNumbersId" v-model="lineNumbers" />
                                 <label for="lineNumbersId"> Show line numbers in multiline input</label>
+                            </p>
+                            <p>
+                                <input type="checkbox" id="usePyPIid" v-model="usePyPI" />
+                                <label for="usePyPIid"> Automatically install PyPI packages when used</label>
                             </p>
                         </div>
                     </div>
@@ -114,6 +118,10 @@ const wrap = ref(getLocalStorage('wrap', 'true') === 'true');
 watch(wrap, (newValue) => {
     localStorage.setItem('wrap', newValue);
 });
+const usePyPI = ref(getLocalStorage('usePyPI', 'true') === 'true');
+watch(usePyPI, (newValue) => {
+    localStorage.setItem('usePyPI', newValue);
+});
 
 onMounted(() => updateBodyDark());
 
@@ -123,6 +131,12 @@ const options = computed(() => {
         lineNumbers:lineNumbers.value,
         closeBrackets:closeBrackets.value,
         wrap:wrap.value,
+    };
+});
+
+const pyoptions = computed(() => {
+    return {
+        usePyPI:usePyPI.value,
     };
 });
 

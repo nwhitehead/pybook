@@ -8,13 +8,15 @@
 //! direct two way communication to this component.
 //!
 //! Props:
-//! - eventbus - Eventbus to communicate two ways with this component (currently unused, designed for controlling Python interpreter in future)
+//! - eventbus - Eventbus to communicate two ways with this component
 //! - options - Setup for input and output, has:
 //!     - evalSingleLine - Whether to eval single line input when Enter pressed (or insert newline if false)
 //!     - lineNumbers - Show line numbers on multiline input
 //!     - closeBrackets - Automatically close brackets/quotes/etc. while typing input
 //!     - wrap - Whether to wrap output long lines or not
 //!     - fixedHeight - Whether to fix the size (false will shrink/grow vertically between min/max sizes, true will always be max size)
+//! - pyoptions - Options for python interpreter
+//!     - usePyPI - If true imports will automatically look in PyPI and install dependencies, otherwise just Pyodide packages will be loaded as needed
 //! - dark - Whether to render in darkmode
 //!
 //! Emits:
@@ -27,6 +29,11 @@
 //! - update:busy - When busy state changes, payload is true/false for new busy state
 //! - update:stdin - When stdin state changes, payload is true/false
 //!
+//! Eventbus accepts:
+//! - evaluate - Payload has { src }
+//! - interrupt
+//! - clear
+//! - reset
 
 <template>
     <div :class="{ consoleappholder:true, dark }">
@@ -139,7 +146,7 @@ import { signalMap,
                  isInputWaiting
              } from '../signal.js';
 
-const props = defineProps([ 'eventbus', 'options', 'dark' ]);
+const props = defineProps([ 'eventbus', 'options', 'pyoptions', 'dark' ]);
 const emit = defineEmits([ 'update:history', 'evaluate', 'stdin', 'interrupt', 'update:busy', 'update:stdin' ]);
 
 const consoleInputEventbus = mitt(); // bus for ConsoleInput
@@ -376,7 +383,7 @@ function evaluate(src, console) {
         });
     }
     emit('evaluate', src);
-    let options = {};
+    let options = { usePyPI:props.pyoptions.usePyPI };
     if (!console) {
         // For code evaluation, do not print "-> 4" for "2+2", only output for explicit prints.
         options.no_default_func = true;
