@@ -10,7 +10,7 @@
             <div class="columns">
                 <div class="column is-half">
                     <div class="box">
-                        <CodeInput v-model="script" :options="optionsCode" :dark="darkmode" />
+                        <CodeInput v-model="script" :options="optionsCode" />
                     </div>
                 </div>
                 <div class="column is-half">
@@ -75,7 +75,7 @@ import CodeInput from './CodeInput.vue';
 import Console from './Console.vue';
 import Feedback from './Feedback.vue';
 
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import axios from 'axios';
 import mitt from 'mitt';
 
@@ -119,9 +119,14 @@ watch(darkmode, (newValue) => {
     localStorage.setItem('darkmode', newValue);
 });
 
+onMounted(() => updateBodyDark());
+
 const optionsCode = computed(() => {
     return {
         type:'python',
+        dark:darkmode.value,
+        lineNumbers:lineNumbers.value,
+        closeBrackets:closeBrackets.value,
     };
 });
 
