@@ -26,6 +26,9 @@
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
 //! - evaluate - Emitted when user requests text to be evaluated/passed as input
+//! - interrupt
+//! - clear
+//! - reset
 //!
 //! NOTE: This component requires clearing the VueCodemirror global extensions.
 //!

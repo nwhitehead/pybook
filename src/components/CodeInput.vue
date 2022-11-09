@@ -26,6 +26,9 @@
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
 //! - evaluate - Emitted when user requests text to be evaluated/passed as input
+//! - interrupt
+//! - clear
+//! - reset
 //!
 //! NOTE: This component requires clearing the VueCodemirror global extensions.
 //!
@@ -75,7 +78,7 @@ import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { consoleExtension } from './customTheme.js';
 
 const props = defineProps([ 'modelValue', 'eventbus', 'options' ]);
-const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt' ]);
+const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'reset' ]);
 
 let cmElement = ref(null);
 let cmComponent = ref(null);
@@ -91,6 +94,8 @@ function nop(target) {
 const blankKeymap = [
     { key:'Ctrl-Enter', run: () => { emit('evaluate'); return true; } },
     { key:'Ctrl-c', run: () => { emit('interrupt'); return true; } },
+    { key:'Ctrl-l', run: () => { emit('clear'); return true; } },
+    { key:'Ctrl-Shift-l', run: () => { emit('reset'); return true; } },
 ];
 
 const ignoreInputDropExtension = function () {

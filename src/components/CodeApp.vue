@@ -13,7 +13,12 @@
                         <Controls :buttons="buttons" :dark="darkmode" 
                             @pressed="pressed"
                         />
-                        <CodeInput v-model="script" :options="optionsCode" />
+                        <CodeInput v-model="script" :options="optionsCode" 
+                            @interrupt="interrupt"
+                            @evaluate="evaluate"
+                            @clear="clear"
+                            @reset="reset"
+                        />
                     </div>
                 </div>
                 <div class="column is-half">
@@ -201,6 +206,30 @@ function pressed(evt) {
     if (evt === 'Stop') {
         eventbus.emit('interrupt');
     }
+}
+
+function interrupt() {
+    // Key shortcut for interrupt
+    eventbus.emit('interrupt');
+}
+
+function evaluate() {
+    // Key shortcut for evaluate in editor
+    if (!busy.value && !stdin.value) {
+        eventbus.emit('evaluate', {
+            src:script.value,
+        });
+    }
+}
+
+function clear() {
+    // Key shortcut for clear output
+    eventbus.emit('clear');
+}
+
+function reset() {
+    // Key shortcut for reset
+    eventbus.emit('reset');
 }
 
 </script>

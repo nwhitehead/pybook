@@ -53,26 +53,6 @@
 </template>
 
 <style>
-/* Set scrollbar in light mode for everything */
-::-webkit-scrollbar {
-    width: 12px;
-    background-color: #ddd;
-}
-::-webkit-scrollbar-thumb {
-    background-color: #bbb;
-    border-radius: 6px;
-}
-
-/* Set scrollbar in dark mode, need both parts to handle root scrollbar */
-.dark::-webkit-scrollbar, .dark ::-webkit-scrollbar {
-    width: 12px;
-    background-color: #222;
-}
-.dark::-webkit-scrollbar-thumb, .dark ::-webkit-scrollbar-thumb {
-    background-color: #444;
-    border-radius: 6px;
-}
-
 /* Set basic fg/bg in light and dark modes */
 div.consoleappholder {
     background-color: transparent;
@@ -259,7 +239,7 @@ const horizontalOffset = computed(() => {
 });
 
 const INPUT_INDENT_PERCHAR = 8.5;
-const MIN_MARGIN_LEFT = 35; // Keeps cursor from overlapping busy icon on left
+const MIN_MARGIN_LEFT = 0;
 const MAX_MARGIN_LEFT = 400;
 const ORIGINAL_MARGIN_TOP = -43;
 const ONE_LINE = 20;
@@ -504,17 +484,13 @@ function reset() {
 // Respond to direct eventbus requests from parent
 
 props.eventbus.on('evaluate', (evt) => {
-    // Clear outputs and reset
+    // Clear outputs and reset with no version info or prompt at start
     outputs.splice(0);
     python.deletestate(normalstate, {
         onResponse: function() {
             python.freshstate(normalstate, {
                 onResponse: function() {
                     status.value = 'Ready';
-                    addOutput({
-                        name: 'stdout',
-                        'text/plain': python_version + '\n',
-                    });
                     evaluate(evt.src, /*console=*/false);
                 },
             });
@@ -526,4 +502,11 @@ props.eventbus.on('interrupt', () => {
     interrupt();
 });
 
+props.eventbus.on('clear', () => {
+    clear();
+});
+
+props.eventbus.on('reset', () => {
+    reset();
+});
 </script>
