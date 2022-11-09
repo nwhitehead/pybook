@@ -70,7 +70,7 @@
                     </div>
                 </div>
             </div>
-            <Feedback :disable="disableFeedback" @send="send" />
+            <Feedback :disable="disableFeedback" :dark="darkmode" @send="send" />
         </div>
     </section>
 </template>
@@ -114,11 +114,11 @@ watch(disableFeedback, (newValue) => {
 });
 const darkmode = ref(getLocalStorage('darkmode', 'false') === 'true');
 function updateBodyDark() {
-    const body = document.querySelector('body');
+    const html = document.querySelector('html');
     if (darkmode.value) {
-        body.classList.add('dark');
+        html.classList.add('dark');
     } else {
-        body.classList.remove('dark');
+        html.classList.remove('dark');
     }
 }
 watch(darkmode, (newValue) => {

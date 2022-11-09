@@ -51,6 +51,27 @@
 </template>
 
 <style>
+/* Set scrollbar in light mode for everything */
+::-webkit-scrollbar {
+    width: 12px;
+    background-color: #ddd;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #bbb;
+    border-radius: 6px;
+}
+
+/* Set scrollbar in dark mode, need both parts to handle root scrollbar */
+.dark::-webkit-scrollbar, .dark ::-webkit-scrollbar {
+    width: 12px;
+    background-color: #222;
+}
+.dark::-webkit-scrollbar-thumb, .dark ::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 6px;
+}
+
+/* Set basic fg/bg in light and dark modes */
 div.consoleappholder {
     background-color: #eee;
 }
@@ -60,15 +81,6 @@ div.consoleappholder pre {
 div.consoleappholder.dark {
     background-color: #222;
 }
-.dark::-webkit-scrollbar {
-    width: 12px;
-    background-color: #222;
-}
-.dark::-webkit-scrollbar-thumb {
-    background-color: #444;
-    border-radius: 6px;
-}
-
 div.consoleappholder.dark pre {
     color: #eee;
 }
@@ -81,6 +93,8 @@ div.consoleinputholder {
     margin-top: -43px;
     margin-left: 35px;
 }
+
+/* Set icon positions and animations */
 div.busyiconholder {
     position: relative;
     width: 0;
@@ -115,14 +129,19 @@ div.inputiconholder {
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
+
+/* Set output backgrounds */
 div.dataoutput pre.stdout {
     background-color: transparent;
 }
 div.dataoutput pre.stderr {
-    background-color: #f5ed9d;
+    background-color: transparent;
+    border: 8px solid;
+    border-image: repeating-linear-gradient(44deg, #888, #888 4px, #ff0 4px, #ff0 8px, #888 8px) 0 8 0 0;
+    border-width: 0px 8px 0px 0px;
 }
 div.consoleappholder.dark pre.stderr {
-    background-color: #430;
+    border-image: repeating-linear-gradient(44deg, transparent, transparent 4px, #ff0 4px, #ff0 8px, transparent 8px) 0 8 0 0;
 }
 </style>
 
@@ -375,12 +394,6 @@ function evaluate(src, console) {
             name: 'stdout',
             'text/plain': ansi_bold + fancy_indent(src, '', '... ') + ansi_normal + '\n',
         });
-    } else {
-        // For code evaluation, show a newline to end prompt in console (start with fresh line)
-        addOutput({
-            name: 'stdout',
-            'text/plain': '\n',
-        });
     }
     emit('evaluate', src);
     let options = {};
@@ -494,7 +507,22 @@ function reset() {
 // Respond to direct eventbus requests from parent
 
 props.eventbus.on('evaluate', (evt) => {
-    evaluate(evt.src, /*console=*/false);
+    // Clear outputs and reset
+    outputs.splice(0);
+    python.deletestate(normalstate, {
+        onResponse: function() {
+            python.freshstate(normalstate, {
+                onResponse: function() {
+                    status.value = 'Ready';
+                    addOutput({
+                        name: 'stdout',
+                        'text/plain': python_version + '\n',
+                    });
+                    evaluate(evt.src, /*console=*/false);
+                },
+            });
+        } 
+    });
 });
 
 props.eventbus.on('interrupt', () => {
