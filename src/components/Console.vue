@@ -75,13 +75,10 @@
 
 /* Set basic fg/bg in light and dark modes */
 div.consoleappholder {
-    background-color: #eee;
+    background-color: transparent;
 }
 div.consoleappholder pre {
     color: #444;
-}
-div.consoleappholder.dark {
-    background-color: #222;
 }
 div.consoleappholder.dark pre {
     color: #eee;

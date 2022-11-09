@@ -9,7 +9,7 @@
         <div class="container">
             <div class="columns">
                 <div class="column is-half">
-                    <div class="box">
+                    <div class="box editor">
                         <Controls :buttons="buttons" :dark="darkmode" 
                             @pressed="pressed"
                         />
@@ -17,7 +17,7 @@
                     </div>
                 </div>
                 <div class="column is-half">
-                    <div class="box">
+                    <div class="box console">
                         <Console :eventbus="eventbus" :options="optionsConsole" :dark="darkmode"
                             @update:busy="(evt) => busy = evt"
                             @update:stdin="(evt) => stdin = evt"

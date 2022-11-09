@@ -9,7 +9,7 @@
         <div class="container">
             <div class="columns">
                 <div class="column is-four-fifths">
-                    <div class="box">
+                    <div class="box console">
                         <Console :eventbus="eventbus" :options="options" :dark="darkmode" />
                     </div>
                 </div>

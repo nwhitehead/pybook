@@ -24,13 +24,17 @@ section.section {
     padding-bottom: 0;
 }
 
+.box.console {
+    background-color: #f2f2f2;
+}
+
 section.dark {
     background-color: $black;
     color: $light;
 }
 
 section.dark .box {
-    background-color: $dark;
+    background-color: #222;
     color: $light;
 }
 

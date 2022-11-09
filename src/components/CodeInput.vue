@@ -34,7 +34,7 @@
   <div :class="{ codeinput:true, python:isPython, ready:isReady }">
     <codemirror
       v-model="modelValue"
-      :style="{ maxHeight: '600px' }"
+      :style="{ maxHeight: 'calc(100vh - 200px)' }"
       :autofocus="!disabled"
       :indent-with-tab="true"
       :tab-size="indent"
@@ -53,7 +53,6 @@ div.codeinput {
     width: 100%;
     padding: 5px 8px 5px 10px;
     margin: 10px 0 10px 0;
-    height: auto;
     z-index: 0;
 }
 .cm-editor.cm-focused { outline: none !important }
