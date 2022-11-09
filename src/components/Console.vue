@@ -224,36 +224,39 @@ const inputOptions = computed(() => {
     };
 });
 
-//! Compute horizontal offset of last line of outputs
-const horizontalOffset = computed(() => {
-    if (outputs.length === 0) {
+const INPUT_INDENT_PERCHAR = 8.5;
+const MIN_MARGIN_LEFT = 0;
+const MIN_MARGIN_LEFT_BUSY = 35;
+const MAX_MARGIN_LEFT = 400;
+const ORIGINAL_MARGIN_TOP = -43;
+const ONE_LINE = 20;
+
+//! Compute horizontal offset of last line of outputs, also avoid busy icon
+watch([outputs, busy], ([newOutputs, newBusy]) => {
+    if (newOutputs.length === 0) {
         return 0;
     }
-    const last = outputs[outputs.length - 1];
+    const last = newOutputs[newOutputs.length - 1];
     if (last['text/plain'] === undefined) {
         // If the last part of output is not plain text, give up computing horizontal offset
         return 0;
     }
     const split = last['text/plain'].split('\n');
-    return split[split.length - 1].length;
-});
+    const len = split[split.length - 1].length;
+    let top = ORIGINAL_MARGIN_TOP;
 
-const INPUT_INDENT_PERCHAR = 8.5;
-const MIN_MARGIN_LEFT = 0;
-const MAX_MARGIN_LEFT = 400;
-const ORIGINAL_MARGIN_TOP = -43;
-const ONE_LINE = 20;
-
-watch(horizontalOffset, (newValue, oldValue) => {
-    let newMarginLeft = newValue * INPUT_INDENT_PERCHAR;
+    let newMarginLeft = len * INPUT_INDENT_PERCHAR;
     if (newMarginLeft > MAX_MARGIN_LEFT) {
         // If input is far right, then start new input on left side of next line
         newMarginLeft = MIN_MARGIN_LEFT;
-        consoleinputholder.value.style['margin-top'] = ORIGINAL_MARGIN_TOP + ONE_LINE + 'px';
-    } else {
-        consoleinputholder.value.style['margin-top'] = ORIGINAL_MARGIN_TOP + 'px';
+        top += ONE_LINE;
+    }
+    // Avoid busy
+    if (newBusy && newMarginLeft < MIN_MARGIN_LEFT_BUSY ) {
+        newMarginLeft = MIN_MARGIN_LEFT_BUSY;
     }
     newMarginLeft = newMarginLeft < MIN_MARGIN_LEFT ? MIN_MARGIN_LEFT : (newMarginLeft > MAX_MARGIN_LEFT ? MAX_MARGIN_LEFT : newMarginLeft);
+    consoleinputholder.value.style['margin-top'] = top + 'px';
     consoleinputholder.value.style['margin-left'] = newMarginLeft + 'px';
 });
 
@@ -484,13 +487,17 @@ function reset() {
 // Respond to direct eventbus requests from parent
 
 props.eventbus.on('evaluate', (evt) => {
-    // Clear outputs and reset with no version info or prompt at start
+    // Clear outputs and reset with no version info or prompt at start (except newline to avoid out of bounds busy)
     outputs.splice(0);
     python.deletestate(normalstate, {
         onResponse: function() {
             python.freshstate(normalstate, {
                 onResponse: function() {
                     status.value = 'Ready';
+                    addOutput({
+                        name: 'stdout',
+                        'text/plain': '\n',
+                    });
                     evaluate(evt.src, /*console=*/false);
                 },
             });

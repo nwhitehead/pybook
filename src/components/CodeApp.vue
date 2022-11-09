@@ -166,6 +166,7 @@ const optionsCode = computed(() => {
         dark:darkmode.value,
         lineNumbers:editLineNumbers.value,
         closeBrackets:closeBrackets.value,
+        highlightLine:true,
     };
 });
 

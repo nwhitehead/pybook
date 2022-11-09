@@ -18,28 +18,28 @@
                         <div class="content">
                             <p class="subtitle is-4">Configuration</p>
                             <p>
-                                <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
-                                <label for="evalSingleLineId"> <span class="tag">Enter</span> evaluates single line input</label>
-                            </p>
-                            <p>
-                                <input type="checkbox" id="lineNumbersId" v-model="lineNumbers" />
-                                <label for="lineNumbersId"> Show line numbers in multiline input</label>
-                            </p>
-                            <p>
-                                <input type="checkbox" id="closeBracketsId" v-model="closeBrackets" />
-                                <label for="closeBracketsId"> Close brackets while typing</label>
+                                <input type="checkbox" id="darkmodeId" v-model="darkmode" />
+                                <label for="darkmodeId"> Enable dark mode</label>
                             </p>
                             <p>
                                 <input type="checkbox" id="disableFeedbackId" v-model="disableFeedback" />
                                 <label for="disableFeedbackId"> Disable feedback tag</label>
                             </p>
                             <p>
-                                <input type="checkbox" id="darkmodeId" v-model="darkmode" />
-                                <label for="darkmodeId"> Enable dark mode</label>
+                                <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
+                                <label for="evalSingleLineId"> <span class="tag">Enter</span> evaluates single line input</label>
                             </p>
                             <p>
                                 <input type="checkbox" id="wrapId" v-model="wrap" />
                                 <label for="wrapId"> Wrap long lines</label>
+                            </p>
+                            <p>
+                                <input type="checkbox" id="closeBracketsId" v-model="closeBrackets" />
+                                <label for="closeBracketsId"> Close brackets while typing</label>
+                            </p>
+                            <p>
+                                <input type="checkbox" id="lineNumbersId" v-model="lineNumbers" />
+                                <label for="lineNumbersId"> Show line numbers in multiline input</label>
                             </p>
                         </div>
                     </div>
