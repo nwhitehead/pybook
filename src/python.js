@@ -181,9 +181,9 @@ export function newPythonKernel(opts) {
     var worker = startup();
 
     return {
-        evaluate: function(expr, name, callback) {
+        evaluate: function(expr, name, options, callback) {
             callbacks = callback;
-            worker.postMessage({ type:'execute', expr:expr, name:name });
+            worker.postMessage({ type:'execute', expr:expr, name:name, options:options });
         },
         setglobal: function(name, identifier, value, callback) {
             callbacks = callback;

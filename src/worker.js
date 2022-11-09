@@ -137,7 +137,7 @@ async function configure(config) {
     }
 
     // Version of pyodide.runPythonAsync that goes through exec.wrapped_run_cell
-    async function runCellAsync(code, state) {
+    async function runCellAsync(code, state, options) {
         Atomics.store(sharedArray, signalMap['busy'], 1);
         const exec_module = pyodide.globals.get('pbexec');
         let theState = getState(state);
@@ -167,7 +167,7 @@ async function configure(config) {
             }
         }
         const eval_func = exec_module.wrapped_run_cell;
-        const default_func = exec_module.default_func;
+        const default_func = options.no_default_func ? null : exec_module.default_func;
         await eval_func(code, /*globals_=*/theState, /*locals_=*/null, /*func=*/default_func, /*history=*/true, /*write=*/true, /*print_exception=*/true, /*propagate_exception=*/false, /*strip=*/1);
         Atomics.store(sharedArray, signalMap['busy'], 0);
     };
@@ -187,7 +187,7 @@ async function configure(config) {
             } else {
                 if (input.type === 'execute') {
                     // Now run the code (only send response once code finishes)
-                    await runCellAsync(input.expr, input.name);
+                    await runCellAsync(input.expr, input.name, input.options);
                     postMessage({ type: 'response' });
                 }
                 if (input.type === 'setglobal') {

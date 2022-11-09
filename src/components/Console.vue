@@ -23,7 +23,7 @@
 //! - stdin - When stdin is entered, payload is line entered
 //! - interrupt - When user interrupts
 //! - update:busy - When busy state changes, payload is true/false for new busy state
-//! - update:stdin - When stdin state changes, paylaod is true/false
+//! - update:stdin - When stdin state changes, payload is true/false
 //!
 
 <template>
@@ -105,9 +105,9 @@ div.inputiconholder {
   animation-timing-function: linear;
 }
 @keyframes pulse {
-	0% { color: #00000080; }
+	0% { color: #88888880; }
 	50% { color: #88888800; }
-	100% { color: #00000080; }
+	100% { color: #88888880; }
 }
 .pulse {
   animation-name: pulse;
@@ -195,6 +195,10 @@ watch(busy, (newValue) => {
 
 watch(waitingInput, (newValue) => {
     emit('update:stdin', newValue);
+});
+
+onMounted(() => {
+    emit('update:busy', busy.value);
 });
 
 onMounted(() => {
@@ -360,6 +364,58 @@ function historyRegister(entry) {
     }
 }
 
+function evaluate(src, console) {
+    clearInterrupt();
+    status.value = 'Working';
+    if (console) {
+        // Register command history on console
+        historyRegister(src);
+        // Console echoes input (with fancy indent, in bold)
+        addOutput({
+            name: 'stdout',
+            'text/plain': ansi_bold + fancy_indent(src, '', '... ') + ansi_normal + '\n',
+        });
+    } else {
+        // For code evaluation, show a newline to end prompt in console (start with fresh line)
+        addOutput({
+            name: 'stdout',
+            'text/plain': '\n',
+        });
+    }
+    emit('evaluate', src);
+    let options = {};
+    if (!console) {
+        // For code evaluation, do not print "-> 4" for "2+2", only output for explicit prints.
+        options.no_default_func = true;
+    }
+    python.evaluate(src, normalstate, options, {
+        onStdout: function (msg) {
+            addOutput({
+                name: 'stdout',
+                'text/plain': msg,
+            });
+        },
+        onStderr: function (msg) {
+            addOutput({
+                name: 'stderr',
+                'text/plain': msg,
+            });
+        },
+        onOutput: function(content_type, msg) {
+            let item = {};
+            item[content_type] = msg;
+            addOutput(item);
+        },
+        onResponse: function () {
+            addOutput({
+                name: 'stdout',
+                'text/plain': prompt,
+            });
+            status.value = 'Ready';
+        }
+    });
+}
+
 function clickEvaluate() {
     const src = entry.value;
     entry.value = '';
@@ -392,43 +448,15 @@ function clickEvaluate() {
         // Don't register any history, not submitted
         return;
     }
-    status.value = 'Working';
-    historyRegister(src);
-    addOutput({
-        name: 'stdout',
-        'text/plain': ansi_bold + fancy_indent(src, '', '... ') + ansi_normal + '\n',
-    });
-    emit('evaluate', src);
-    python.evaluate(src, normalstate, {
-        onStdout: function (msg) {
-            addOutput({
-                name: 'stdout',
-                'text/plain': msg,
-            });
-        },
-        onStderr: function (msg) {
-            addOutput({
-                name: 'stderr',
-                'text/plain': msg,
-            });
-        },
-        onOutput: function(content_type, msg) {
-            let item = {};
-            item[content_type] = msg;
-            addOutput(item);
-        },
-        onResponse: function () {
-            addOutput({
-                name: 'stdout',
-                'text/plain': prompt,
-            });
-            status.value = 'Ready';
-        }
-    });
+    evaluate(src, /*console=*/true);
 }
 
 //! Trigger interrupt in python worker
 function interrupt() {
+    if (status.value === 'Initializing') {
+        // Don't interrupt if we are still loading
+        return;
+    }
     status.value = 'Interrupt';
     setInterrupt();
     emit('interrupt');
@@ -462,5 +490,15 @@ function reset() {
         } 
     });
 }
+
+// Respond to direct eventbus requests from parent
+
+props.eventbus.on('evaluate', (evt) => {
+    evaluate(evt.src, /*console=*/false);
+});
+
+props.eventbus.on('interrupt', () => {
+    interrupt();
+});
 
 </script>

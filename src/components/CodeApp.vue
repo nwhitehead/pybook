@@ -10,13 +10,18 @@
             <div class="columns">
                 <div class="column is-half">
                     <div class="box">
-                        <Controls :buttons="buttons" :dark="darkmode" />
+                        <Controls :buttons="buttons" :dark="darkmode" 
+                            @pressed="pressed"
+                        />
                         <CodeInput v-model="script" :options="optionsCode" />
                     </div>
                 </div>
                 <div class="column is-half">
                     <div class="box">
-                        <Console :eventbus="eventbus" :options="optionsConsole" :dark="darkmode" />
+                        <Console :eventbus="eventbus" :options="optionsConsole" :dark="darkmode"
+                            @update:busy="(evt) => busy = evt"
+                            @update:stdin="(evt) => stdin = evt"
+                        />
                     </div>
                 </div>
             </div>
@@ -81,10 +86,6 @@ import { computed, ref, watch, onMounted } from 'vue';
 import axios from 'axios';
 import mitt from 'mitt';
 
-const buttons = ref([
-    { name:'Run', icon:'play_arrow', class:{ 'is-primary':true }},
-]);
-
 const script = ref('');
 
 // Event bus for communicating back and forth with Console directly
@@ -147,6 +148,30 @@ const optionsConsole = computed(() => {
 function send(evt) {
     // Fire off post request and ignore any errors at this point
     axios.post('/api/feedback', evt);
+}
+
+const busy = ref(null);
+const stdin = ref(null);
+
+const buttons = computed(() => {
+    let result = [];
+    if (!busy.value && !stdin.value) {
+        result.push({ name:'Run', icon:'play_arrow', class:{ 'is-primary':true }});
+    } else {
+        result.push({ name:'Stop', icon:'stop', class:{ 'is-danger':true }});
+    }
+    return result;
+});
+
+function pressed(evt) {
+    if (evt === 'Run') {
+        eventbus.emit('evaluate', {
+            src:script.value,
+        });
+    }
+    if (evt === 'Stop') {
+        eventbus.emit('interrupt');
+    }
 }
 
 </script>

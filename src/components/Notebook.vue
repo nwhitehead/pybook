@@ -175,7 +175,7 @@ onMounted(() => {
             return;
         }
         status.value = 'Working';
-        python.evaluate(msg, normalstate, {
+        python.evaluate(msg, normalstate, {}, {
             onStdout: function (msg) {
                 customBus.emit('stdout', msg);
             },
@@ -238,7 +238,7 @@ function cellEval (state) {
             // Only difference is that we set the user input to global variable '__input'
             python.setglobal(normalstate, '__input', cell.user);
         }
-        python.evaluate(src, normalstate, {
+        python.evaluate(src, normalstate, {}, {
             onStdout: function (msg) {
                     addOutput(cell, { name: 'stdout', 'text/plain': msg });
             },
