@@ -46,29 +46,40 @@
                     <div class="box">
                         <div class="content">
                             <p class="subtitle is-4">Configuration</p>
+                            <p class="subtitle is-6">General</p>
+                            <p>
+                                <input type="checkbox" id="darkmodeId" v-model="darkmode" />
+                                <label for="darkmodeId"> Enable dark mode</label>
+                            </p>
+                            <p>
+                                <input type="checkbox" id="disableFeedbackId" v-model="disableFeedback" />
+                                <label for="disableFeedbackId"> Disable feedback tag</label>
+                            </p>
+                            <p class="subtitle is-6">Console</p>
                             <p>
                                 <input type="checkbox" id="evalSingleLineId" v-model="evalSingleLine" />
                                 <label for="evalSingleLineId"> <span class="tag">Enter</span> evaluates single line input in console</label>
+                            </p>
+                            <p>
+                                <input type="checkbox" id="wrapId" v-model="wrap" />
+                                <label for="wrapId"> Wrap long lines</label>
                             </p>
                             <p>
                                 <input type="checkbox" id="lineNumbersId" v-model="lineNumbers" />
                                 <label for="lineNumbersId"> Show line numbers in multiline input</label>
                             </p>
                             <p>
+                                <input type="checkbox" id="fixedHeightId" v-model="fixedHeight" />
+                                <label for="fixedHeightId"> Fixed size</label>
+                            </p>
+                            <p class="subtitle is-6">Editor</p>
+                            <p>
                                 <input type="checkbox" id="closeBracketsId" v-model="closeBrackets" />
-                                <label for="closeBracketsId"> Close brackets while typing</label>
+                                <label for="closeBracketsId"> Close brackets/parentheses/quotes while typing</label>
                             </p>
                             <p>
-                                <input type="checkbox" id="disableFeedbackId" v-model="disableFeedback" />
-                                <label for="disableFeedbackId"> Disable feedback tag</label>
-                            </p>
-                            <p>
-                                <input type="checkbox" id="darkmodeId" v-model="darkmode" />
-                                <label for="darkmodeId"> Enable dark mode</label>
-                            </p>
-                            <p>
-                                <input type="checkbox" id="wrapId" v-model="wrap" />
-                                <label for="wrapId"> Wrap long lines</label>
+                                <input type="checkbox" id="editLineNumbersId" v-model="editLineNumbers" />
+                                <label for="editLineNumbersId"> Show line numbers</label>
                             </p>
                         </div>
                     </div>
@@ -133,6 +144,14 @@ const wrap = ref(getLocalStorage('wrap', 'true') === 'true');
 watch(wrap, (newValue) => {
     localStorage.setItem('wrap', newValue);
 });
+const editLineNumbers = ref(getLocalStorage('editLineNumbers', 'true') === 'true');
+watch(editLineNumbers, (newValue) => {
+    localStorage.setItem('editLineNumbers', newValue);
+});
+const fixedHeight = ref(getLocalStorage('fixedHeight', 'false') === 'true');
+watch(fixedHeight, (newValue) => {
+    localStorage.setItem('fixedHeight', newValue);
+});
 
 onMounted(() => updateBodyDark());
 
@@ -140,7 +159,7 @@ const optionsCode = computed(() => {
     return {
         type:'python',
         dark:darkmode.value,
-        lineNumbers:lineNumbers.value,
+        lineNumbers:editLineNumbers.value,
         closeBrackets:closeBrackets.value,
     };
 });
@@ -151,6 +170,7 @@ const optionsConsole = computed(() => {
         lineNumbers:lineNumbers.value,
         closeBrackets:closeBrackets.value,
         wrap:wrap.value,
+        fixedHeight:fixedHeight.value,
     };
 });
 

@@ -14,6 +14,7 @@
 //!     - lineNumbers - Show line numbers on multiline input
 //!     - closeBrackets - Automatically close brackets/quotes/etc. while typing input
 //!     - wrap - Whether to wrap output long lines or not
+//!     - fixedHeight - Whether to fix the size (false will shrink/grow vertically between min/max sizes, true will always be max size)
 //! - dark - Whether to render in darkmode
 //!
 //! Emits:
@@ -29,7 +30,7 @@
 
 <template>
     <div :class="{ consoleappholder:true, dark }">
-        <div :class="{ consoleoutputholder:true, dark }" ref="holder">
+        <div :class="{ consoleoutputholder:true, dark, fixedheight:options.fixedHeight }" ref="holder">
             <ConsoleOutput :values="outputs" :wrap="options.wrap" />
             <div class="busyiconholder">
                 <span class="material-icons spin" v-if="busy">autorenew</span>
@@ -90,7 +91,7 @@ div.consoleoutputholder {
     max-height: calc(100vh - 130px);
     overflow: auto;
 }
-div.consoleoutputholder.fullheight {
+div.consoleoutputholder.fixedheight {
     min-height: calc(100vh - 130px);
 }
 div.consoleinputholder {
