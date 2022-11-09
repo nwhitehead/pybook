@@ -10,6 +10,7 @@
             <div class="columns">
                 <div class="column is-half">
                     <div class="box">
+                        <Controls :buttons="buttons" :dark="darkmode" />
                         <CodeInput v-model="script" :options="optionsCode" />
                     </div>
                 </div>
@@ -73,11 +74,16 @@
 
 import CodeInput from './CodeInput.vue';
 import Console from './Console.vue';
+import Controls from './Controls.vue';
 import Feedback from './Feedback.vue';
 
 import { computed, ref, watch, onMounted } from 'vue';
 import axios from 'axios';
 import mitt from 'mitt';
+
+const buttons = ref([
+    { name:'Run', icon:'play_arrow', class:{ 'is-primary':true }},
+]);
 
 const script = ref('');
 
