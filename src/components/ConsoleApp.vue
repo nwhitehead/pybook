@@ -5,6 +5,7 @@
 //!
 
 <template>
+    <TheNavbar :dark="darkmode" />
     <section :class="{ section:true, dark:darkmode }">
         <div class="container">
             <div class="columns">
@@ -72,6 +73,7 @@
 
 import Console from './Console.vue';
 import Feedback from './Feedback.vue';
+import TheNavbar from './TheNavbar.vue';
 
 import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import axios from 'axios';
