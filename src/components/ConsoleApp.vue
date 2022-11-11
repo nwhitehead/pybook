@@ -41,7 +41,6 @@
 
 import Console from './Console.vue';
 import Feedback from './Feedback.vue';
-import { storageBacked } from './storageBacked.js';
 import TheNavbar from './TheNavbar.vue';
 import TheConfiguration from './TheConfiguration.vue';
 
@@ -60,6 +59,7 @@ const options = computed(() => {
         lineNumbers:configuration.lineNumbers,
         closeBrackets:configuration.closeBrackets,
         wrap:configuration.wrap,
+        fixedHeight:configuration.fixedHeight,
     };
 });
 

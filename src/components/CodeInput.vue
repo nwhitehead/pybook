@@ -37,7 +37,7 @@
   <div :class="{ codeinput:true, python:isPython, ready:isReady }">
     <codemirror
       v-model="modelValue"
-      :style="{ maxHeight: 'calc(100vh - 200px)' }"
+      :style="{ maxHeight: 'calc(100vh - 270px)' }"
       :autofocus="!disabled"
       :indent-with-tab="true"
       :tab-size="indent"

@@ -72,11 +72,11 @@ div.consoleappholder.dark pre {
 }
 div.consoleoutputholder {
     min-height: 60px;
-    max-height: calc(100vh - 130px);
+    max-height: calc(100vh - 200px);
     overflow: auto;
 }
 div.consoleoutputholder.fixedheight {
-    min-height: calc(100vh - 130px);
+    min-height: calc(100vh - 200px);
 }
 div.consoleinputholder {
     margin-top: -43px;

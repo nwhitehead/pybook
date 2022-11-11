@@ -154,3 +154,26 @@ section.dark input[type=checkbox]:checked::before {
 .dark::-webkit-scrollbar-corner, .dark ::-webkit-scrollbar-corner {
     background-color: transparent;
 }
+
+/* Fixup heading in dark mode */
+section.dark nav.panel {
+    background-color: #222;
+    color: $light;
+}
+
+section.dark .panel-heading {
+    background-color: #444;
+    color: $light;
+}
+
+section.dark label.label {
+    color: $grey-lighter;
+}
+
+.title-box {
+    padding: 0px 10px 5px 10px;
+    margin: 5px;
+}
+.panel-heading {
+    padding-left: 15px;
+}
