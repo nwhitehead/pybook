@@ -23,18 +23,18 @@
 
     <div id="navbarBasicExample" class="navbar-menu">
         <div class="navbar-start">
-            <a class="navbar-item" href="/">Home</a>
-            <a class="navbar-item" href="/console.html">Console</a>
-            <a class="navbar-item" href="/code.html">Editor</a>
-            <a class="navbar-item" href="/hint.html">Usage</a>
+            <a class="navbar-item" href="#/">Home</a>
+            <a class="navbar-item" href="#/console">Console</a>
+            <a class="navbar-item" href="#/code">Editor</a>
+            <a class="navbar-item" href="#/hint">Usage</a>
             <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">More</a>
                 <div class="navbar-dropdown">
-                    <a class="navbar-item" href="/about.html">About</a>
-                    <a class="navbar-item" href="/roadmap.html">Roadmap</a>
-                    <a class="navbar-item" href="/contact.html">Contact</a>
+                    <a class="navbar-item" href="#/about">About</a>
+                    <a class="navbar-item" href="#/roadmap">Roadmap</a>
+                    <a class="navbar-item" href="#/contact">Contact</a>
                     <hr class="navbar-divider">
-                    <a class="navbar-item" href="/feedback.html">Report an issue</a>
+                    <a class="navbar-item" href="#/feedback">Report an issue</a>
                 </div>
             </div>
         </div>
