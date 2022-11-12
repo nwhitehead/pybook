@@ -1,6 +1,5 @@
 // The worker
 
-//import '/static/lib/pyodide/pyodide.asm.js';
 import { loadPyodide } from '/static/lib/pyodide/pyodide.mjs';
 
 // First message will be config object to setup shared arrays and other configuration
