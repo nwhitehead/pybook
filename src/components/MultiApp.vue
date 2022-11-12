@@ -8,7 +8,7 @@
     <TheNavbar :dark="configuration.darkmode" />
     <section :class="{ section:true, dark:configuration.darkmode }">
         <div class="container">
-            <ConsoleApp />
+            <component :is="currentView" />
             <Feedback :disable="configuration.disableFeedback" :dark="configuration.darkmode" @send="send" />
         </div>
     </section>
@@ -17,13 +17,33 @@
 <script setup>
 
 import ConsoleApp from './ConsoleApp.vue';
+import CodeApp from './CodeApp.vue';
 import Feedback from './Feedback.vue';
 import TheNavbar from './TheNavbar.vue';
+import MainView from './MainView.vue';
+import NotFoundView from './NotFoundView.vue';
+import UsageView from './UsageView.vue';
 
 import axios from 'axios';
-import { onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 import { configuration, updateBodyDark } from './globals.js';
+
+const currentPath = ref(window.location.hash);
+window.addEventListener('hashchange', () => {
+    currentPath.value = window.location.hash;
+});
+
+const routes = {
+    '#/': MainView,
+    '#/console': ConsoleApp,
+    '#/code': CodeApp,
+    '#/usage': UsageView,
+};
+
+const currentView = computed(() => {
+    return routes[ currentPath.value || '#/' ] || NotFoundView;
+});
 
 onMounted(() => updateBodyDark());
 

@@ -26,7 +26,7 @@
             <a class="navbar-item" href="#/">Home</a>
             <a class="navbar-item" href="#/console">Console</a>
             <a class="navbar-item" href="#/code">Editor</a>
-            <a class="navbar-item" href="#/hint">Usage</a>
+            <a class="navbar-item" href="#/usage">Usage</a>
             <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">More</a>
                 <div class="navbar-dropdown">
