@@ -1,5 +1,6 @@
-// main_console.js
-import App from './components/ConsoleApp.vue';
+// main.js
+
+import App from './components/MultiApp.vue';
 import VueCodemirror from 'vue-codemirror';
 import { createApp } from 'vue';
 import { marked } from 'marked';
