@@ -8,7 +8,9 @@
     <TheNavbar :dark="configuration.darkmode" />
     <section :class="{ section:true, dark:configuration.darkmode }">
         <div class="container">
-            <component :is="currentView" />
+            <KeepAlive>
+                <component :is="currentView" />
+            </KeepAlive>
             <Feedback :disable="configuration.disableFeedback" :dark="configuration.darkmode" @send="send" />
         </div>
     </section>
