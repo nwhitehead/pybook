@@ -1,4 +1,6 @@
-# PyBook
+# Nathan's Python Console
+
+## Building
 
 ## Building
 
@@ -6,33 +8,31 @@ You will need `node`, `npm`, and packages from `package.json`. Once you have `no
 
 You will need a local `python3`. There is a wheel file to build that is used by Pyodide.
 
-You will need `go` for the server and backend API. Make sure `go` is available from the command line.
+You will need `rust` for the server and backend API. Make sure `cargo` is available from the command line.
 
 Pyodide is needed to run locally, it is somewhat large.
 
-There is a `Makefile` that will download Pyodide and extract it, then build a local Python library needed by Pybook, then build the JavaScript application, then build the Go server.
+There is a `Makefile` that will download Pyodide and extract it, then build a local Python library needed by Pybook.
 
     make
 
-## Running
+Once this part is done, the project is a Vite/Vue3 project. Install dependencies with:
 
-To view, start server:
+    npm install
 
-    npm run serve
+Then to try it out (without backend server running), do:
 
-Then go to http://localhost:8080/static/src/
+    npm run dev
 
 ## Rebuilding
 
-If you change JavaScript code, there is a build phase. Output files go into `/build`. You can also just do a toplevel `make`, or if you want to do the specific JavaScript parts do:
-
-    npm run build
+Vite should catch changes and recompile with hot swapping on the fly. You might need to reload the web page occasionally.
 
 If you change Python package code in `pbexec`, you will need to rebuild the wheel file. This should be done automatically with `make` as well. To do this manually, inside `pylib` do:
 
     python3 -m build
 
-This will create a wheel file that needs to be copied to `lib/pyodide`.
+This will create a wheel file that needs to be copied to `static/lib/pyodide`.
 
 ## Unit Testing
 
@@ -61,11 +61,9 @@ To run tests do:
     with open('test.svg') as f:
         pybook.output_content('image/svg+xml', f.read())
 
-## Versions
-
-Pyodide XXX
-
 ## Ideas
+
+These are some unorganized ideas for Python notebooks.
 
 ### Indicator
 
@@ -234,9 +232,9 @@ Rust server for CRUD and versioning of notebook data.
 
 # Deployment
 
-Deploy to server using Ansible. Setup host in `/etc/ansible/hosts`. Update `acme_email` in the `server_letsencrypt.yml` file
+Deploy to server using Ansible. Setup host in `/etc/ansible/hosts`. Update `acme_email` in the `server/letsencrypt.yml` file
 to get reminders about renewing SSL certificates. I'm using Vultr for server. Once Ansible is installed and you can ping your
-server via ansible, then run the playbook `server_setup.yml` to setup nginx. Run `server_deploy.yml` to sync over files
-for the website. This uses `rsync` so should just sync changes. Pyodide in `/lib` is the biggest part of the transfer, should
-not change with PyBook development. Then do the playbook `server_letsencrypt.yml` to setup the SSL certificate. This is required
+server via ansible, then run the playbook `server/setup.yml` to setup nginx. Run `server/deploy.yml` to sync over files
+for the website. This uses `rsync` so should just sync changes. Pyodide in `static/lib` is the biggest part of the transfer, should
+not change with PyBook development. Then do the playbook `server/letsencrypt.yml` to setup the SSL certificate. This is required
 for the various headers needed for WASM serving with SharedArrayBuffer enabled.

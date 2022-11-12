@@ -1,8 +1,8 @@
-PYODIDE_VERSION=0.21.0a3
+PYODIDE_VERSION=0.21.3
 PYODIDE_LOCATION=https://github.com/pyodide/pyodide/releases/download/${PYODIDE_VERSION}/pyodide-build-${PYODIDE_VERSION}.tar.bz2
 PBEXEC_VERSION=0.0.1
 
-all: static/lib/pyodide/pyodide-build-${PYODIDE_VERSION}.untar lib/pyodide/pbexec_nwhitehead-${PBEXEC_VERSION}-py3-none-any.whl build/out.js
+all: static/lib/pyodide/pyodide-build-${PYODIDE_VERSION}.untar static/lib/pyodide/pbexec_nwhitehead-${PBEXEC_VERSION}-py3-none-any.whl
 
 static/lib/pyodide/pyodide-build-${PYODIDE_VERSION}.downloaded:
 	mkdir -p lib/pyodide
