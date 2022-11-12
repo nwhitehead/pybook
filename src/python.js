@@ -28,7 +28,7 @@ function newPythonWorker() {
         INPUT_BUFFER_SIZE: INPUT_BUFFER_SIZE,
     };
 
-    let worker = new Worker('build/worker.js');
+    let worker = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
     worker.postMessage(config);
 
     worker.on = function(type, handler) {

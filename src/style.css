@@ -1,16 +1,27 @@
 
-@import '../node_modules/bulma/bulma.sass';
+@import '../node_modules/bulma/css/bulma.css';
 
-// My colors
-$blue-light: hsl(217, 71%, 70%);
+/* My colors */
+:root {
+    --blue: hsl(217, 71%, 50%);
+    --blue-light: hsl(217, 71%, 70%);
+    --light: #eee;
+    --dark: #222;
+    --white: #fff;
+    --black: #000;
+    --grey-lighter: #ddd;
+    --grey-light: #aaa;
+    --grey: #888;
+    --grey-dark: #555;
+}
 
 html {
     overflow-y: auto;
-    background-color: $white;
+    background-color: var(--white);
     transition: all 0.5s ease;
 }
 html.dark {
-    background-color: $black;
+    background-color: var(--black);
 }
 body {
     height: 100vh;
@@ -25,48 +36,48 @@ section.section {
 }
 
 .box.console {
-    background-color: #f2f2f2;
+    background-color: var(--light);
 }
 .box.editor {
-    background-color: #f2f2f2;
+    background-color: var(--light);
 }
 
 section.dark {
-    background-color: $black;
-    color: $light;
+    background-color: var(--black);
+    color: var(--light);
 }
 
 section.dark .box {
-    background-color: #222;
-    color: $light;
+    background-color: var(--dark);
+    color: var(--light);
 }
 
 section.dark .title {
-    color: $light;
+    color: var(--light);
 }
 section.dark .subtitle {
-    color: $light;
+    color: var(--light);
 }
 section .tag {
-    background-color: $grey-lighter;
-    color: $dark;
+    background-color: var(--grey-lighter);
+    color: var(--dark);
 }
 section.dark .tag {
-    background-color: $grey-dark;
-    color: $light;
+    background-color: var(--grey-dark);
+    color: var(--light);
 }
 section.dark a {
-    color: $blue-light;
+    color: var(--blue-light);
 }
 section.dark a:hover {
-    color: $light;
+    color: var(--light);
 }
 
 input[type=checkbox] {
     appearance: none;
     width: 18px;
     height: 18px;
-    border: solid 1px $grey-light;
+    border: solid 1px var(--grey-light);
     margin-right: 8px;
     position: relative;
     vertical-align: -3px;
@@ -76,66 +87,66 @@ input[type=checkbox]:checked::before {
     content: "";
     width: 12px;
     height: 12px;
-    background-color: $blue;
+    background-color: var(--blue);
     position: absolute;
     top: 2px;
     left: 2px;
 }
 
 section.dark input[type=checkbox]:checked::before {
-    background-color: $blue-light;
+    background-color: var(--blue-light);
 }
 
 .modal-card-body.dark {
-    background-color: $dark;
-    color: $light;
+    background-color: var(--dark);
+    color: var(--light);
 }
 
 .modal-card-body.dark a {
-    color:$light;
-    background-color:$dark;
+    color: var(--light);
+    background-color: var(--dark);
 }
 
 .modal-card-body.dark a:hover {
-    color:$light;
-    background-color:$grey-dark;
+    color: var(--light);
+    background-color: var(--grey-dark);
 }
 
 .modal-card-body.dark li.is-active a {
-    color:$dark;
-    background-color:$blue-light;
+    color: var(--dark);
+    background-color: var(--blue-light);
 }
 
 .modal-card-body.dark li.is-active a:hover {
-    color:$dark;
-    background-color:$blue-light;
+    color: var(--dark);
+    background-color: var(--blue-light);
 }
 
 .modal-card-body.dark textarea {
-    color:$light;
-    background-color:$dark;
+    color: var(--light);
+    background-color: var(--dark);
 }
 
 .modal-card-body.dark textarea::placeholder {
-    color:$grey;
+    color: var(--grey);
 }
 
 .modal-card-body.dark input[type=email] {
-    color:$light;
-    background-color:$dark;
+    color: var(--light);
+    background-color: var(--dark);
 }
 
 .modal-card-body.dark input[type=email]::placeholder {
-    color:$grey;
+    color: var(--grey);
 }
 
 /* Set scrollbar in light mode for everything */
 ::-webkit-scrollbar {
     width: 12px;
-    background-color: #ddd;
+    background-color: var(--grey-lighter);
 }
 ::-webkit-scrollbar-thumb {
-    background-color: #bbb;
+    background-color: var(--grey-light);
     border-radius: 6px;
 }
 ::-webkit-scrollbar-corner {
@@ -145,10 +156,10 @@ section.dark input[type=checkbox]:checked::before {
 /* Set scrollbar in dark mode, need both parts to handle root scrollbar */
 .dark::-webkit-scrollbar, .dark ::-webkit-scrollbar {
     width: 12px;
-    background-color: #222;
+    background-color: var(--dark);
 }
 .dark::-webkit-scrollbar-thumb, .dark ::-webkit-scrollbar-thumb {
-    background-color: #444;
+    background-color: var(--grey-dark);
     border-radius: 6px;
 }
 .dark::-webkit-scrollbar-corner, .dark ::-webkit-scrollbar-corner {
@@ -157,17 +168,17 @@ section.dark input[type=checkbox]:checked::before {
 
 /* Fixup heading in dark mode */
 section.dark nav.panel {
-    background-color: #222;
-    color: $light;
+    background-color: var(--dark);
+    color: var(--light);
 }
 
 section.dark .panel-heading {
-    background-color: #444;
-    color: $light;
+    background-color: var(--grey-dark);
+    color: var(--light);
 }
 
 section.dark label.label {
-    color: $grey-lighter;
+    color: var(--grey-lighter);
 }
 
 .title-box {

@@ -26,7 +26,7 @@
                         <label><input type="checkbox" id="disableFeedbackId" v-model="configuration.disableFeedback" /> Disable feedback tag</label>
                     </div>
                     <div class="control">
-                        <label><input type="checkbox" id="closeBracketsId" v-model="configuration.closeBrackets" /> Auto close <tt>()[]{}''""</tt> while typing</label>
+                        <label><input type="checkbox" id="closeBracketsId" v-model="configuration.closeBrackets" /> Auto close brackets/quotes while typing</label>
                     </div>
                 </div>
             </template>

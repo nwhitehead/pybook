@@ -12,7 +12,7 @@
 <nav :class="{ navbar:true, 'has-shadow':true, dark:dark }" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <div class="nav-left">
-            <img src="logo.png" class="navbar-item" alt="Nathans Python Console" />
+            <img src="/static/gfx/logo.png" class="navbar-item" alt="Nathans Python Console" />
         </div>
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
             <span aria-hidden="true"></span>

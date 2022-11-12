@@ -1,6 +1,17 @@
 // The worker
 
+//import '/static/lib/pyodide/pyodide.asm.js';
+import { loadPyodide } from '/static/lib/pyodide/pyodide.mjs';
+
 // First message will be config object to setup shared arrays and other configuration
+
+let absurl = null;
+let signalMap = null;
+let sharedArray = null;
+let sharedInputArray = null;
+let INPUT_BUFFER_SIZE = null;
+let loaded = null;
+let states = null;
 
 async function configure(config) {
     // This code runs after we get the configuration data
@@ -9,8 +20,6 @@ async function configure(config) {
     sharedArray = config.sharedArray;
     sharedInputArray = config.sharedInputArray;
     INPUT_BUFFER_SIZE = config.INPUT_BUFFER_SIZE;
-
-    importScripts(absurl + '/lib/pyodide/pyodide.js');
 
     function inputGet() {
         // Signal that we are waiting for input
@@ -46,7 +55,7 @@ async function configure(config) {
     }
 
     loaded = false;
-    let pyodide = await loadPyodide({indexURL : absurl + '/lib/pyodide'});
+    let pyodide = await loadPyodide({indexURL : absurl + '/static/lib/pyodide'});
     let version = '🐍 Python ' + pyodide.runPython('import sys; sys.version') + '\n🤖 Pyodide ' + pyodide.version;
 
     function wait_io_complete() {
@@ -97,11 +106,11 @@ async function configure(config) {
     await pyodide.loadPackage('micropip');
     pyodide.runPython('import micropip');
     // Install pbexec
-    await pyodide.runPythonAsync('await micropip.install("' + absurl + '/lib/pyodide/pbexec_nwhitehead-0.0.1-py3-none-any.whl' + '")');
+    await pyodide.runPythonAsync('await micropip.install("' + absurl + '/static/lib/pyodide/pbexec_nwhitehead-0.0.1-py3-none-any.whl' + '")');
     pyodide.runPython('from pbexec import pbexec');
     pyodide.runPython('import sys; sys.setrecursionlimit(150)');
     // Start with fresh state as base
-    states = { 
+    states = {
         base:pyodide.globals.get('pbexec').fresh_state()
     };
     // Clear starting flag
