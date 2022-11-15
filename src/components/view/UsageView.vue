@@ -46,11 +46,11 @@ You can interrupt evaluation with <span class="tag">Ctrl</span>-<span class="tag
 <p>See the list of <a href="https://pyodide.org/en/stable/usage/packages-in-pyodide.html">supported packages</a>.</p>
 
 <p class="subtitle is-5">Pure Python Packages</p>
-<p>Packages available on PyPI that are pure Python can be installed with <tt>micropip</tt>.</p>
+<p>Packages available on PyPI that are pure Python can be installed automatically with <tt>import</tt>.</p>
 <p>For example:</p>
-<pre><code>import micropip
-await micropip.install('hypothesis')
-import hypothesis</code></pre>
+<pre><code>import hypothesis</code></pre>
+<p>See the projects on <a href="https://pypi.org/">https://pypi.org/</a>. Due to browser limitations not all packages
+are supported directly.</p>
 
 <p class="subtitle is-5">Debugging</p>
 <p>Simple interactive debugging can be done using <tt>pdb</tt>. Within your code, set breakpoints by
@@ -73,7 +73,7 @@ pybook.output_content('text/html', '&lt;span class="material-icons"&gt;sailing&l
 </code></pre>
 
 <p>Allowed content types include <tt>text/plain</tt>, <tt>text/html</tt>, <tt>image/png</tt>, <tt>image/svg+xml</tt>, and <tt>audio/wav</tt>. HTML output
-is sanitized through DOMPurify which only allows a subset of content.</p>
+is sanitized through DOMPurify which only allows a subset of content. The <tt>pybook</tt> package is specific to <emph>Nathan's Python Console</emph> tools.</p>
 
 <p>Here is example showing generation of an audio clip.</p>
 <pre><code>import wave
@@ -105,9 +105,11 @@ pybook.output_content('audio/wav', data)
 </code></pre>
 
 <p class="subtitle is-5">Copy and Paste</p>
-<p>The console supports multiline editing. You can copy larger fragments from other sources and paste in the code, then edit and evaluate them.</p>
+<p>The console and code editor support multiline editing. You can copy larger fragments from other sources and paste in the code, then edit and evaluate them.</p>
 <p>One small note is that if you are trying to copy and paste within the input area, the binding for <span class="tag">Ctrl</span>-<span class="tag">C</span>
-is to interrupt the interpreter. You can use a right click to copy in this case.</p>
+is to interrupt the interpreter. You may be able to use a right click to copy in this case. You can also set a configuration option to use
+<span class="tag">Ctrl</span>-<span class="tag">I</span> to interrupt the interpreter and leave the standard binding for
+<span class="tag">Ctrl</span>-<span class="tag">C</span>.</p>
 
                     </div>
                 </div>

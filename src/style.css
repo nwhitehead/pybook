@@ -188,3 +188,12 @@ section.dark label.label {
 .panel-heading {
     padding-left: 15px;
 }
+footer {
+    color: var(--grey);
+}
+section.dark footer {
+    background-color: var(--dark);
+}
+section.dark hr {
+    background-color: var(--grey-dark);
+}

@@ -13,6 +13,7 @@
             </KeepAlive>
             <Feedback :disable="configuration.disableFeedback" :dark="configuration.darkmode" @send="send" />
         </div>
+    <TheFooter :dark="configuration.darkmode" />
     </section>
 </template>
 
@@ -21,10 +22,11 @@
 import ConsoleApp from './ConsoleApp.vue';
 import CodeApp from './CodeApp.vue';
 import Feedback from './Feedback.vue';
+import TheFooter from './TheFooter.vue';
 import TheNavbar from './TheNavbar.vue';
-import MainView from './MainView.vue';
-import NotFoundView from './NotFoundView.vue';
-import UsageView from './UsageView.vue';
+import MainView from './view/MainView.vue';
+import NotFoundView from './view/NotFoundView.vue';
+import UsageView from './view/UsageView.vue';
 
 import axios from 'axios';
 import { ref, computed, onMounted } from 'vue';
