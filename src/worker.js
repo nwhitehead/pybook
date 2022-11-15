@@ -94,6 +94,12 @@ async function configure(config) {
                 wait_io_complete();
             }
         },
+        output_file: function(content_type, filename) {
+            pyodide.checkInterrupt();
+            const content_data = pyodide.FS.readFile(filename);
+            postMessage({ type:'output', subtype:'binary', content_type:content_type, data:content_data });
+            wait_io_complete();
+        },
         input_stdin: function() {
             return inputGet();
         }

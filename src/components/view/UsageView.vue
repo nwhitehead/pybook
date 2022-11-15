@@ -29,7 +29,7 @@ print(f'Hello, {name}.')</code></pre>
 
 <p class="subtitle is-5">Interrupting</p>
 <p>While the interpreter is evaluating you will see a busy symbol <span class="material-icons">autorenew</span>.
-You can interrupt evaluation with <span class="tag">Ctrl</span>-<span class="tag">C</span>. </p>
+You can interrupt evaluation with <span class="tag">Ctrl</span>-<span class="tag">C</span>. Try interrupting this program:</p>
 <pre><code>while True:
     pass</code></pre>
 
@@ -62,9 +62,10 @@ You can examine state, continue execution, or quit.</p>
 
 factorial(2)</code></pre>
 <p>To debug the example, try entering <tt>c</tt> four times when the interactive debugger starts.
-Then try <tt>p n</tt> to see the value of <tt>n</tt>. Try <tt>bt</tt> to get a backtrace. Enter <tt>q</tt> to quit.</p>
+Then try <tt>p n</tt> to see the value of <tt>n</tt>. Try <tt>bt</tt> to get a backtrace. Enter <tt>q</tt> to quit.
+What's wrong with the function?</p>
 
-<p class="subtitle is-5">HTML</p>
+<p class="subtitle is-5">Rich Output (HTML)</p>
 <p>Using the <tt>pybook</tt> package you can output sanitized HTML. Here is an example showing an
 icon from Google Material Icons.</p>
 
@@ -73,7 +74,49 @@ pybook.output_content('text/html', '&lt;span class="material-icons"&gt;sailing&l
 </code></pre>
 
 <p>Allowed content types include <tt>text/plain</tt>, <tt>text/html</tt>, <tt>image/png</tt>, <tt>image/svg+xml</tt>, and <tt>audio/wav</tt>. HTML output
-is sanitized through DOMPurify which only allows a subset of content. The <tt>pybook</tt> package is specific to <emph>Nathan's Python Console</emph> tools.</p>
+is sanitized through <a href="https://github.com/cure53/DOMPurify">DOMPurify</a>
+which only allows a subset of content. The <tt>pybook</tt> package is specific to <emph>Nathan's Python Console</emph> tools.</p>
+
+<p class="subtitle is-5"><tt>matplotlib</tt> graphs</p>
+
+<p>You can use <tt>matplotlib</tt> to generate and show graphs. There are several important steps. First, choose a non-interactive backend that allows
+generating PNG or SVG images. For PNG generation you can use the <tt>agg</tt> backend like this:</p>
+
+<pre><code>import matplotlib
+matplotlib.use('agg')
+</code></pre>
+
+<p>Next, after creating a plot use the <tt>savefig()</tt> method to save the plot. Here is an example:</p>
+
+<pre><code>import matplotlib.pyplot as plt
+plt.plot([1, 3, 2, 4])
+plt.ylabel('some numbers')
+plt.savefig('plot.png')
+plt.clf()
+</code></pre>
+
+<p>Finally, output the PNG file to the browser.</p>
+
+<pre><code>import pybook
+pybook.output_file('image/png', 'plot.png')
+</code></pre>
+
+<p>Here is a similar example generating a vector SVG graph using the <tt>svg</tt> backend.</p>
+
+<pre><code>import matplotlib
+matplotlib.use('svg')
+
+import matplotlib.pyplot as plt
+plt.plot([1, 3, 2, 4])
+plt.ylabel('some numbers')
+plt.savefig('plot.svg')
+plt.clf()
+
+import pybook
+pybook.output_file('image/svg+xml', 'plot.svg')
+</code></pre>
+
+<p class="subtitle is-5">Audio</p>
 
 <p>Here is example showing generation of an audio clip.</p>
 <pre><code>import wave
