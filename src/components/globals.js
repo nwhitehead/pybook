@@ -16,6 +16,7 @@ export const configuration = storageBacked('config', reactive({
     'fixedHeight':false,
     'closeBrackets':false,
     'editLineNumbers':true,
+    'alternateInterrupt':false,
     'usePyPI':true,
 }));
 

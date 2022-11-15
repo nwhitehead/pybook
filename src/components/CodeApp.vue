@@ -57,6 +57,7 @@ const optionsCode = computed(() => {
         lineNumbers:configuration.editLineNumbers,
         closeBrackets:configuration.closeBrackets,
         highlightLine:true,
+        alternateInterrupt:configuration.alternateInterrupt,
     };
 });
 
@@ -67,6 +68,7 @@ const optionsConsole = computed(() => {
         closeBrackets:configuration.closeBrackets,
         wrap:configuration.wrap,
         fixedHeight:configuration.fixedHeight,
+        alternateInterrupt:configuration.alternateInterrupt,
     };
 });
 

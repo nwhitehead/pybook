@@ -28,6 +28,11 @@
                     <div class="control">
                         <label><input type="checkbox" id="closeBracketsId" v-model="configuration.closeBrackets" /> Auto close brackets/quotes while typing</label>
                     </div>
+                    <div class="control">
+                        <label><input type="checkbox" id="alternateInterruptId" v-model="configuration.alternateInterrupt" /> Use
+                            <span class="tag">Ctrl</span>-<span class="tag">I</span> for interrupt instead of 
+                            <span class="tag">Ctrl</span>-<span class="tag">C</span>.</label>
+                    </div>
                 </div>
             </template>
             <template v-if="showEditor">

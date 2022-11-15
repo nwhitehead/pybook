@@ -4,7 +4,10 @@ import { watch } from 'vue';
 export function storageBacked(name, rValue) {
     const stored = localStorage.getItem(name);
     const stringValue = stored === null ? JSON.stringify(rValue) : stored;
-    Object.assign(rValue, JSON.parse(stringValue));
+    const parsed = JSON.parse(stringValue);
+    for (const [key, value] of Object.entries(parsed)) {
+        rValue[key] = value;
+    }
     watch(rValue, (newValue) => {
         localStorage.setItem(name, JSON.stringify(newValue));
     });

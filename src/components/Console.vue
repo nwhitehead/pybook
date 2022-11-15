@@ -15,6 +15,7 @@
 //!     - closeBrackets - Automatically close brackets/quotes/etc. while typing input
 //!     - wrap - Whether to wrap output long lines or not
 //!     - fixedHeight - Whether to fix the size (false will shrink/grow vertically between min/max sizes, true will always be max size)
+//!     - alternateInput - Use Ctrl-I instead of Ctrl-C
 //! - pyoptions - Options for python interpreter
 //!     - usePyPI - If true imports will automatically look in PyPI and install dependencies, otherwise just Pyodide packages will be loaded as needed
 //! - dark - Whether to render in darkmode
@@ -227,6 +228,7 @@ const inputOptions = computed(() => {
         singleLine: waitingInput.value ? true : false,
         lineNumbers: waitingInput.value ? false : (numLines > 1 ? options.lineNumbers : false),
         closeBrackets: waitingInput.value ? false : options.closeBrackets,
+        alternateInterrupt: options.alternateInterrupt,
         dark: props.dark,
     };
 });

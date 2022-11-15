@@ -39,6 +39,7 @@ const options = computed(() => {
         closeBrackets:configuration.closeBrackets,
         wrap:configuration.wrap,
         fixedHeight:configuration.fixedHeight,
+        alternateInterrupt:configuration.alternateInterrupt,
     };
 });
 

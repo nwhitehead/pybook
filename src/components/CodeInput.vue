@@ -91,11 +91,19 @@ function nop(target) {
     return true;
 }
 
-const blankKeymap = [
+const customKeymap = [
     { key:'Ctrl-Enter', run: () => { emit('evaluate'); return true; } },
-    { key:'Ctrl-c', run: () => { emit('interrupt'); return true; } },
     { key:'Ctrl-l', run: () => { emit('clear'); return true; } },
     { key:'Ctrl-Shift-l', run: () => { emit('reset'); return true; } },
+];
+
+
+const interruptNormalKeymap = [
+    { key:'Ctrl-c', run: () => { emit('interrupt'); return true; } },
+];
+
+const interruptAlternateKeymap = [
+    { key:'Ctrl-i', run: () => { emit('interrupt'); return true; } },
 ];
 
 const ignoreInputDropExtension = function () {
@@ -128,7 +136,7 @@ const defaultExtensions = (() => [
   // Custom drag and drop handler
   ignoreInputDropExtension(),
   keymap.of([
-    ...blankKeymap,
+    ...customKeymap,
     ...closeBracketsKeymap,
     ...defaultKeymap,
     ...searchKeymap,
@@ -138,9 +146,16 @@ const defaultExtensions = (() => [
 ])()
 
 const extensions = computed(() => {
-  // Extensions are reactive to options, computed to avoid recomputing on every template render
-  let ext = [ defaultExtensions ];
   const opts = props.options ? props.options : {};
+  // Extensions are reactive to options, computed to avoid recomputing on every template render
+  let ext = [];
+    // Either use Ctrl-C or Ctrl-I for interrupt based on configuration option
+  if (opts.alternateInterrupt) {
+    ext.push(keymap.of(...interruptAlternateKeymap));
+  } else {
+    ext.push(keymap.of(...interruptNormalKeymap));
+  }
+  ext = ext.concat(defaultExtensions);
   // Put in optional editor extensions
   if (opts.lineNumbers) {
     ext.push(lineNumbers());
