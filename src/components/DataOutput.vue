@@ -11,7 +11,8 @@
 //!     - text/plain
 //!     - text/html
 //!     - image/svg+xml
-//!   Additionally value may have key "name" with value of "stdout" or "stderr" to distinguish different "text/plain" MIME outputs.
+//! Additionally value may have key "name" with value of "stdout" or "stderr" to distinguish different "text/plain" MIME outputs.
+//! Value may have key 'download' set to true to indicate that there should be a button to download and save the content instead of viewing.
 //!
 //! If the value has more than one MIME type, they will be shown sequentially with simplest first.
 //!
@@ -35,6 +36,7 @@
         <img v-if="isSVG(value)" :src="dataURI('image/svg+xml', value)" />
         <img v-if="isPNG(value)" :src="dataURI('image/png', value)" />
         <audio v-if="isWAV(value)" controls autoplay :src="dataURI('audio/wav', value)" />
+        <FileSave v-if="isDownload(value)" :value="value" />
     </div>
 </template>
 
@@ -56,6 +58,8 @@
 import { computed, ref, onMounted, onUpdated } from 'vue';
 import DOMPurify from 'dompurify';
 import Convert from 'ansi-to-html';
+
+import FileSave from './FileSave.vue';
 
 const convert = new Convert();
 const htmlContent = ref(null);
@@ -111,29 +115,38 @@ function getClass (value) {
 
 function isPre (value) {
     if (value === undefined) return false;
+    if (value.download) return false;
     return value['text/plain'] !== undefined;
 }
 
 function isHtml (value) {
     if (value === undefined) return false;
+    if (value.download) return false;
     return value['text/html'] !== undefined;
 }
 
 function isSVG (value) {
     if (value === undefined) return false;
+    if (value.download) return false;
     return value['image/svg+xml'] !== undefined;
 }
 
 function isPNG (value) {
     if (value === undefined) return false;
+    if (value.download) return false;
     return value['image/png'] !== undefined;
 }
 
 function isWAV (value) {
     if (value === undefined) return false;
+    if (value.download) return false;
     return value['audio/wav'] !== undefined;
 }
 
+function isDownload (value) {
+    if (value === undefined) return false;
+    return value.download === true;
+}
 
 // Following 2 functions from:
 // https://developer.mozilla.org/en-US/docs/Glossary/Base64#Solution_.232_.E2.80.93_rewriting_atob%28%29_and_btoa%28%29_using_TypedArrays_and_UTF-8

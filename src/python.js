@@ -140,6 +140,11 @@ export function newPythonKernel(opts) {
             console.log('Rich output', content_type, data);
         };
     }
+    if (opts.onDownload === undefined) {
+        opts.onDownload = function(content_type, data, filename) {
+            console.log('Download', content_type, data, filename);
+        };
+    }
     if (opts.onResponse === undefined) {
         opts.onResponse = function() {
             console.log('Response');
@@ -166,8 +171,8 @@ export function newPythonKernel(opts) {
             } else if (msg.type === 'output') {
                 findHandler('onOutput', callback, opts, defaultHandler)(msg.content_type, msg.data);
                 setIOComplete();
-            } else if (msg.type === 'filesystem') {
-                findHandler('onFilesystem', callback, opts, defaultHandler)();
+            } else if (msg.type === 'download') {
+                findHandler('onDownload', callback, opts, defaultHandler)(msg.content_type, msg.data, msg.filename);
                 setIOComplete();
             } else if (msg.type === 'response') {
                 findHandler('onResponse', callback, opts, defaultHandler)();

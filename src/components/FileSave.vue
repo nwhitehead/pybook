@@ -1,27 +1,25 @@
 <template>
   <div class="filesave">
-    <a class="dropdown-item" v-on:click.stop="action">
+    <a class="button" v-on:click.stop="action">
       <slot>
-        Save
+        Save "{{ value.filename }}"
         <!-- Fallback label -->
       </slot>
     </a>
   </div>
 </template>
 
-<script>
-export default {
-  props: ['value', 'filename'],
-  methods: {
-    action() {
-      let a = document.createElement('a');
-      const data = this.value;
-      const blob = new Blob([data], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      a.download = this.filename;
-      a.href = url;
-      a.click();
-    },
-  },
-};
+<script setup>
+const props = defineProps( ['value' ] );
+
+function action() {
+    let a = document.createElement('a');
+    const data = props.value.data;
+    const blob = new Blob([data], { type: props.value.content_type });
+    const url = window.URL.createObjectURL(blob);
+    a.download = props.value.filename;
+    a.href = url;
+    a.click();
+}
+
 </script>

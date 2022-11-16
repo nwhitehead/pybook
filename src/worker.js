@@ -12,6 +12,9 @@ let INPUT_BUFFER_SIZE = null;
 let loaded = null;
 let states = null;
 
+// Interval to synchronize local filesystem changes to IndexDB
+const PERSISTENT_INTERVAL_MS = 5000;
+
 async function configure(config) {
     // This code runs after we get the configuration data
     absurl = config.absurl;
@@ -102,8 +105,26 @@ async function configure(config) {
         },
         input_stdin: function() {
             return inputGet();
-        }
+        },
+        download_file: function(content_type, filename) {
+            pyodide.checkInterrupt();
+            const content_data = pyodide.FS.readFile(filename);
+            postMessage({ type:'download', content_type:content_type, data:content_data, filename:filename });
+            wait_io_complete();
+        },
     };
+    // Setup local filesystem (persistent storage local to browser)
+    pyodide.FS.mkdir('persistent');
+    pyodide.FS.mount(pyodide.FS.filesystems.IDBFS, {}, 'persistent');
+    // Initial sync from existing index into FS state ('true' direction)
+    pyodide.FS.syncfs(true, () => {});
+    globalThis.pyodide = pyodide;
+    // Persistent filesystem every so often
+    setInterval(() => {
+        // Send changes to IndexDB ('false' direction)
+        pyodide.FS.syncfs(false, () => {});
+    }, PERSISTENT_INTERVAL_MS);
+    // Set interrupt buffer
     pyodide.setInterruptBuffer(sharedArray);
     // Register pybook model (JavaScript code, not a real module)
     pyodide.registerJsModule('pybook', pybook); // synchronous

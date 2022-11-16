@@ -246,8 +246,8 @@ watch([outputs, busy], ([newOutputs, newBusy]) => {
         return 0;
     }
     const last = newOutputs[newOutputs.length - 1];
-    if (last['text/plain'] === undefined) {
-        // If the last part of output is not plain text, give up computing horizontal offset
+    if (last['text/plain'] === undefined || last.download) {
+        // If the last part of output is not normal plain text, give up computing horizontal offset
         return 0;
     }
     const split = last['text/plain'].split('\n');
@@ -406,6 +406,14 @@ function evaluate(src, console) {
         onOutput: function(content_type, msg) {
             let item = {};
             item[content_type] = msg;
+            addOutput(item);
+        },
+        onDownload: function(content_type, msg, filename) {
+            let item = {};
+            item.content_type = content_type;
+            item.data = msg;
+            item.filename = filename;
+            item.download = true;
             addOutput(item);
         },
         onResponse: function () {

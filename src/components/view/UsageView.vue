@@ -148,11 +148,21 @@ pybook.output_content('audio/wav', data)
 </code></pre>
 
 <p class="subtitle is-5">Copy and Paste</p>
+
 <p>The console and code editor support multiline editing. You can copy larger fragments from other sources and paste in the code, then edit and evaluate them.</p>
 <p>One small note is that if you are trying to copy and paste within the input area, the binding for <span class="tag">Ctrl</span>-<span class="tag">C</span>
 is to interrupt the interpreter. You may be able to use a right click to copy in this case. You can also set a configuration option to use
 <span class="tag">Ctrl</span>-<span class="tag">I</span> to interrupt the interpreter and leave the standard binding for
 <span class="tag">Ctrl</span>-<span class="tag">C</span>.</p>
+
+<p class="subtitle is-5">Files</p>
+
+<p>You can use regular file operations from Python in the console. The filesystem is a temporary filesystem kept in memory and only
+persists as long as the interpreter is running. Restarting the interpreter will lose any changes to the filesystem.</p>
+
+<p>If you want to persist files between page loads you can put files in the <tt>persistent</tt> directory. The contents of the <tt>persistent</tt>
+directory are stored in the browsers local storage area. Don't forget that if you visit from another computer the file contents will <em>not</em>
+be visible.</p>
 
                     </div>
                 </div>
