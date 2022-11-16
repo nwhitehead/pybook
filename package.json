@@ -18,6 +18,7 @@
     "mitt": "^3.0.0",
     "node-fetch": "^3.3.0",
     "pinia": "^2.0.16",
+    "printable-characters": "^1.0.42",
     "prismjs": "^1.28.0",
     "sortable": "^2.0.0",
     "vue": "^3.2.37",

@@ -7,12 +7,17 @@
 //! * SVG content
 //!
 //! Props:
-//! * value - This is a dict with keys of MIME type and value of content. MIME types are:
+//! value - This is a dict with keys of MIME type and value of content. MIME types are:
 //!     - text/plain
 //!     - text/html
+//!     - image/png
 //!     - image/svg+xml
+//!     - audio/wav
+//! isLast - true when DataOutput is last output element (some special cursor spacing logic for newlines needed when true) 
+//!
 //! Additionally value may have key "name" with value of "stdout" or "stderr" to distinguish different "text/plain" MIME outputs.
 //! Value may have key 'download' set to true to indicate that there should be a button to download and save the content instead of viewing.
+//! Value may have key 'upload' set to true to indicate that there should be a button to upload a file.
 //!
 //! If the value has more than one MIME type, they will be shown sequentially with simplest first.
 //!
@@ -63,7 +68,7 @@ import FileSave from './FileSave.vue';
 
 const convert = new Convert();
 const htmlContent = ref(null);
-const props = defineProps(['value']);
+const props = defineProps([ 'value', 'isLast' ]);
 const htmlMarkdown = computed(() => {
     if (props.value['text/html']) {
         return DOMPurify.sanitize(props.value['text/html']);
@@ -73,7 +78,11 @@ const htmlMarkdown = computed(() => {
 const preContent = computed(() => {
     if (props.value['text/plain']) {
         let result = DOMPurify.sanitize(convert.toHtml(escapeHtml(props.value['text/plain'])));
-        return result.endsWith('\n') ? result + '\n' : result;
+        if (props.isLast) {
+            // For last output, if it ends with newline and no other content, HTML will not put space for cursor on left side of newline. Force space.
+            return result.endsWith('\n') ? result + '\n' : result;
+        }
+        return result;
     }
     return '';
 });
@@ -115,37 +124,42 @@ function getClass (value) {
 
 function isPre (value) {
     if (value === undefined) return false;
-    if (value.download) return false;
+    if (value.download || value.upload) return false;
     return value['text/plain'] !== undefined;
 }
 
 function isHtml (value) {
     if (value === undefined) return false;
-    if (value.download) return false;
+    if (value.download || value.upload) return false;
     return value['text/html'] !== undefined;
 }
 
 function isSVG (value) {
     if (value === undefined) return false;
-    if (value.download) return false;
+    if (value.download || value.upload) return false;
     return value['image/svg+xml'] !== undefined;
 }
 
 function isPNG (value) {
     if (value === undefined) return false;
-    if (value.download) return false;
+    if (value.download || value.upload) return false;
     return value['image/png'] !== undefined;
 }
 
 function isWAV (value) {
     if (value === undefined) return false;
-    if (value.download) return false;
+    if (value.download || value.upload) return false;
     return value['audio/wav'] !== undefined;
 }
 
 function isDownload (value) {
     if (value === undefined) return false;
     return value.download === true;
+}
+
+function isUpload (value) {
+    if (value === undefined) return false;
+    return value.upload === true;
 }
 
 // Following 2 functions from:

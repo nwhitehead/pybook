@@ -10,8 +10,8 @@
 
 <template>
     <div :class="{ consoleoutput:true, nowrap:!wrap }">
-        <template v-for="value in values">
-            <DataOutput :value="value" />
+        <template v-for="(value, index) in values">
+            <DataOutput :value="value" :isLast="index === values.length - 1" />
         </template>
     </div>
 </template>

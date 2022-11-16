@@ -137,6 +137,7 @@ import ConsoleOutput from './ConsoleOutput.vue';
 
 import { computed, reactive, ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import mitt from 'mitt';
+import { strlen } from 'printable-characters';
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
@@ -253,7 +254,7 @@ watch([outputs, busy], ([newOutputs, newBusy]) => {
         return 0;
     }
     const split = last['text/plain'].split('\n');
-    const len = split[split.length - 1].length;
+    const len = strlen(split[split.length - 1]);
     let top = ORIGINAL_MARGIN_TOP;
 
     let newMarginLeft = len * INPUT_INDENT_PERCHAR;
@@ -277,7 +278,8 @@ function clickOutput(evt) {
 }
 
 const normalstate = 'state';
-const prompt = '>>> ';
+const prompt = ansi_normal + '>>> ';
+const prompt_multiline = '... ';
 let python_version = '';
 
 const python_opts = {
@@ -299,6 +301,7 @@ const python_opts = {
 const python = newPythonKernel(python_opts);
 
 //! Take a multiline string and indent it with a prefix on first line, different prefix on subsequent lines
+//! Used to echo multiline input
 function fancy_indent(txt, first_prefix, prefix) {
     const lines = txt.split('\n');
     let result = [];
@@ -383,7 +386,7 @@ function evaluate(src, console) {
         // Console echoes input (with fancy indent, in bold)
         addOutput({
             name: 'stdout',
-            'text/plain': ansi_bold + fancy_indent(src, '', '... ') + ansi_normal + '\n',
+            'text/plain': ansi_bold + fancy_indent(src, '', prompt_multiline) + ansi_normal + '\n',
         });
     }
     emit('evaluate', src);
