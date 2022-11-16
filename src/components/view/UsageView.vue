@@ -185,6 +185,55 @@ persists as long as the interpreter is running. Restarting the interpreter will 
 directory are stored in the browsers local storage area. Don't forget that if you visit from another computer the file contents will <em>not</em>
 be visible.</p>
 
+<p class="subtitle is-5">PyPI packages with <tt>micropip</tt></p>
+
+<p>In case the <tt>import</tt> statement cannot be mapped to a specific PyPI package, you can directly import PyPI packages using
+<tt>micropip</tt>. Here is a hypothetical example:</p>
+
+<pre><code>import micropip
+await micropip.install('hypothesis')
+import hypothesis
+</code></pre>
+
+<p class="subtitle is-5">Async IO</p>
+
+<p>There is some support for asynchronous IO in the console. In particular, top-level <tt>await</tt> is allowed. The module <tt>asyncio</tt>
+can be imported and used. Note that the browser has a top-level event loop running. You cannot start a new top-level event loop using <tt>asyncio</tt>.
+This means some examples may need to be edited for the browser.</p>
+
+<p class="subtitle is-5">Tracing program flow</p>
+
+<p>To debug small Python programs it can be convenient to use <a href=""><tt>snoop</tt></a>. This package lets you decorate a function and it will
+show debug output for each line of the function as it executes. Here is an example:</p>
+
+<pre><code>import snoop
+
+@snoop
+def f():
+    i = 0 
+    while True:
+        print(f'count {i}')
+        i += 1
+
+f()
+</code></pre>
+
+<p>To help with legibility you can choose different output locations and color schemes. Here is an example with options set:</p>
+
+<pre><code>import snoop
+import sys
+
+snoop.install(out=sys.stdout, color='bw')
+@snoop
+def f():
+    i = 0
+    while True:
+        print(f'count {i}')
+        i += 1
+
+f()
+</code></pre>
+
                     </div>
                 </div>
             </div>
