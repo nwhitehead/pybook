@@ -15,7 +15,7 @@ const props = defineProps( ['value' ] );
 function action() {
     let a = document.createElement('a');
     const data = props.value.data;
-    const blob = new Blob([data], { type: props.value.content_type });
+    const blob = new Blob([data]);
     const url = window.URL.createObjectURL(blob);
     a.download = props.value.filename;
     a.href = url;

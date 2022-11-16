@@ -164,14 +164,16 @@ const ansi_bold = '\x1b[1m';
 const ansi_normal = '\x1b[0m';
 
 function addOutput (out) {
-  if (outputs.length === 0) {
-    outputs.push(out);
-  } else if (outputs[outputs.length - 1].name === out.name && outputs[outputs.length - 1]['text/plain'].length < MAX_LENGTH) {
-    outputs[outputs.length - 1]['text/plain'] += out['text/plain'];
-  } else {
-    outputs.push(out);
-  }
-  nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
+    if (outputs.length === 0) {
+        outputs.push(out);
+    } else if (out.name !== 'stdout' && out.name !== 'stderr') {
+        outputs.push(out);
+    }else if (outputs[outputs.length - 1].name === out.name && outputs[outputs.length - 1]['text/plain'].length < MAX_LENGTH) {
+        outputs[outputs.length - 1]['text/plain'] += out['text/plain'];
+    } else {
+        outputs.push(out);
+    }
+    nextTick(() => holder.value.scroll(0, holder.value.scrollHeight));
 }
 
 // Time is used to trigger watcher on SharedArrayBuffer for waiting for stdin (Vue doesn't know when value changes there)
@@ -408,9 +410,8 @@ function evaluate(src, console) {
             item[content_type] = msg;
             addOutput(item);
         },
-        onDownload: function(content_type, msg, filename) {
+        onDownload: function(msg, filename) {
             let item = {};
-            item.content_type = content_type;
             item.data = msg;
             item.filename = filename;
             item.download = true;

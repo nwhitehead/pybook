@@ -106,10 +106,10 @@ async function configure(config) {
         input_stdin: function() {
             return inputGet();
         },
-        download_file: function(content_type, filename) {
+        download_file: function(filename) {
             pyodide.checkInterrupt();
             const content_data = pyodide.FS.readFile(filename);
-            postMessage({ type:'download', content_type:content_type, data:content_data, filename:filename });
+            postMessage({ type:'download', data:content_data, filename:filename });
             wait_io_complete();
         },
     };
@@ -190,10 +190,12 @@ async function configure(config) {
                 }
             }
             // Use handy function pyodide provides to map import name to package name (e.g. 'import bs4' becomes package 'beautifulsoup4')
-            const import_name_to_package_name = pyodide._api._import_name_to_package_name;
+            let import_name_to_package_name = pyodide._api._import_name_to_package_name;
+            // Custom additions to pyodide import_name map
+            import_name_to_package_name.set('png', 'pypng');
             for (let i = 0; i < packages.length; i++) {
                 const name = packages[i];
-                let packagename = import_name_to_package_name[name] ? import_name_to_package_name[name] : name;
+                let packagename = import_name_to_package_name.get(name) ? import_name_to_package_name.get(name) : name;
                 try {
                     await pyodide.runPythonAsync('await micropip.install("' + packagename + '")');
                 } catch(err) {

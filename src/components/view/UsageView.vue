@@ -116,9 +116,30 @@ import pybook
 pybook.output_file('image/svg+xml', 'plot.svg')
 </code></pre>
 
+<p class="subtitle is-5">Images</p>
+
+<p>Here is an example showing generation and display of a PNG image.</p>
+
+<pre><code>import png
+
+width = 100
+height = 100
+img = []
+for y in range(height):
+    row = ()
+    for x in range(width):
+        row = row + (200 - (x + y), x*2, y*2)
+    img.append(row)
+with open('test.png', 'wb') as f:
+    w = png.Writer(width, height, greyscale=False)
+    w.write(f, img)
+
+import pybook
+pybook.output_file('image/png', 'test.png')</code></pre>
+
 <p class="subtitle is-5">Audio</p>
 
-<p>Here is example showing generation of an audio clip.</p>
+<p>Here is example showing generation and output of an audio clip.</p>
 <pre><code>import wave
 import struct
 import math
