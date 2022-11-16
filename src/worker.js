@@ -62,7 +62,9 @@ async function configure(config) {
 
     function wait_io_complete() {
         // Wait until io is complete to continue (worker is synchronous IO)
+        // Allow interrupts
         while (Atomics.load(sharedArray, signalMap['io_complete']) === 0) {
+            pyodide.checkInterrupt();
             Atomics.wait(sharedArray, signalMap['io_complete'], 0, 100.0);
         }
         // IO is now complete, reset signal back to 0 for next time
@@ -111,6 +113,11 @@ async function configure(config) {
             pyodide.checkInterrupt();
             const content_data = pyodide.FS.readFile(filename);
             postMessage({ type:'download', data:content_data, filename:filename });
+            wait_io_complete();
+        },
+        upload_file: function(filename) {
+            pyodide.checkInterrupt();
+            postMessage({ type:'upload', filename:filename });
             wait_io_complete();
         },
     };

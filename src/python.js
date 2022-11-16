@@ -145,6 +145,11 @@ export function newPythonKernel(opts) {
             console.log('Download', data, filename);
         };
     }
+    if (opts.onUpload === undefined) {
+        opts.onUpload = function(filename) {
+            console.log('Upload', filename);
+        };
+    }
     if (opts.onResponse === undefined) {
         opts.onResponse = function() {
             console.log('Response');
@@ -174,6 +179,9 @@ export function newPythonKernel(opts) {
             } else if (msg.type === 'download') {
                 findHandler('onDownload', callback, opts, defaultHandler)(msg.data, msg.filename);
                 setIOComplete();
+            } else if (msg.type === 'upload') {
+                findHandler('onUpload', callback, opts, defaultHandler)(msg.filename);
+                //setIOComplete();
             } else if (msg.type === 'response') {
                 findHandler('onResponse', callback, opts, defaultHandler)();
             } else {
@@ -210,6 +218,9 @@ export function newPythonKernel(opts) {
             worker.terminate();
             clearInterrupt();
             worker = startup();
+        },
+        savefile: function(filename, data) {
+            worker.postMessage({ type:'savefile', filename:filename, data:data });
         },
     };
 }

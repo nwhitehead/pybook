@@ -18,6 +18,7 @@
 //! Additionally value may have key "name" with value of "stdout" or "stderr" to distinguish different "text/plain" MIME outputs.
 //! Value may have key 'download' set to true to indicate that there should be a button to download and save the content instead of viewing.
 //! Value may have key 'upload' set to true to indicate that there should be a button to upload a file.
+//! Value with 'upload' also has field 'handler' which is called when upload file data is ready.
 //!
 //! If the value has more than one MIME type, they will be shown sequentially with simplest first.
 //!
@@ -41,7 +42,8 @@
         <img v-if="isSVG(value)" :src="dataURI('image/svg+xml', value)" />
         <img v-if="isPNG(value)" :src="dataURI('image/png', value)" />
         <audio v-if="isWAV(value)" controls autoplay :src="dataURI('audio/wav', value)" />
-        <FileSave v-if="isDownload(value)" :value="value" />
+        <FileSave v-if="isDownload(value)" :filename="value.filename" :data="value.data" />
+        <FileUpload v-if="isUpload(value)" :filename="value.filename" @data="(data) => value.handler(data)" />
     </div>
 </template>
 
@@ -65,6 +67,7 @@ import DOMPurify from 'dompurify';
 import Convert from 'ansi-to-html';
 
 import FileSave from './FileSave.vue';
+import FileUpload from './FileUpload.vue';
 
 const convert = new Convert();
 const htmlContent = ref(null);

@@ -420,6 +420,15 @@ function evaluate(src, console) {
             item.download = true;
             addOutput(item);
         },
+        onUpload: function(filename) {
+            let item = {};
+            item.filename = filename;
+            item.upload = true;
+            item.handler = function(data) {
+                globalThis.console.log('Console got upload data', data);
+            }
+            addOutput(item);
+        },
         onResponse: function () {
             addOutput({
                 name: 'stdout',
