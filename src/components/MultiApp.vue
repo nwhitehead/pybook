@@ -24,6 +24,7 @@ import CodeApp from './CodeApp.vue';
 import Feedback from './Feedback.vue';
 import TheFooter from './TheFooter.vue';
 import TheNavbar from './TheNavbar.vue';
+import ConfigurationView from './view/ConfigurationView.vue';
 import MainView from './view/MainView.vue';
 import NotFoundView from './view/NotFoundView.vue';
 import UsageView from './view/UsageView.vue';
@@ -42,6 +43,7 @@ const routes = {
     '#/': MainView,
     '#/console': ConsoleApp,
     '#/code': CodeApp,
+    '#/configuration': ConfigurationView,
     '#/usage': UsageView,
 };
 

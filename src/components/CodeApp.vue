@@ -18,8 +18,6 @@
                     @reset="reset"
                 />
             </div>
-            <TheConfiguration :configuration="configuration" :showGeneral="true" :showConsole="true" :showEditor="true" :showPython="true" />
-            <TheKeyboardControls :configuration="configuration" />
         </div>
         <div class="column is-half">
             <div class="box console">
@@ -37,8 +35,6 @@
 import CodeInput from './CodeInput.vue';
 import Console from './Console.vue';
 import Controls from './Controls.vue';
-import TheConfiguration from './TheConfiguration.vue';
-import TheKeyboardControls from './TheKeyboardControls.vue';
 
 import { computed, ref } from 'vue';
 import mitt from 'mitt';
