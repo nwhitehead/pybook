@@ -8,6 +8,8 @@ let absurl = null;
 let signalMap = null;
 let sharedArray = null;
 let sharedInputArray = null;
+let sharedFileArray = null;
+let sharedFileSizeArray = null;
 let INPUT_BUFFER_SIZE = null;
 let loaded = null;
 let states = null;
@@ -21,6 +23,8 @@ async function configure(config) {
     signalMap = config.signalMap;
     sharedArray = config.sharedArray;
     sharedInputArray = config.sharedInputArray;
+    sharedFileArray = config.sharedFileArray;
+    sharedFileSizeArray = config.sharedFileSizeArray;
     INPUT_BUFFER_SIZE = config.INPUT_BUFFER_SIZE;
 
     function inputGet() {
@@ -119,6 +123,10 @@ async function configure(config) {
             pyodide.checkInterrupt();
             postMessage({ type:'upload', filename:filename });
             wait_io_complete();
+            // Now we have sharedFileArray and sharedFileSizeArray filled out
+            const size = sharedFileSizeArray[0];
+            // Synchronous emscripten FS write
+            pyodide.FS.writeFile(filename, sharedFileArray.slice(0, size));
         },
     };
     // Setup local filesystem (persistent storage local to browser)

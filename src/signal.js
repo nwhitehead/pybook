@@ -24,6 +24,12 @@ export const sharedArray = new Int32Array(sharedBuffer);
 export const sharedInputBuffer = new SharedArrayBuffer(INPUT_BUFFER_SIZE);
 export const sharedInputArray = new Int32Array(sharedInputBuffer);
 
+export const FILE_BUFFER_SIZE = 1024 * 1024 * 16;
+export const sharedFileBuffer = new SharedArrayBuffer(FILE_BUFFER_SIZE);
+export const sharedFileArray = new Uint8Array(sharedFileBuffer);
+export const sharedFileSizeBuffer = new SharedArrayBuffer(4);
+export const sharedFileSizeArray = new Uint32Array(sharedFileSizeBuffer);
+
 function check(name) {
     return Atomics.load(sharedArray, signalMap[name]) !== 0;
 }
@@ -70,4 +76,14 @@ export function inputPut(value) {
     p = (p + 1) % INPUT_BUFFER_SIZE;
     Atomics.store(sharedArray, signalMap['input_end'], p);
     Atomics.notify(sharedArray, signalMap['input_end']);
+}
+
+//!
+//! Set file upload data
+//!
+//! Caller is responsible for atomic sync to read these contents from other contexts
+//!
+export function setFileUploadData(data) {
+    sharedFileArray.set(data);
+    Atomics.store(sharedFileSizeArray, 0, data.length);
 }

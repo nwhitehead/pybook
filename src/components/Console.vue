@@ -141,12 +141,13 @@ import { strlen } from 'printable-characters';
 
 import { newPythonKernel } from '../python.js';
 import { signalMap,
-                 isBusy,
-                 isStarting, setStarting,
-                 setInterrupt, clearInterrupt,
-                 inputPut,
-                 isInputWaiting
-             } from '../signal.js';
+         isBusy,
+         isStarting, setStarting,
+         setInterrupt, clearInterrupt,
+         setIOComplete,
+         inputPut,
+         isInputWaiting,
+         setFileUploadData } from '../signal.js';
 
 const props = defineProps([ 'eventbus', 'options', 'pyoptions', 'dark' ]);
 const emit = defineEmits([ 'update:history', 'evaluate', 'stdin', 'interrupt', 'update:busy', 'update:stdin' ]);
@@ -425,7 +426,9 @@ function evaluate(src, console) {
             item.filename = filename;
             item.upload = true;
             item.handler = function(data) {
-                globalThis.console.log('Console got upload data', data);
+                setFileUploadData(data);
+                setIOComplete();
+                // JavaScript will get the io complete signal and read the file upload data area
             }
             addOutput(item);
         },

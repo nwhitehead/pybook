@@ -15,7 +15,9 @@
 //!
 
 import { signalMap, setStarting, clearInterrupt,
-         sharedArray, sharedInputArray, setIOComplete, INPUT_BUFFER_SIZE
+         sharedArray, sharedInputArray,
+         sharedFileArray, sharedFileSizeArray,
+         setIOComplete, INPUT_BUFFER_SIZE
        } from './signal.js';
 
 // Spawn the web worker thread and configure it
@@ -24,6 +26,8 @@ function newPythonWorker() {
         absurl: document.location.origin,
         sharedArray: sharedArray,
         sharedInputArray: sharedInputArray,
+        sharedFileArray: sharedFileArray,
+        sharedFileSizeArray: sharedFileSizeArray,
         signalMap: signalMap,
         INPUT_BUFFER_SIZE: INPUT_BUFFER_SIZE,
     };
