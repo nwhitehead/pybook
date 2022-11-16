@@ -67,6 +67,7 @@ async function configure(config) {
         }
         // IO is now complete, reset signal back to 0 for next time
         Atomics.store(sharedArray, signalMap['io_complete'], 0);
+        Atomics.notify(sharedArray, signalMap['io_complete']);
     }
 
     let pybook = {
