@@ -205,8 +205,18 @@ with open('test.png', 'wb') as f:
 import pybook
 pybook.download_file('test.png')</code></pre>
 
-<p>To keep working on saved files in a new Python interpreter, you can use <tt>pybook</tt> to show an upload link. Click the link and
-choose the saved file to upload.</p>
+<p>To work on saved files, you can use <tt>pybook</tt> to show an upload link. Click the link and
+choose the file to upload. Once the contents are uploaded, the Python program continues. Files up to 16 MB are allowed.</p>
+
+<pre><code>import pybook
+import os
+
+pybook.upload_file('test.png')
+# Let's see how long the file is
+f = open('test.png', 'rb')
+f.seek(0, os.SEEK_END)
+print(f.tell())
+</code></pre>
 
 <p class="subtitle is-5">PyPI packages with <tt>micropip</tt></p>
 

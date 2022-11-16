@@ -41,6 +41,8 @@
             <p>Many packages are supported without any setup needed. You can also directly output graphics and sound to the browser without going through other
             programs to preview your output.
             </p>
+            <li><em>Privacy</em></li>
+            <p>The Python code you run is not being sent to a remote server, it is running privately in your browser.</p>
             <li><em>Demonstration</em></li>
             <p>If you want to show off Python code to demonstrate something, it is convenient to point people to a place where they can see the demonstration
             immediately without any barriers to getting started.
