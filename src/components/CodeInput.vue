@@ -22,6 +22,7 @@
 //!     ready - Is state ready for submitting input (default true)
 //!     evalSingleLine - If true then pressing Enter on single line will evaluate (default true)
 //!     dark - Show in dark mode colors
+//!     fixedHeight - Make editor fixed height (default is false)
 //!
 //! Events:
 //! - update:modelValue - Emitted when modelValue changes, payload is value
@@ -37,7 +38,7 @@
   <div :class="{ codeinput:true, python:isPython, ready:isReady }">
     <codemirror
       v-model="modelValue"
-      :style="{ maxHeight: 'calc(100vh - 270px)' }"
+      :style="codemirrorStyle"
       :autofocus="!disabled"
       :indent-with-tab="true"
       :tab-size="indent"
@@ -82,6 +83,15 @@ const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear'
 
 let cmElement = ref(null);
 let cmComponent = ref(null);
+
+const codemirrorStyle = computed(() => {
+    const options = props.options ? props.options : {};
+    let res = { maxHeight: 'calc(100vh - 270px)' };
+    if (options.fixedHeight) {
+        res.minHeight = 'calc(100vh - 270px)';
+    }
+    return res;
+});
 
 function handleReady(payload) {
     cmComponent.value = payload.view;

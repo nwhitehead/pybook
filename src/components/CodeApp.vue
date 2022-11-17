@@ -6,7 +6,7 @@
 
 <template>
     <div class="columns">
-        <div class="column is-half">
+        <div class="column is-three-fifths">
             <div class="box editor">
                 <Controls :buttons="buttons" :dark="configuration.darkmode" 
                     @pressed="pressed"
@@ -19,7 +19,7 @@
                 />
             </div>
         </div>
-        <div class="column is-half">
+        <div class="column is-two-fifths">
             <div class="box console">
                 <Console :eventbus="eventbus" :options="optionsConsole" :pyoptions="pyoptionsConsole" :dark="configuration.darkmode"
                     @update:busy="(evt) => busy = evt"
@@ -54,6 +54,7 @@ const optionsCode = computed(() => {
         closeBrackets:configuration.closeBrackets,
         highlightLine:true,
         alternateInterrupt:configuration.alternateInterrupt,
+        fixedHeight:true,
     };
 });
 
@@ -63,7 +64,7 @@ const optionsConsole = computed(() => {
         lineNumbers:configuration.lineNumbers,
         closeBrackets:configuration.closeBrackets,
         wrap:configuration.wrap,
-        fixedHeight:configuration.fixedHeight,
+        fixedHeight:true,
         alternateInterrupt:configuration.alternateInterrupt,
     };
 });
