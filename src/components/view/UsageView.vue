@@ -16,7 +16,7 @@
 <p>When you evaluate input, the Python interpreter will evaluate all the expressions in your input. Values that are not <tt>None</tt> will
 be shown in the output with an arrow, like this: <tt>→ 4</tt>.</p>
 <p>You can print to <tt>stdout</tt> and <tt>stderr</tt> as well.</p>
-<pre><code>4
+<pre><code class="language-python">4
 print('🐍' * 10 + ' Hello world!')
 import sys
 sys.stderr.write('Warning!\n')</code></pre>
@@ -24,31 +24,31 @@ sys.stderr.write('Warning!\n')</code></pre>
 <p class="subtitle is-5">Input</p>
 <p>When the interpreter is waiting for input, you will see the symbol <span class="material-icons">pending</span>.
 You can enter text and press <span class="tag">Enter</span> to submit it.</p>
-<pre><code>name = input('What is your name? ')
+<pre><code class="language-python">name = input('What is your name? ')
 print(f'Hello, {name}.')</code></pre>
 
 <p class="subtitle is-5">Interrupting</p>
 <p>While the interpreter is evaluating you will see a busy symbol <span class="material-icons">autorenew</span>.
 You can interrupt evaluation with <span class="tag">Ctrl</span>-<span class="tag">C</span>. Try interrupting this program:</p>
-<pre><code>while True:
+<pre><code class="language-python">while True:
     pass</code></pre>
 
 <p class="subtitle is-5">Python Packages</p>
 <p>Packages provided in the Python standard library can be imported with <tt>import</tt>.</p>
 <p>For example:</p>
-<pre><code>import math</code></pre>
+<pre><code class="language-python">import math</code></pre>
 <p>See the list of <a href="https://docs.python.org/3.10/library/">Python packages</a>.</p>
 
 <p class="subtitle is-5">Pyodide Packages</p>
 <p>Packages provided by Pyodide can be imported with <tt>import</tt>.</p>
 <p>For example:</p>
-<pre><code>import numpy</code></pre>
+<pre><code class="language-python">import numpy</code></pre>
 <p>See the list of <a href="https://pyodide.org/en/stable/usage/packages-in-pyodide.html">supported packages</a>.</p>
 
 <p class="subtitle is-5">Pure Python Packages</p>
 <p>Packages available on PyPI that are pure Python can be installed automatically with <tt>import</tt>.</p>
 <p>For example:</p>
-<pre><code>import hypothesis</code></pre>
+<pre><code class="language-python">import hypothesis</code></pre>
 <p>See the projects on <a href="https://pypi.org/">https://pypi.org/</a>. Due to browser limitations not all packages
 are supported directly.</p>
 
@@ -56,7 +56,7 @@ are supported directly.</p>
 <p>Simple interactive debugging can be done using <tt>pdb</tt>. Within your code, set breakpoints by
 calling <tt>breakpoint()</tt>. When your code hits a breakpoint the interactive debugger will be started.
 You can examine state, continue execution, or quit.</p>
-<pre><code>def factorial(n):
+<pre><code class="language-python">def factorial(n):
     breakpoint()
     return n * factorial(n - 1)
 
@@ -69,7 +69,7 @@ What's wrong with the function?</p>
 <p>Using the <tt>pybook</tt> package you can output sanitized HTML. Here is an example showing an
 icon from Google Material Icons.</p>
 
-<pre><code>import pybook
+<pre><code class="language-python">import pybook
 pybook.output_content('text/html', '&lt;span class="material-icons"&gt;sailing&lt;/span&gt;')
 </code></pre>
 
@@ -82,13 +82,13 @@ which only allows a subset of content. The <tt>pybook</tt> package is specific t
 <p>You can use <tt>matplotlib</tt> to generate and show graphs. There are several important steps. First, choose a non-interactive backend that allows
 generating PNG or SVG images. For PNG generation you can use the <tt>agg</tt> backend like this:</p>
 
-<pre><code>import matplotlib
+<pre><code class="language-python">import matplotlib
 matplotlib.use('agg')
 </code></pre>
 
 <p>Next, after creating a plot use the <tt>savefig()</tt> method to save the plot. Here is an example:</p>
 
-<pre><code>import matplotlib.pyplot as plt
+<pre><code class="language-python">import matplotlib.pyplot as plt
 plt.plot([1, 3, 2, 4])
 plt.ylabel('some numbers')
 plt.savefig('plot.png')
@@ -97,13 +97,13 @@ plt.clf()
 
 <p>Finally, output the PNG file to the browser.</p>
 
-<pre><code>import pybook
+<pre><code class="language-python">import pybook
 pybook.output_file('image/png', 'plot.png')
 </code></pre>
 
 <p>Here is a similar example generating a vector SVG graph using the <tt>svg</tt> backend.</p>
 
-<pre><code>import matplotlib
+<pre><code class="language-python">import matplotlib
 matplotlib.use('svg')
 
 import matplotlib.pyplot as plt
@@ -120,7 +120,7 @@ pybook.output_file('image/svg+xml', 'plot.svg')
 
 <p>Here is an example showing generation and display of a PNG image.</p>
 
-<pre><code>import png
+<pre><code class="language-python">import png
 
 width = 100
 height = 100
@@ -140,7 +140,7 @@ pybook.output_file('image/png', 'test.png')</code></pre>
 <p class="subtitle is-5">Audio</p>
 
 <p>Here is example showing generation and output of an audio clip.</p>
-<pre><code>import wave
+<pre><code class="language-python">import wave
 import struct
 import math
 
@@ -188,7 +188,7 @@ be visible.</p>
 <p>Another option is to download files generated by Python to the local system. You can use <tt>pybook</tt> to show a download link, then click the
 link to save your file. Here is an example with a PNG file:</p>
 
-<pre><code>import png
+<pre><code class="language-python">import png
 
 width = 100
 height = 100
@@ -208,7 +208,7 @@ pybook.download_file('test.png')</code></pre>
 <p>To work on saved files, you can use <tt>pybook</tt> to show an upload link. Click the link and
 choose the file to upload. Once the contents are uploaded, the Python program continues. Files up to 16 MB are allowed.</p>
 
-<pre><code>import pybook
+<pre><code class="language-python">import pybook
 import os
 
 pybook.upload_file('test.png')
@@ -223,7 +223,7 @@ print(f.tell())
 <p>In case the <tt>import</tt> statement cannot be mapped to a specific PyPI package, you can directly import PyPI packages using
 <tt>micropip</tt>. Here is a hypothetical example:</p>
 
-<pre><code>import micropip
+<pre><code class="language-python">import micropip
 await micropip.install('hypothesis')
 import hypothesis
 </code></pre>
@@ -239,7 +239,7 @@ This means some examples may need to be edited for the browser.</p>
 <p>To debug small Python programs it can be convenient to use <a href=""><tt>snoop</tt></a>. This package lets you decorate a function and it will
 show debug output for each line of the function as it executes. Here is an example:</p>
 
-<pre><code>import snoop
+<pre><code class="language-python">import snoop
 
 @snoop
 def f():
@@ -253,7 +253,7 @@ f()
 
 <p>To help with legibility you can choose different output locations and color schemes. Here is an example with options set:</p>
 
-<pre><code>import snoop
+<pre><code class="language-python">import snoop
 import sys
 
 snoop.install(out=sys.stdout, color='bw')

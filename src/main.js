@@ -7,7 +7,11 @@ import { marked } from 'marked';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism.css';
 import 'prismjs/components/prism-python.js';
+import 'prismjs/plugins/custom-class/prism-custom-class';
 import './style.css';
+
+// Set Prism to use custom classes, to avoid conflicts with Bulma (specifically ".number" and ".tag" class names)
+Prism.plugins.customClass.map({ number: "prism-number", tag: "prism-tag" });
 
 marked.setOptions({
     highlight: (code, lang) => {
