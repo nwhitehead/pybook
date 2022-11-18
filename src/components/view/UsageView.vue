@@ -267,3 +267,14 @@ f()
         </div>
     </div>
 </template>
+
+<script setup>
+
+import { onMounted } from 'vue';
+import Prism from 'prismjs';
+
+onMounted(() => {
+    Prism.highlightAll();
+});
+
+</script>
