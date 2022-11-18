@@ -50,44 +50,6 @@
 
 </template>
 
-<style>
-
-nav.navbar.dark {
-    background-color: #000;
-    color: #ddd;
-}
-nav.navbar.dark img {
-    filter: invert(1) hue-rotate(180deg);
-}
-nav.navbar.dark.has-shadow {
-    /* Fix shadow in dark mode to be darker */
-    box-shadow: 0 2px 0 0 #444;
-}
-nav.navbar.dark .navbar-item {
-    color: #ddd;
-}
-nav.navbar.dark .navbar-item:hover {
-    background-color: #222;
-    color: #ddd;
-}
-nav.navbar.dark .navbar-link {
-    background-color: #000;
-    color: #ddd;
-}
-nav.navbar.dark .navbar-link:hover {
-    background-color: #222;
-    color: #ddd;
-}
-nav.navbar.dark .navbar-dropdown
-{
-    background-color: #111;
-    color: #ddd;
-}
-nav.navbar.dark .navbar-item.has-dropdown {
-    background-color: #000;
-    color: #ddd;
-}
-</style>
 
 <script setup>
 

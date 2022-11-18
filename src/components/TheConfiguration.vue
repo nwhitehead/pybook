@@ -74,6 +74,8 @@
 
 <script setup>
 
-const props = defineProps([ 'configuration', 'showGeneral', 'showConsole', 'showEditor', 'showPython' ]);
+import { configuration } from './globals.js';
+
+const props = defineProps([ 'showGeneral', 'showConsole', 'showEditor', 'showPython' ]);
 
 </script>

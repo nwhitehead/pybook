@@ -6,14 +6,13 @@
 
 <template>
     <div class="container">
-        <TheConfiguration :configuration="configuration" :showGeneral="true" :showConsole="true" :showEditor="true" :showPython="true" />
-        <TheKeyboardControls :configuration="configuration" />
+        <TheConfiguration :showGeneral="true" :showConsole="true" :showEditor="true" :showPython="true" />
+        <TheKeyboardControls />
     </div>
 </template>
 
 <script setup>
 
-import { configuration } from '../globals.js';
 import TheConfiguration from '../TheConfiguration.vue';
 import TheKeyboardControls from '../TheKeyboardControls.vue';
 

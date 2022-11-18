@@ -26,11 +26,10 @@ export const configuration = storageBacked('config', reactive({
 }));
 
 export function updateBodyDark() {
-    const html = document.querySelector('html');
     if (configuration.darkmode) {
-        html.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
     } else {
-        html.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', '');
     }
 }
 

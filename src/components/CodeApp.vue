@@ -43,6 +43,7 @@
     flex-grow: 1;
     flex-shrink: 1;
     padding: 12px;
+    overflow: auto;
 }
 </style>
 

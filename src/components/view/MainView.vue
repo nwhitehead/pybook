@@ -15,7 +15,8 @@
             </p>
             <figure>
                 <a href="#/console">
-                    <img src="/static/gfx/console.png" alt="Screenshot showing the Python Console and a hello print command." />
+                    <img v-if="!configuration.darkmode" src="/static/gfx/console.png" alt="Screenshot showing the Python Console and a hello print command." />
+                    <img v-if="configuration.darkmode" src="/static/gfx/console-dark.png" alt="Screenshot showing the Python Console and a hello print command." />
                 </a>
                 <figcaption>Screenshot showing the Python Console and a "Hello, browser" print command.</figcaption>
             </figure>
@@ -27,7 +28,8 @@
             </p>
             <figure>
                 <a href="#/code">
-                    <img src="/static/gfx/editor.png" alt="Screenshot showing editor doing factorial" />
+                    <img v-if="!configuration.darkmode" src="/static/gfx/editor.png" alt="Screenshot showing editor doing factorial" />
+                    <img v-if="configuration.darkmode" src="/static/gfx/editor-dark.png" alt="Screenshot showing editor doing factorial" />
                 </a>
                 <figcaption>Screenshot showing the Python Editor with a simple factorial function.</figcaption>
             </figure>
@@ -65,3 +67,9 @@
         </div>
     </div>
 </template>
+
+<script setup>
+
+import { configuration } from '../globals.js';
+
+</script>

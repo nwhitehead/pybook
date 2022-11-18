@@ -29,6 +29,4 @@
 
 import { configuration } from './globals.js';
 
-const props = defineProps([ 'configuration ']);
-
 </script>

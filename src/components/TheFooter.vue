@@ -10,7 +10,7 @@
         <div class="container">
             <div class="content">
                 <p>Copyright © 2022, Nathan Whitehead.</p>
-                <p>Made with ☕.</p>
+                <p>Made with <span class="coffee">☕</span>.</p>
             </div>
         </div>
     </footer>

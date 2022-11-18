@@ -4,7 +4,6 @@
 /* My colors */
 :root {
     --blue: hsl(217, 71%, 50%);
-    --blue-light: hsl(217, 71%, 70%);
     --light: #eee;
     --dark: #222;
     --white: #fff;
@@ -13,22 +12,46 @@
     --grey-light: #aaa;
     --grey: #888;
     --grey-dark: #555;
+    --primary: #00d1b2;
+    --primaryhover: #00c4a7;
+    --danger: hsl(348, 100%, 61%);
+    --dangerhover: hsl(348, 100%, 55%);
+}
+
+[data-theme="dark"] {
+    --blue: hsl(217, 71%, 70%);
+    --light: #222;
+    --dark: #eee;
+    --white: #000;
+    --black: #fff;
+    --grey-lighter: #333;
+    --grey-light: #666;
+    --grey: #888;
+    --grey-dark: #bbb;
+    --primary: #00d1b2;
+    --primaryhover: #00c4a7;
+    --danger: hsl(348, 100%, 45%);
+    --dangerhover: hsl(348, 100%, 40%);
 }
 
 html {
     overflow-y: auto;
     background-color: var(--white);
+    color: var(--dark);
     transition: all 0.5s ease;
-}
-html.dark {
-    background-color: var(--black);
 }
 body {
     height: 100vh;
     transition: all 0.5s ease;
+    color: var(--dark);
+}
+.content h1, .content h2, .content h3, .content h4, .content h5, .content h6 {
+    color: var(--dark);
 }
 section {
     transition: all 0.5s ease;
+    background-color: var(--white);
+    color: var(--dark);
 }
 
 section.section {
@@ -41,38 +64,27 @@ section.section {
 .box.editor {
     background-color: var(--light);
 }
-
-section.dark {
-    background-color: var(--black);
-    color: var(--light);
-}
-
-section.dark .box {
-    background-color: var(--dark);
-    color: var(--light);
-}
-
-section.dark .title {
-    color: var(--light);
-}
-section.dark .subtitle {
-    color: var(--light);
-}
 section .tag {
     background-color: var(--grey-lighter);
     color: var(--dark);
 }
-section.dark .tag {
-    background-color: var(--grey-dark);
-    color: var(--light);
+.panel-heading {
+    background-color: var(--grey-lighter);
+    color: var(--dark);
 }
-section.dark a {
-    color: var(--blue-light);
+[data-theme="dark"] .panel {
+    background-color: var(--light);
 }
-section.dark a:hover {
-    color: var(--light);
+.box {
+    background-color: var(--white);
+    color: var(--dark);
 }
-
+[data-theme="dark"] .box {
+    background-color: var(--light);
+}
+.label {
+    color: var(--grey-dark);
+}
 input[type=checkbox] {
     appearance: none;
     width: 18px;
@@ -93,53 +105,6 @@ input[type=checkbox]:checked::before {
     left: 2px;
 }
 
-section.dark input[type=checkbox]:checked::before {
-    background-color: var(--blue-light);
-}
-
-.modal-card-body.dark {
-    background-color: var(--dark);
-    color: var(--light);
-}
-
-.modal-card-body.dark a {
-    color: var(--light);
-    background-color: var(--dark);
-}
-
-.modal-card-body.dark a:hover {
-    color: var(--light);
-    background-color: var(--grey-dark);
-}
-
-.modal-card-body.dark li.is-active a {
-    color: var(--dark);
-    background-color: var(--blue-light);
-}
-
-.modal-card-body.dark li.is-active a:hover {
-    color: var(--dark);
-    background-color: var(--blue-light);
-}
-
-.modal-card-body.dark textarea {
-    color: var(--light);
-    background-color: var(--dark);
-}
-
-.modal-card-body.dark textarea::placeholder {
-    color: var(--grey);
-}
-
-.modal-card-body.dark input[type=email] {
-    color: var(--light);
-    background-color: var(--dark);
-}
-
-.modal-card-body.dark input[type=email]::placeholder {
-    color: var(--grey);
-}
-
 /* Set scrollbar in light mode for everything */
 ::-webkit-scrollbar {
     width: 12px;
@@ -153,34 +118,6 @@ section.dark input[type=checkbox]:checked::before {
     background-color: transparent;
 }
 
-/* Set scrollbar in dark mode, need both parts to handle root scrollbar */
-.dark::-webkit-scrollbar, .dark ::-webkit-scrollbar {
-    width: 12px;
-    background-color: var(--dark);
-}
-.dark::-webkit-scrollbar-thumb, .dark ::-webkit-scrollbar-thumb {
-    background-color: var(--grey-dark);
-    border-radius: 6px;
-}
-.dark::-webkit-scrollbar-corner, .dark ::-webkit-scrollbar-corner {
-    background-color: transparent;
-}
-
-/* Fixup heading in dark mode */
-section.dark nav.panel {
-    background-color: var(--dark);
-    color: var(--light);
-}
-
-section.dark .panel-heading {
-    background-color: var(--grey-dark);
-    color: var(--light);
-}
-
-section.dark label.label {
-    color: var(--grey-lighter);
-}
-
 .title-box {
     padding: 0px 10px 5px 10px;
     margin: 5px;
@@ -188,12 +125,84 @@ section.dark label.label {
 .panel-heading {
     padding-left: 15px;
 }
-footer {
+footer.footer {
+    background-color: var(--white);
     color: var(--grey);
 }
-section.dark footer {
-    background-color: var(--dark);
+hr {
+    background-color: var(--light);
 }
-section.dark hr {
-    background-color: var(--grey-dark);
+a {
+    color: var(--blue);
+}
+a:hover {
+    color: var(--grey);
+}
+
+[data-theme="dark"] .coffee {
+    filter: contrast(80%);
+    display: inline-block;
+}
+.subtitle {
+    color: var(--dark);
+}
+nav.navbar {
+    color: var(--dark);
+    background-color: var(--white);
+}
+
+img:hover {
+    background-color: transparent;
+}
+
+[data-theme="dark"] nav.navbar img {
+    filter: invert(1) hue-rotate(180deg);
+    background-color: transparent;
+}
+
+[data-theme="dark"] nav.navbar.has-shadow {
+    box-shadow: 0 2px 0 0 var(--grey-lighter);
+}
+
+nav.navbar .navbar-item {
+    color: var(--dark);
+    background-color: var(--white);
+}
+nav.navbar .navbar-item:hover {
+    color: var(--blue);
+}
+nav.navbar .navbar-link {
+    color: var(--dark);
+}
+nav.navbar .navbar-item.has-dropdown.is-active .navbar-link {
+    background-color: var(--grey-lighter);
+}
+nav.navbar .navbar-item.has-dropdown:hover .navbar-link {
+    background-color: var(--grey-lighter);
+}
+nav.navbar .navbar-dropdown {
+    background-color: var(--white);
+}
+nav.navbar .navbar-dropdown a.navbar-item:hover {
+    background-color: var(--light);
+}
+hr.navbar-divider {
+    background-color: var(--light);
+}
+
+a.button.is-primary {
+    color: var(--white);
+    background-color: var(--primary);
+}
+a.button.is-primary:hover {
+    color: var(--white);
+    background-color: var(--primaryhover);
+}
+a.button.is-danger {
+    color: var(--white);
+    background-color: var(--danger);
+}
+a.button.is-danger:hover {
+    color: var(--white);
+    background-color: var(--dangerhover);
 }
