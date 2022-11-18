@@ -19,7 +19,7 @@
                 />
             </div>
         </div>
-        <div class="multipane-resizer" />
+        <MultipaneResizer layout="vertical" />
         <div class="consolePane">
             <div class="box console consolePane">
                 <Console :eventbus="eventbus" :options="optionsConsole" :pyoptions="pyoptionsConsole" :dark="configuration.darkmode"
@@ -52,6 +52,7 @@ import CodeInput from './CodeInput.vue';
 import Console from './Console.vue';
 import Controls from './Controls.vue';
 import Multipane from './Multipane.vue';
+import MultipaneResizer from './MultipaneResizer.vue';
 
 import { computed, ref } from 'vue';
 import mitt from 'mitt';

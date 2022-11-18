@@ -31,29 +31,20 @@
 }
 .layout-h > .multipane-resizer {
     width: auto;
-    height: 10px;
+    height: 20px;
     cursor: row-resize;
     display: block;
     z-index: 2 !important;
 }
 .layout-v > .multipane-resizer {
-    width: 10px;
+    width: 20px;
     height: auto;
     cursor: col-resize;
     display: block;
     z-index: 2 !important;
-    margin-right: -10px;
-    left: -5px;
+    margin-right: -20px;
+    left: -10px;
     flex-shrink: 0;
-}
-.layout-v > .multipane-resizer:before {
-    content: '';
-    position: absolute;
-    left: 4px;
-    top: 0;
-    width: 0;
-    height: 100%;
-    border-left: 1px dotted #888;
 }
 </style>
 
@@ -103,7 +94,6 @@ function onMouseDown(evt) {
     const style = getComputedStyle(pane);
 
     const resize = (initialSize, offset = 0) => {
-        console.log(`Resize ${initialSize} - ${offset}`);
         if (initialSize === undefined) {
             return props.layout === 'vertical' ? initialPaneWidth : initialPaneHeight;
         }
