@@ -7,8 +7,13 @@
 import { watch, reactive } from 'vue';
 import { storageBacked } from './storageBacked.js';
 
+function userPrefersDark() {
+    if (!window.matchMedia) return false;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
 export const configuration = storageBacked('config', reactive({
-    'darkmode':false,
+    'darkmode':userPrefersDark(),
     'disableFeedback':false,
     'evalSingleLine':true,
     'wrap':true,
