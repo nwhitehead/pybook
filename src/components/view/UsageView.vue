@@ -5,12 +5,9 @@
 //!
 
 <template>
-        <div class="columns">
-            <div class="column is-four-fifths">
-
-                <div class="box">
-                    <div class="content">
-                        <p class="subtitle is-4">Python Hints</p>
+    <div class="container">
+        <div class="content">
+            <p class="subtitle is-4">Python Hints</p>
 
 <p class="subtitle is-5">Output</p>
 <p>When you evaluate input, the Python interpreter will evaluate all the expressions in your input. Values that are not <tt>None</tt> will
@@ -267,9 +264,6 @@ def f():
 f()
 </code></pre>
 
-                    </div>
-                </div>
-            </div>
         </div>
-
+    </div>
 </template>

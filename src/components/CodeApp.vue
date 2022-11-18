@@ -5,8 +5,8 @@
 //!
 
 <template>
-    <div class="columns">
-        <div class="column is-three-fifths">
+    <Multipane layout="vertical">
+        <div class="editorPane">
             <div class="box editor">
                 <Controls :buttons="buttons" :dark="configuration.darkmode" 
                     @pressed="pressed"
@@ -19,22 +19,39 @@
                 />
             </div>
         </div>
-        <div class="column is-two-fifths">
-            <div class="box console">
+        <div class="multipane-resizer" />
+        <div class="consolePane">
+            <div class="box console consolePane">
                 <Console :eventbus="eventbus" :options="optionsConsole" :pyoptions="pyoptionsConsole" :dark="configuration.darkmode"
                     @update:busy="(evt) => busy = evt"
                     @update:stdin="(evt) => stdin = evt"
                 />
             </div>
         </div>
-    </div>
+    </Multipane>
 </template>
+
+<style>
+.editorPane {
+    width: 50%;
+    min-width: 25%;
+    max-width: 80%;
+    flex-shrink: 0;
+    padding: 12px;
+}
+.consolePane {
+    flex-grow: 1;
+    flex-shrink: 1;
+    padding: 12px;
+}
+</style>
 
 <script setup>
 
 import CodeInput from './CodeInput.vue';
 import Console from './Console.vue';
 import Controls from './Controls.vue';
+import Multipane from './Multipane.vue';
 
 import { computed, ref } from 'vue';
 import mitt from 'mitt';

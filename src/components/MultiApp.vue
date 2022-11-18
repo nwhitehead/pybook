@@ -7,12 +7,10 @@
 <template>
     <TheNavbar :dark="configuration.darkmode" />
     <section :class="{ section:true, dark:configuration.darkmode }">
-        <div class="container">
-            <KeepAlive>
-                <component :is="currentView" />
-            </KeepAlive>
-            <Feedback :disable="configuration.disableFeedback" :dark="configuration.darkmode" @send="send" />
-        </div>
+        <KeepAlive>
+            <component :is="currentView" />
+        </KeepAlive>
+        <Feedback :disable="configuration.disableFeedback" :dark="configuration.darkmode" @send="send" />
     <TheFooter :dark="configuration.darkmode" />
     </section>
 </template>

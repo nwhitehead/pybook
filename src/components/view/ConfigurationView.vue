@@ -5,8 +5,10 @@
 //!
 
 <template>
-    <TheConfiguration :configuration="configuration" :showGeneral="true" :showConsole="true" :showEditor="true" :showPython="true" />
-    <TheKeyboardControls :configuration="configuration" />
+    <div class="container">
+        <TheConfiguration :configuration="configuration" :showGeneral="true" :showConsole="true" :showEditor="true" :showPython="true" />
+        <TheKeyboardControls :configuration="configuration" />
+    </div>
 </template>
 
 <script setup>
