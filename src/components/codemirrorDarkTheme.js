@@ -112,7 +112,7 @@ The highlighting style
 const consoleHighlightStyle = /*@__PURE__*/HighlightStyle.define([
     { tag: tags.keyword,
         color: violet },
-    { tag: [tags.name, tags.deleted, tags.character, tags.propertyName, tags.macroName],
+    { tag: [tags.deleted, tags.character, tags.macroName],
         color: coral },
     { tag: [/*@__PURE__*/tags.function(tags.variableName), tags.labelName],
         color: malibu },

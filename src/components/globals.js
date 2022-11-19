@@ -7,6 +7,9 @@
 import { watch, reactive } from 'vue';
 import { storageBacked } from './storageBacked.js';
 
+import prismlight from './prism-one-light.css?inline';
+import prismdark from './prism-one-dark.css?inline';
+
 function userPrefersDark() {
     if (!window.matchMedia) return false;
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -26,10 +29,13 @@ export const configuration = storageBacked('config', reactive({
 }));
 
 export function updateBodyDark() {
+    const prismtheme = document.getElementById('prismtheme');
     if (configuration.darkmode) {
         document.documentElement.setAttribute('data-theme', 'dark');
+        prismtheme.innerHTML = prismdark;
     } else {
         document.documentElement.setAttribute('data-theme', '');
+        prismtheme.innerHTML = prismlight;
     }
 }
 
