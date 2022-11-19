@@ -5,7 +5,7 @@ import VueCodemirror from 'vue-codemirror';
 import { createApp } from 'vue';
 import { marked } from 'marked';
 import Prism from 'prismjs';
-import 'prismjs/themes/prism.css';
+import './components/prism-one-light.css';
 import 'prismjs/components/prism-python.js';
 import 'prismjs/plugins/custom-class/prism-custom-class';
 import './style.css';
