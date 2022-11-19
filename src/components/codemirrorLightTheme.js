@@ -4,6 +4,9 @@ import { HighlightStyle, syntaxHighlighting, defaultHighlightStyle } from '@code
 import { tags } from '@lezer/highlight';
 
 let theme = EditorView.theme({
+    "&": {
+        fontSize: "14px",
+    },
     ".cm-gutters": {
         backgroundColor: "var(--line-gutter)",
         color: "var(--grey)",

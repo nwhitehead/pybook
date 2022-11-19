@@ -51,7 +51,8 @@ The editor theme style
 const consoleTheme = /*@__PURE__*/EditorView.theme({
     "&": {
         color: ivory,
-        backgroundColor: background
+        backgroundColor: background,
+        fontSize: "14px",
     },
     ".cm-content": {
         caretColor: cursor
