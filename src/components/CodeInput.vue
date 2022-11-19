@@ -5,7 +5,7 @@
 //! syntax highlighting for Python (optional).
 //!
 //! Props:
-//! - modelValue - This is the main text contents inside the cell input.
+//! - modelValue - This is the main text contents inside the cell input
 //! - eventbus - Small eventbus for sending commands to the input area outside of prop changes (focus, blur, etc.)
 //! - options - This is a dict of options related to the editor
 //!     indent - Number of spaces per indent level (default 4)
@@ -37,7 +37,7 @@
 <template>
   <div :class="{ codeinput:true, python:isPython, ready:isReady }">
     <codemirror
-      v-model="modelValue"
+      v-model="localModelValue"
       :style="codemirrorStyle"
       :autofocus="!disabled"
       :indent-with-tab="true"
@@ -45,7 +45,7 @@
       :extensions="extensions"
       :disabled="disabled"
       ref="cmElement"
-      @update:modelValue="newValue => { $emit('update:modelValue', newValue); }"
+      @update:modelValue="newValue => { localModelValue = newValue; $emit('update:modelValue', newValue); }"
       @ready="handleReady"
     />
   </div>
@@ -76,10 +76,18 @@ import { defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatchi
 import { defaultKeymap, history, historyKeymap, insertNewlineAndIndent } from '@codemirror/commands';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
-import { consoleExtension } from './customTheme.js';
+import { consoleExtension } from './codemirrorDarkTheme.js';
+import { consoleLightExtension } from './codemirrorLightTheme.js';
 
 const props = defineProps([ 'modelValue', 'eventbus', 'options' ]);
 const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'reset' ]);
+
+let localModelValue = ref(props.modelValue);
+
+// Need to watch for prop changes from parent to make sure our local copy is synced
+watch(() => props.modelValue, (newValue) => {
+    localModelValue.value = newValue;
+});
 
 let cmElement = ref(null);
 let cmComponent = ref(null);
@@ -190,9 +198,11 @@ const extensions = computed(() => {
   if (opts.type === 'python') {
     ext.push(python());
   }
-  // Enable dark mode if applicable (we use one-dark)
+  // Enable dark mode if applicable
   if (opts.dark) {
     ext.push(consoleExtension);
+  } else {
+    ext.push(consoleLightExtension);
   }
   return ext;
 });
