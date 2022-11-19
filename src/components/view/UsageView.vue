@@ -5,7 +5,7 @@
 //!
 
 <template>
-    <div class="container" ref="el">
+    <div class="container">
         <div class="content">
             <p class="subtitle is-4">Python Hints</p>
 
@@ -13,40 +13,39 @@
 <p>When you evaluate input, the Python interpreter will evaluate all the expressions in your input. Values that are not <tt>None</tt> will
 be shown in the output with an arrow, like this: <tt>→ 4</tt>.</p>
 <p>You can print to <tt>stdout</tt> and <tt>stderr</tt> as well.</p>
-<pre><code class="language-python">4
+<Example :code="String.raw`4
 print('🐍' * 10 + ' Hello world!')
 import sys
-sys.stderr.write('Warning!\n')
-</code></pre>
+sys.stderr.write('Warning!\n')`" />
 
 <p class="subtitle is-5">Input</p>
 <p>When the interpreter is waiting for input, you will see the symbol <span class="material-icons">pending</span>.
 You can enter text and press <span class="tag">Enter</span> to submit it.</p>
-<pre><code class="language-python">name = input('What is your name? ')
-print(f'Hello, {name}.')</code></pre>
+<Example :code="String.raw`name = input('What is your name? ')
+print(f'Hello, {name}.')`" />
 
 <p class="subtitle is-5">Interrupting</p>
 <p>While the interpreter is evaluating you will see a busy symbol <span class="material-icons">autorenew</span>.
 You can interrupt evaluation with <span class="tag">Ctrl</span>-<span class="tag">C</span>. Try interrupting this program:</p>
-<pre><code class="language-python">while True:
-    pass</code></pre>
+<Example :code="String.raw`while True:
+    pass`" />
 
 <p class="subtitle is-5">Python Packages</p>
 <p>Packages provided in the Python standard library can be imported with <tt>import</tt>.</p>
 <p>For example:</p>
-<pre><code class="language-python">import math</code></pre>
+<Example :code="String.raw`import math`" />
 <p>See the list of <a href="https://docs.python.org/3.10/library/">Python packages</a>.</p>
 
 <p class="subtitle is-5">Pyodide Packages</p>
 <p>Packages provided by Pyodide can be imported with <tt>import</tt>.</p>
 <p>For example:</p>
-<pre><code class="language-python">import numpy</code></pre>
+<Example :code="String.raw`import numpy`" />
 <p>See the list of <a href="https://pyodide.org/en/stable/usage/packages-in-pyodide.html">supported packages</a>.</p>
 
 <p class="subtitle is-5">Pure Python Packages</p>
 <p>Packages available on PyPI that are pure Python can be installed automatically with <tt>import</tt>.</p>
 <p>For example:</p>
-<pre><code class="language-python">import hypothesis</code></pre>
+<Example :code="String.raw`import hypothesis`" />
 <p>See the projects on <a href="https://pypi.org/">https://pypi.org/</a>. Due to browser limitations not all packages
 are supported directly.</p>
 
@@ -54,11 +53,11 @@ are supported directly.</p>
 <p>Simple interactive debugging can be done using <tt>pdb</tt>. Within your code, set breakpoints by
 calling <tt>breakpoint()</tt>. When your code hits a breakpoint the interactive debugger will be started.
 You can examine state, continue execution, or quit.</p>
-<pre><code class="language-python">def factorial(n):
+<Example :code="String.raw`def factorial(n):
     breakpoint()
     return n * factorial(n - 1)
 
-factorial(2)</code></pre>
+factorial(2)`" />
 <p>To debug the example, try entering <tt>c</tt> four times when the interactive debugger starts.
 Then try <tt>p n</tt> to see the value of <tt>n</tt>. Try <tt>bt</tt> to get a backtrace. Enter <tt>q</tt> to quit.
 What's wrong with the function?</p>
@@ -67,9 +66,7 @@ What's wrong with the function?</p>
 <p>Using the <tt>pybook</tt> package you can output sanitized HTML. Here is an example showing an
 icon from Google Material Icons.</p>
 
-<pre><code class="language-python">import pybook
-pybook.output_content('text/html', '&lt;span class="material-icons"&gt;sailing&lt;/span&gt;')
-</code></pre>
+<Example :code="sailingExample" />
 
 <p>Allowed content types include <tt>text/plain</tt>, <tt>text/html</tt>, <tt>image/png</tt>, <tt>image/svg+xml</tt>, and <tt>audio/wav</tt>. HTML output
 is sanitized through <a href="https://github.com/cure53/DOMPurify">DOMPurify</a>
@@ -80,28 +77,47 @@ which only allows a subset of content. The <tt>pybook</tt> package is specific t
 <p>You can use <tt>matplotlib</tt> to generate and show graphs. There are several important steps. First, choose a non-interactive backend that allows
 generating PNG or SVG images. For PNG generation you can use the <tt>agg</tt> backend like this:</p>
 
-<pre><code class="language-python">import matplotlib
+<Example :code="String.raw`import matplotlib
 matplotlib.use('agg')
-</code></pre>
+`" />
 
 <p>Next, after creating a plot use the <tt>savefig()</tt> method to save the plot. Here is an example:</p>
 
-<pre><code class="language-python">import matplotlib.pyplot as plt
+<Example :code="String.raw`import matplotlib
+matplotlib.use('agg')
+
+import matplotlib.pyplot as plt
 plt.plot([1, 3, 2, 4])
 plt.ylabel('some numbers')
 plt.savefig('plot.png')
 plt.clf()
-</code></pre>
+`" />
 
 <p>Finally, output the PNG file to the browser.</p>
 
-<pre><code class="language-python">import pybook
+<Example :code="String.raw`import pybook
 pybook.output_file('image/png', 'plot.png')
-</code></pre>
+`" />
+
+<p>Here it is all together:</p>
+
+<Example :code="String.raw`import matplotlib
+matplotlib.use('agg')
+
+import matplotlib.pyplot as plt
+plt.plot([1, 3, 2, 4])
+plt.ylabel('some numbers')
+plt.savefig('plot.png')
+plt.clf()
+
+import pybook
+pybook.output_file('image/png', 'plot.png')
+`" />
+
 
 <p>Here is a similar example generating a vector SVG graph using the <tt>svg</tt> backend.</p>
 
-<pre><code class="language-python">import matplotlib
+<Example :code="String.raw`import matplotlib
 matplotlib.use('svg')
 
 import matplotlib.pyplot as plt
@@ -112,13 +128,13 @@ plt.clf()
 
 import pybook
 pybook.output_file('image/svg+xml', 'plot.svg')
-</code></pre>
+`" />
 
 <p class="subtitle is-5">Images</p>
 
 <p>Here is an example showing generation and display of a PNG image.</p>
 
-<pre><code class="language-python">import png
+<Example :code="String.raw`import png
 
 width = 100
 height = 100
@@ -133,12 +149,12 @@ with open('test.png', 'wb') as f:
     w.write(f, img)
 
 import pybook
-pybook.output_file('image/png', 'test.png')</code></pre>
+pybook.output_file('image/png', 'test.png')`" />
 
 <p class="subtitle is-5">Audio</p>
 
 <p>Here is example showing generation and output of an audio clip.</p>
-<pre><code class="language-python">import wave
+<Example :code="String.raw`import wave
 import struct
 import math
 
@@ -164,7 +180,7 @@ obj.close()
 import pybook
 data = open('sound.wav', 'rb').read()
 pybook.output_content('audio/wav', data)
-</code></pre>
+`" />
 
 <p class="subtitle is-5">Copy and Paste</p>
 
@@ -186,7 +202,7 @@ be visible.</p>
 <p>Another option is to download files generated by Python to the local system. You can use <tt>pybook</tt> to show a download link, then click the
 link to save your file. Here is an example with a PNG file:</p>
 
-<pre><code class="language-python">import png
+<Example :code="String.raw`import png
 
 width = 100
 height = 100
@@ -201,12 +217,12 @@ with open('test.png', 'wb') as f:
     w.write(f, img)
 
 import pybook
-pybook.download_file('test.png')</code></pre>
+pybook.download_file('test.png')`" />
 
 <p>To work on saved files, you can use <tt>pybook</tt> to show an upload link. Click the link and
 choose the file to upload. Once the contents are uploaded, the Python program continues. Files up to 16 MB are allowed.</p>
 
-<pre><code class="language-python">import pybook
+<Example :code="String.raw`import pybook
 import os
 
 pybook.upload_file('test.png')
@@ -214,17 +230,17 @@ pybook.upload_file('test.png')
 f = open('test.png', 'rb')
 f.seek(0, os.SEEK_END)
 print(f.tell())
-</code></pre>
+`" />
 
 <p class="subtitle is-5">PyPI packages with <tt>micropip</tt></p>
 
 <p>In case the <tt>import</tt> statement cannot be mapped to a specific PyPI package, you can directly import PyPI packages using
 <tt>micropip</tt>. Here is a hypothetical example:</p>
 
-<pre><code class="language-python">import micropip
+<Example :code="String.raw`import micropip
 await micropip.install('hypothesis')
 import hypothesis
-</code></pre>
+`" />
 
 <p class="subtitle is-5">Async IO</p>
 
@@ -237,7 +253,7 @@ This means some examples may need to be edited for the browser.</p>
 <p>To debug small Python programs it can be convenient to use <a href=""><tt>snoop</tt></a>. This package lets you decorate a function and it will
 show debug output for each line of the function as it executes. Here is an example:</p>
 
-<pre><code class="language-python">import snoop
+<Example :code="String.raw`import snoop
 
 @snoop
 def f():
@@ -247,11 +263,11 @@ def f():
         i += 1
 
 f()
-</code></pre>
+`" />
 
 <p>To help with legibility you can choose different output locations and color schemes. Here is an example with options set:</p>
 
-<pre><code class="language-python">import snoop
+<Example :code="String.raw`import snoop
 import sys
 
 snoop.install(out=sys.stdout, color='bw')
@@ -263,7 +279,7 @@ def f():
         i += 1
 
 f()
-</code></pre>
+`" />
 
         </div>
     </div>
@@ -271,36 +287,10 @@ f()
 
 <script setup>
 
-import { onMounted, ref } from 'vue';
-import Prism from 'prismjs';
+import Example from '../Example.vue';
 
-import { eventbus } from '../globals.js';
-
-// DOM element for container
-const el = ref(null);
-
-onMounted(() => {
-    Prism.highlightAll();
-    // Add 'sendToEditor' to all <pre> elements that have <code> with language-python as child
-    for (const example of el.value.querySelectorAll('pre code.language-python')) {
-        example.parentElement.addEventListener('click', (evt) => {
-            sendToEditor(evt);
-        });
-    }
-});
-
-function unEscapeHtml (unsafe) {
-    // Order matters, end with & so we don't generate more matches as we do replacements.
-    return unsafe.replaceAll('&#039;', "'").replaceAll('&quot;', '"').replaceAll('&gt;', '>').replaceAll('&lt;', '<').replaceAll('&amp;', '&');
-}
-
-function sendToEditor(evt) {
-    // Extract example text
-    // First need to first take out syntax highlighting
-    // Then unescape HTML elements like &lt; that were needed in the HTML code for <.
-    const txt = unEscapeHtml(evt.target.children[0].innerHTML.replace(/<\/?span[^>]*>/g,""));
-    // Send message to switch to editor with the example loaded
-    eventbus.emit('example', { code:txt });
-}
+// This one is annoying to escape
+const sailingExample = `import pybook
+pybook.output_content('text/html', '<span class="material-icons">sailing</span>')`;
 
 </script>
