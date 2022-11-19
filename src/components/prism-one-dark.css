@@ -151,6 +151,10 @@ pre[class*="language-"] {
 	color: hsl(187, 47%, 55%);
 }
 
+.token.string-interpolation > .token.string {
+	color: #56b6c2;
+}
+
 /* HTML overrides */
 .token.attr-value > .token.punctuation.attr-equals,
 .token.special-attr > .token.attr-value > .token.value.css {
