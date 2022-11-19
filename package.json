@@ -3,9 +3,9 @@
   "packageManager": "yarn@3.1.1",
   "dependencies": {
     "@codemirror/commands": "^6.0.1",
-    "@codemirror/language": "^6.3.1",
     "@codemirror/lang-markdown": "^6.0.0",
     "@codemirror/lang-python": "^6.0.0",
+    "@codemirror/language": "^6.3.1",
     "@codemirror/state": "^6.1.0",
     "@codemirror/theme-one-dark": "^6.1.0",
     "@codemirror/view": "^6.0.2",
@@ -25,8 +25,8 @@
     "vue": "^3.2.37",
     "vue-axios": "^3.4.1",
     "vue-codemirror": "^6.0.0",
-    "vuedraggable": "^4.1.0",
-    "xterm": "^4.19.0"
+    "vuedraggable": "^2.24.3",
+    "xterm": "^5.0.0"
   },
   "jest": {
     "transform": {}
