@@ -5,7 +5,7 @@
 //!
 
 <template>
-    <div class="container">
+    <div class="container" ref="el">
         <div class="content">
             <p class="subtitle is-4">Python Hints</p>
 
@@ -16,7 +16,8 @@ be shown in the output with an arrow, like this: <tt>→ 4</tt>.</p>
 <pre><code class="language-python">4
 print('🐍' * 10 + ' Hello world!')
 import sys
-sys.stderr.write('Warning!\n')</code></pre>
+sys.stderr.write('Warning!\n')
+</code></pre>
 
 <p class="subtitle is-5">Input</p>
 <p>When the interpreter is waiting for input, you will see the symbol <span class="material-icons">pending</span>.
@@ -270,11 +271,36 @@ f()
 
 <script setup>
 
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import Prism from 'prismjs';
+
+import { eventbus } from '../globals.js';
+
+// DOM element for container
+const el = ref(null);
 
 onMounted(() => {
     Prism.highlightAll();
+    // Add 'sendToEditor' to all <pre> elements that have <code> with language-python as child
+    for (const example of el.value.querySelectorAll('pre code.language-python')) {
+        example.parentElement.addEventListener('click', (evt) => {
+            sendToEditor(evt);
+        });
+    }
 });
+
+function unEscapeHtml (unsafe) {
+    // Order matters, end with & so we don't generate more matches as we do replacements.
+    return unsafe.replaceAll('&#039;', "'").replaceAll('&quot;', '"').replaceAll('&gt;', '>').replaceAll('&lt;', '<').replaceAll('&amp;', '&');
+}
+
+function sendToEditor(evt) {
+    // Extract example text
+    // First need to first take out syntax highlighting
+    // Then unescape HTML elements like &lt; that were needed in the HTML code for <.
+    const txt = unEscapeHtml(evt.target.children[0].innerHTML.replace(/<\/?span[^>]*>/g,""));
+    // Send message to switch to editor with the example loaded
+    eventbus.emit('example', { code:txt });
+}
 
 </script>

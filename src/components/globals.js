@@ -4,8 +4,9 @@
 //! Should be used sparingly. Not for general communication, more like global configuration.
 //!
 
-import { watch, reactive } from 'vue';
+import { ref, watch, reactive } from 'vue';
 import { storageBacked } from './storageBacked.js';
+import mitt from 'mitt';
 
 import prismlight from './prism-one-light.css?inline';
 import prismdark from './prism-one-dark.css?inline';
@@ -27,6 +28,11 @@ export const configuration = storageBacked('config', reactive({
     'alternateInterrupt':false,
     'usePyPI':true,
 }));
+
+//! This eventbus is global to all components, used for ad hoc component communication
+//! Bypasses props / events / emit normal Vue communication. Anyone can listen/emit on this
+//! eventbus.
+export const eventbus = new mitt();
 
 export function updateBodyDark() {
     const prismtheme = document.getElementById('prismtheme');

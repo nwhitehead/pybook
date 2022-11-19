@@ -8,7 +8,7 @@
     <TheNavbar :dark="configuration.darkmode" />
     <section :class="{ section:true, dark:configuration.darkmode }">
         <KeepAlive>
-            <component :is="currentView" />
+            <component :is="currentView" @codeAppComponentMounted="codeAppComponentMounted" />
         </KeepAlive>
         <Feedback :disable="configuration.disableFeedback" :dark="configuration.darkmode" @send="send" />
     <TheFooter :dark="configuration.darkmode" />
@@ -30,7 +30,7 @@ import UsageView from './view/UsageView.vue';
 import axios from 'axios';
 import { ref, computed, onMounted } from 'vue';
 
-import { configuration, updateBodyDark } from './globals.js';
+import { configuration, updateBodyDark, eventbus } from './globals.js';
 
 const currentPath = ref(window.location.hash);
 window.addEventListener('hashchange', () => {
@@ -54,6 +54,25 @@ onMounted(() => updateBodyDark());
 function send(evt) {
     // Fire off post request and ignore any errors at this point
     axios.post('/api/feedback', evt);
+}
+
+let examplePayload = null;
+
+eventbus.on('example', (payload) => {
+    window.location.hash = '#/code';
+    // Changing the hash triggers event listener, is enough to change component
+    // CodeApp component listens for same event, will handle update state for itself
+
+    // If code editor was lazy loaded and not present, remember it and re-send the event once editor component is mounted
+    examplePayload = payload;
+});
+
+function codeAppComponentMounted(evt) {
+    console.log("CodeApp Component mounted", evt);
+    if (examplePayload !== null) {
+        eventbus.emit('example', examplePayload);
+        examplePayload = null;
+    }
 }
 
 </script>

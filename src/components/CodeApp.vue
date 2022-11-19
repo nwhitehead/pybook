@@ -3,6 +3,9 @@
 //!
 //! A Vue component representing the top level code panel app.
 //!
+//! Emits:
+//! - codeAppComponentMounted - When component is ready. This is needed when clicking on examples in case the CodeApp is lazy loaded.
+//!
 
 <template>
     <Multipane layout="vertical">
@@ -22,7 +25,7 @@
         <MultipaneResizer layout="vertical" />
         <div class="consolePane">
             <div class="box console consolePane">
-                <Console :eventbus="eventbus" :options="optionsConsole" :pyoptions="pyoptionsConsole" :dark="configuration.darkmode"
+                <Console :eventbus="consoleEventbus" :options="optionsConsole" :pyoptions="pyoptionsConsole" :dark="configuration.darkmode"
                     @update:busy="(evt) => busy = evt"
                     @update:stdin="(evt) => stdin = evt"
                 />
@@ -55,15 +58,21 @@ import Controls from './Controls.vue';
 import Multipane from './Multipane.vue';
 import MultipaneResizer from './MultipaneResizer.vue';
 
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import mitt from 'mitt';
 
-import { configuration, updateBodyDark } from './globals.js';
+import { configuration, updateBodyDark, eventbus } from './globals.js';
 
 const script = ref('');
 
+const emit = defineEmits([ 'codeAppComponentMounted' ]);
+
 // Event bus for communicating back and forth with Console directly
-const eventbus = mitt();
+const consoleEventbus = mitt();
+
+onMounted(() => {
+    emit('codeAppComponentMounted');
+});
 
 const optionsCode = computed(() => {
     return {
@@ -109,24 +118,24 @@ const buttons = computed(() => {
 
 function pressed(evt) {
     if (evt === 'Run') {
-        eventbus.emit('evaluate', {
+        consoleEventbus.emit('evaluate', {
             src:script.value,
         });
     }
     if (evt === 'Stop') {
-        eventbus.emit('interrupt');
+        consoleEventbus.emit('interrupt');
     }
 }
 
 function interrupt() {
     // Key shortcut for interrupt
-    eventbus.emit('interrupt');
+    consoleEventbus.emit('interrupt');
 }
 
 function evaluate() {
     // Key shortcut for evaluate in editor
     if (!busy.value && !stdin.value) {
-        eventbus.emit('evaluate', {
+        consoleEventbus.emit('evaluate', {
             src:script.value,
         });
     }
@@ -134,12 +143,18 @@ function evaluate() {
 
 function clear() {
     // Key shortcut for clear output
-    eventbus.emit('clear');
+    consoleEventbus.emit('clear');
 }
 
 function reset() {
     // Key shortcut for reset
-    eventbus.emit('reset');
+    consoleEventbus.emit('reset');
 }
+
+eventbus.on('example', (payload) => {
+    // Switch to example
+    // CodeMirror will see this as a big edit, user can do Undo and Redo with it to get back to their work if needed.
+    script.value = payload.code;
+});
 
 </script>
