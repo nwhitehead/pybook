@@ -11,14 +11,14 @@
         <div class="nav-left">
             <img src="/static/gfx/logo.png" class="navbar-item" alt="Nathans Python Console" />
         </div>
-        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample" @click="flip()">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
         </a>
     </div>
 
-    <div id="navbarBasicExample" class="navbar-menu">
+    <div :class="{ 'navbar-menu':true, 'is-active':active }">
         <div class="navbar-start">
             <a class="navbar-item" href="#/">Home</a>
             <a class="navbar-item" href="#/console">Console</a>
@@ -46,3 +46,15 @@
 </nav>
 
 </template>
+
+<script setup>
+
+import { ref } from 'vue';
+
+let active = ref(false);
+
+function flip() {
+    active.value = !active.value;
+}
+
+</script>

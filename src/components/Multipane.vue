@@ -10,9 +10,11 @@
 //! - 
 
 <template>
-  <div :class="classnames" :style="divStyle" @mousedown="onMouseDown" ref="container">
-    <slot></slot>
-  </div>
+    <div :class="classnames" :style="divStyle" ref="container"
+            @mousedown="(evt) => genericDrag('mouse', evt)"
+            @touchstart="(evt) => genericDrag('touch', evt)">
+        <slot></slot>
+    </div>
 </template>
 
 <style>
@@ -80,19 +82,18 @@ const divStyle = computed(() => {
     };
 });
 
-function onMouseDown(evt) {
-    //{ target: resizer, pageX: initialPageX, pageY: initialPageY }
+function genericDrag(type, evt) {
     const target = evt.target;
     if (!evt.target.className || !evt.target.className.match('multipane-resizer')) {
         return;
     }
-    const initialPageX = evt.pageX;
-    const initialPageY = evt.pageY;
+    evt.preventDefault();
+    const initialPageX = (type === 'touch') ? evt.targetTouches[0].pageX : evt.pageX;
+    const initialPageY = (type === 'touch') ? evt.targetTouches[0].pageY : evt.pageY;
     let pane = evt.target.previousElementSibling;
     let initialPaneWidth = pane.offsetWidth;
     let initialPaneHeight = pane.offsetHeight;
-    const style = getComputedStyle(pane);
-
+    isResizing.value = true;
     const resize = (initialSize, offset = 0) => {
         if (initialSize === undefined) {
             return props.layout === 'vertical' ? initialPaneWidth : initialPaneHeight;
@@ -108,22 +109,23 @@ function onMouseDown(evt) {
             return v;
         }
     };
-
     isResizing.value = true;
-    function onMouseMove({ pageX, pageY }) {
+    function onMove(evt) {
+        const pageX = (type === 'touch') ? evt.targetTouches[0].pageX : evt.pageX;
+        const pageY = (type === 'touch') ? evt.targetTouches[0].pageY : evt.pageY;
         if (props.layout === 'vertical') {
             resize(initialPaneWidth, pageX - initialPageX);
         } else {
             resize(initialPaneHeight, pageY - initialPageY);
         }
     }
-    function onMouseUp() {
+    function onEnd() {
         isResizing.value = false;
-        removeEventListener('mousemove', onMouseMove);
-        removeEventListener('mouseup', onMouseUp);
+        removeEventListener(type === 'touch' ? 'touchmove' : 'mousemove', onMove);
+        removeEventListener(type === 'touch' ? 'touchend' : 'mouseup', onEnd);
     }
-    addEventListener('mousemove', onMouseMove);
-    addEventListener('mouseup', onMouseUp);
+    addEventListener(type === 'touch' ? 'touchmove' : 'mousemove', onMove);
+    addEventListener(type === 'touch' ? 'touchend' : 'mouseup', onEnd);
 }
 
 </script>
