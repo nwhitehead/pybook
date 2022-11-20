@@ -108,9 +108,9 @@ div.inputiconholder {
   animation-timing-function: linear;
 }
 @keyframes pulse {
-	0% { color: #88888880; }
-	50% { color: #88888800; }
-	100% { color: #88888880; }
+	0% { opacity: 1.0; }
+	50% { opacity: 0; }
+	100% { opacity: 1.0; }
 }
 .pulse {
   animation-name: pulse;
