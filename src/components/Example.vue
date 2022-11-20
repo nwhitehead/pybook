@@ -5,8 +5,37 @@
 //!
 
 <template>
-<pre @click="sendToEditor"><code class="language-python">{{ code }}</code></pre>
+    <div class="wrapper">
+        <div class="control" @click="sendToEditor">
+            <span class="material-icons large">play_circle</span>
+        </div>
+        <pre><code class="language-python">{{ code }}</code></pre>
+    </div>
 </template>
+
+<style>
+.wrapper {
+    position: relative;
+}
+.wrapper pre {
+    display: block;
+}
+.wrapper div.control {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    padding-top: 5px;
+    transform: translateY(-50%) scale(3.0);
+    color: var(--primary);
+    cursor: pointer;
+}
+[data-theme=""] .wrapper div.control {
+    text-shadow: var(--grey) -3px 2px 6px;
+}
+.wrapper div.control:hover {
+    color: var(--primaryhover);
+}
+</style>
 
 <script setup>
 
