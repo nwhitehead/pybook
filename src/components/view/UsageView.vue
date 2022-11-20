@@ -87,6 +87,7 @@ matplotlib.use('agg')
 matplotlib.use('agg')
 
 import matplotlib.pyplot as plt
+plt.style.use('fivethirtyeight')
 plt.plot([1, 3, 2, 4])
 plt.ylabel('some numbers')
 plt.savefig('plot.png')
@@ -105,6 +106,7 @@ pybook.output_file('image/png', 'plot.png')
 matplotlib.use('agg')
 
 import matplotlib.pyplot as plt
+plt.style.use('fivethirtyeight')
 plt.plot([1, 3, 2, 4])
 plt.ylabel('some numbers')
 plt.savefig('plot.png')
@@ -115,12 +117,13 @@ pybook.output_file('image/png', 'plot.png')
 `" />
 
 
-<p>Here is a similar example generating a vector SVG graph using the <tt>svg</tt> backend.</p>
+<p>Here is a similar example generating a vector SVG graph using the <tt>svg</tt> backend. This example also sets dark mode for the generated output.</p>
 
 <Example :code="String.raw`import matplotlib
 matplotlib.use('svg')
 
 import matplotlib.pyplot as plt
+plt.style.use('dark_background')
 plt.plot([1, 3, 2, 4])
 plt.ylabel('some numbers')
 plt.savefig('plot.svg')

@@ -199,7 +199,10 @@ nav.navbar .navbar-dropdown a.navbar-item:hover {
 hr.navbar-divider {
     background-color: var(--light);
 }
-
+[data-theme="dark"] a.button {
+    color: var(--dark);
+    background-color: var(--grey-lighter);
+}
 a.button.is-primary {
     color: var(--white);
     background-color: var(--primary);

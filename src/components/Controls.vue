@@ -12,9 +12,13 @@
 //!
 
 <template>
-    <a v-for="button in buttons" :class="{ button:true, ...button.class }" @click="$emit('pressed', button.name)">
-        <span class="icon-text"><span class="icon"><span class="material-icons">{{button.icon}}</span></span><span>{{button.name}}</span></span>
-    </a>
+    <template v-for="button in buttons">
+        <p class="control">
+            <a :disabled="button.disabled" :class="{ button:true, ...button.class }" @click="$emit('pressed', button.name)">
+                <span class="icon-text"><span class="icon"><span class="material-icons">{{button.icon}}</span></span><span>{{button.name}}</span></span>
+            </a>
+        </p>
+    </template>
 </template>
 
 <script setup>

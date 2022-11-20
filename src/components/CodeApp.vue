@@ -11,7 +11,14 @@
     <Multipane layout="vertical">
         <div class="editorPane">
             <div class="box editor">
-                <Controls :buttons="buttons" @pressed="pressed" />
+                <div class="control-container is-justify-content-space-between">
+                    <div class="left-buttons">
+                        <Controls :buttons="leftButtons" @pressed="pressed" />
+                    </div>
+                    <div class="right-buttons">
+                        <Controls :buttons="rightButtons" @pressed="pressed" />
+                    </div>
+                </div>
                 <CodeInput v-model="script" :options="optionsCode" 
                     @interrupt="interrupt"
                     @evaluate="evaluate"
@@ -26,6 +33,7 @@
                 <Console :eventbus="consoleEventbus" :options="optionsConsole" :pyoptions="pyoptionsConsole"
                     @update:busy="(evt) => busy = evt"
                     @update:stdin="(evt) => stdin = evt"
+                    @update:loading="(evt) => loading = evt"
                 />
             </div>
         </div>
@@ -45,6 +53,9 @@
     flex-shrink: 1;
     padding: 12px;
     overflow: auto;
+}
+.control-container, .left-buttons, .right-buttons {
+    display: flex;
 }
 </style>
 
@@ -104,14 +115,40 @@ const pyoptionsConsole = computed(() => {
 
 const busy = ref(null);
 const stdin = ref(null);
+const loading = ref(null);
 
-const buttons = computed(() => {
+const leftButtons = computed(() => {
     let result = [];
-    if (!busy.value && !stdin.value) {
-        result.push({ name:'Run', icon:'play_arrow', class:{ 'is-primary':true }});
+    if (loading.value) {
+        result.push({
+            name:'Run',
+            icon:'play_arrow',
+            class:{ 'is-primary':true, 'is-loading':true },
+            disabled:true,
+        });
+    } else if (!busy.value && !stdin.value) {
+        result.push({
+            name:'Run',
+            icon:'play_arrow',
+            class:{ 'is-primary':true },
+        });
     } else {
-        result.push({ name:'Stop', icon:'stop', class:{ 'is-danger':true }});
+        result.push({
+            name:'Stop',
+            icon:'stop',
+            class:{ 'is-danger':true },
+        });
     }
+    return result;
+});
+
+const rightButtons = computed(() => {
+    let result = [];
+    result.push({
+        name:'Clear',
+        icon:'remove',
+        class:{ },
+    });
     return result;
 });
 
@@ -123,6 +160,9 @@ function pressed(evt) {
     }
     if (evt === 'Stop') {
         consoleEventbus.emit('interrupt');
+    }
+    if (evt === 'Clear') {
+        consoleEventbus.emit('clear');
     }
 }
 

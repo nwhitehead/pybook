@@ -29,6 +29,7 @@
 //! - interrupt - When user interrupts
 //! - update:busy - When busy state changes, payload is true/false for new busy state
 //! - update:stdin - When stdin state changes, payload is true/false
+//! - update:loading - When loading state changes, payload is true/false
 //!
 //! Eventbus accepts:
 //! - evaluate - Payload has { src }
@@ -147,7 +148,7 @@ import { signalMap,
          setFileUploadData } from '../signal.js';
 
 const props = defineProps([ 'eventbus', 'options', 'pyoptions' ]);
-const emit = defineEmits([ 'update:history', 'evaluate', 'stdin', 'interrupt', 'update:busy', 'update:stdin' ]);
+const emit = defineEmits([ 'update:history', 'evaluate', 'stdin', 'interrupt', 'update:busy', 'update:stdin', 'update:loading' ]);
 
 const consoleInputEventbus = mitt(); // bus for ConsoleInput
 const holder = ref(null);
@@ -193,6 +194,7 @@ onBeforeUnmount(() => {
 });
 
 const busy = computed(() => (status.value==='Working' || status.value==='Initializing') && !waitingInput.value);
+const loading = computed(() => (status.value==='Initializing'));
 
 watch(busy, (newValue) => {
     emit('update:busy', newValue);
@@ -202,8 +204,14 @@ watch(waitingInput, (newValue) => {
     emit('update:stdin', newValue);
 });
 
+watch(loading, (newValue) => {
+    emit('update:loading', newValue);
+});
+
 onMounted(() => {
     emit('update:busy', busy.value);
+    emit('update:stdin', waitingInput.value);
+    emit('update:loading', loading.value);
 });
 
 onMounted(() => {
