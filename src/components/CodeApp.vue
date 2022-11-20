@@ -11,9 +11,7 @@
     <Multipane layout="vertical">
         <div class="editorPane">
             <div class="box editor">
-                <Controls :buttons="buttons" :dark="configuration.darkmode" 
-                    @pressed="pressed"
-                />
+                <Controls :buttons="buttons" @pressed="pressed" />
                 <CodeInput v-model="script" :options="optionsCode" 
                     @interrupt="interrupt"
                     @evaluate="evaluate"
@@ -25,7 +23,7 @@
         <MultipaneResizer layout="vertical" />
         <div class="consolePane">
             <div class="box console consolePane">
-                <Console :eventbus="consoleEventbus" :options="optionsConsole" :pyoptions="pyoptionsConsole" :dark="configuration.darkmode"
+                <Console :eventbus="consoleEventbus" :options="optionsConsole" :pyoptions="pyoptionsConsole"
                     @update:busy="(evt) => busy = evt"
                     @update:stdin="(evt) => stdin = evt"
                 />
@@ -94,6 +92,7 @@ const optionsConsole = computed(() => {
         wrap:configuration.wrap,
         fixedHeight:true,
         alternateInterrupt:configuration.alternateInterrupt,
+        dark:configuration.darkmode,
     };
 });
 

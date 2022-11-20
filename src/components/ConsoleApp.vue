@@ -8,7 +8,7 @@
     <div class="columns">
         <div class="column is-four-fifths">
             <div class="box console">
-                <Console :eventbus="eventbus" :options="options" :pyoptions="pyoptions" :dark="configuration.darkmode" />
+                <Console :eventbus="eventbus" :options="options" :pyoptions="pyoptions" />
             </div>
         </div>
         <div class="column is-one-fifth">
@@ -40,6 +40,7 @@ const options = computed(() => {
         wrap:configuration.wrap,
         fixedHeight:configuration.fixedHeight,
         alternateInterrupt:configuration.alternateInterrupt,
+        dark:configuration.darkmode,
     };
 });
 

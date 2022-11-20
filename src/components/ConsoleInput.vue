@@ -77,7 +77,8 @@ import { defaultHighlightStyle, syntaxHighlighting, indentOnInput, bracketMatchi
 import { defaultKeymap, history, historyKeymap, insertNewlineAndIndent } from '@codemirror/commands';
 import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
-import { consoleExtension } from './codemirrorDarkTheme.js';
+import { consoleDarkExtension } from './codemirrorDarkTheme.js';
+import { consoleLightExtension } from './codemirrorLightTheme.js';
 
 const props = defineProps([ 'modelValue', 'eventbus', 'options' ]);
 const emit = defineEmits([ 'update:modelValue', 'evaluate', 'interrupt', 'clear', 'historyPrevious', 'historyNext', 'reset' ]);
@@ -198,7 +199,6 @@ const defaultExtensions = (() => [
     ...historyKeymap,
     ...foldKeymap,
   ])
-  //EditorView.theme({}, { dark: props.options && props.options.dark }),
 ])();
 
 const extensions = computed(() => {
@@ -242,7 +242,9 @@ const extensions = computed(() => {
   }
   // Enable dark mode if applicable
   if (opts.dark) {
-    ext.push(consoleExtension);
+    ext.push(consoleDarkExtension);
+  } else {
+    ext.push(consoleLightExtension);
   }
   return ext;
 });

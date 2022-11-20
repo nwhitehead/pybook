@@ -3,7 +3,6 @@
 //!
 //! Props:
 //! - disable - Set to true to disable tag from showing at all
-//! - dark - Enable dark mode
 //!
 //! Emits:
 //! - send - Emitted when feedback is to be sent, has payload with fields:
@@ -17,11 +16,11 @@
 //!
 
 <template>
-    <div :class="{ 'modal':true, 'is-active':active }">
+    <div :class="{ modal:true, 'is-active':active }">
         <div class="modal-background"></div>
         <div class="modal-card">
 
-            <div :class="{ 'modal-card-body':true, dark }" v-if="!thanks">
+            <div class="modal-card-body" v-if="!thanks">
                 <p class="title is-4">Send feedback</p>
 
                 <div class="tabs is-toggle is-toggle-rounded">
@@ -72,13 +71,13 @@
                     </div>
                 </div>
             </div>
-            <div :class="{ 'modal-card-body':true, dark }" v-if="thanks">
+            <div class="modal-card-body" v-if="thanks">
                 <p class="title is-4">Thank you for your feedback!</p>
             </div>
             <button class="modal-close is-large" aria-label="close" @click="active=false; thanks=false"></button>
         </div>
     </div>
-    <div v-if="!disable" class="fixed"><button :class="{ feedbackbutton:true, dark }" @click="active=true"><span>Feedback</span></button></div>
+    <div v-if="!disable" class="fixed"><button class="feedbackbutton" @click="active=true"><span>Feedback</span></button></div>
 </template>
 
 <style>
@@ -89,16 +88,16 @@
 }
 .feedbackbutton {
     display: inline-block;
-    border: 2px solid #000;
+    border: 2px solid var(--feedback-button-bg);
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
     border-left: none;
     border-right: none;
-    border-top: 5px solid #000;
+    border-top: 5px solid var(--feedback-button-bg);
     padding: 7px;
     margin: 0px;
-    background-color: #000;
-    color: #fff;
+    background-color: var(--feedback-button-bg);
+    color: var(--feedback-button-fg);
     transform-origin: top left;
     transform: rotate(-90deg) translate(0px, -5px);
     font-size: 1em;
@@ -106,10 +105,52 @@
 .feedbackbutton:hover {
     transform: rotate(-90deg);
 }
-.feedbackbutton.dark {
-    border-top: 5px solid #444;
-    background-color: #444;
-    color: #eee;
+
+[data-theme="dark"] div.modal-card-body {
+    background-color: var(--light);
+    color: var(--dark);
+}
+
+[data-theme="dark"] div.modal-card-body a {
+    color:var(--dark);
+    background-color:var(--light);
+}
+
+[data-theme="dark"] div.modal-card-body p.title {
+    color:var(--dark);
+}
+
+[data-theme="dark"] div.modal-card-body a:hover {
+    color:var(--dark);
+    background-color:var(--grey-light);
+}
+
+[data-theme="dark"] div.modal-card-body li.is-active a {
+    color:var(--light);
+    background-color:var(--blue);
+}
+
+[data-theme="dark"] div.modal-card-body li.is-active a:hover {
+    color:var(--light);
+    background-color:var(--blue);
+}
+
+[data-theme="dark"] .modal-card-body textarea {
+    color:var(--dark);
+    background-color:var(--light);
+}
+
+[data-theme="dark"] .modal-card-body textarea::placeholder {
+    color:var(--grey);
+}
+
+[data-theme="dark"] .modal-card-body input[type=email] {
+    color:var(--dark);
+    background-color:var(--light);
+}
+
+[data-theme="dark"] .modal-card-body input[type=email]::placeholder {
+    color:var(--grey);
 }
 </style>
 
@@ -118,7 +159,7 @@
 import { ref, watch, nextTick } from 'vue';
 import html2canvas from 'html2canvas';
 
-const props = defineProps([ 'disable', 'dark' ]);
+const props = defineProps([ 'disable' ]);
 const emit = defineEmits([ 'send' ]);
 
 let active = ref(false); // When active, modal takes over all display

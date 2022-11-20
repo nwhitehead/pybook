@@ -16,9 +16,9 @@
 //!     - wrap - Whether to wrap output long lines or not
 //!     - fixedHeight - Whether to fix the size (false will shrink/grow vertically between min/max sizes, true will always be max size)
 //!     - alternateInput - Use Ctrl-I instead of Ctrl-C
+//!     - dark - Render with dark mode
 //! - pyoptions - Options for python interpreter
 //!     - usePyPI - If true imports will automatically look in PyPI and install dependencies, otherwise just Pyodide packages will be loaded as needed
-//! - dark - Whether to render in darkmode
 //!
 //! Emits:
 //! - update:history - When command history is changed this is emitted to inform parent, payload is:
@@ -37,8 +37,8 @@
 //! - reset
 
 <template>
-    <div :class="{ consoleappholder:true, dark }">
-        <div :class="{ consoleoutputholder:true, dark, fixedheight:options.fixedHeight }" ref="holder">
+    <div class="consoleappholder">
+        <div :class="{ consoleoutputholder:true, fixedheight:options.fixedHeight }" ref="holder">
             <ConsoleOutput :values="outputs" :wrap="options.wrap" />
             <div class="busyiconholder">
                 <span class="material-icons spin" v-if="busy">autorenew</span>
@@ -66,10 +66,7 @@ div.consoleappholder {
     background-color: transparent;
 }
 div.consoleappholder pre {
-    color: #444;
-}
-div.consoleappholder.dark pre {
-    color: #eee;
+    color: var(--console-fg);
 }
 div.consoleoutputholder {
     min-height: 60px;
@@ -149,7 +146,7 @@ import { signalMap,
          isInputWaiting,
          setFileUploadData } from '../signal.js';
 
-const props = defineProps([ 'eventbus', 'options', 'pyoptions', 'dark' ]);
+const props = defineProps([ 'eventbus', 'options', 'pyoptions' ]);
 const emit = defineEmits([ 'update:history', 'evaluate', 'stdin', 'interrupt', 'update:busy', 'update:stdin' ]);
 
 const consoleInputEventbus = mitt(); // bus for ConsoleInput
@@ -233,7 +230,7 @@ const inputOptions = computed(() => {
         lineNumbers: waitingInput.value ? false : (numLines > 1 ? options.lineNumbers : false),
         closeBrackets: waitingInput.value ? false : options.closeBrackets,
         alternateInterrupt: options.alternateInterrupt,
-        dark: props.dark,
+        dark: options.dark,
     };
 });
 
@@ -241,7 +238,7 @@ const INPUT_INDENT_PERCHAR = 8.5;
 const MIN_MARGIN_LEFT = 0;
 const MIN_MARGIN_LEFT_BUSY = 35;
 const MAX_MARGIN_LEFT = 400;
-const ORIGINAL_MARGIN_TOP = -43;
+const ORIGINAL_MARGIN_TOP = -40;
 const ONE_LINE = 20;
 
 //! Compute horizontal offset of last line of outputs, also avoid busy icon

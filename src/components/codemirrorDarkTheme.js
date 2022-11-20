@@ -151,6 +151,6 @@ const consoleHighlightStyle = /*@__PURE__*/HighlightStyle.define([
 Extension to enable the theme (both the editor theme and
 the highlight style).
 */
-const consoleExtension = [consoleTheme, /*@__PURE__*/syntaxHighlighting(consoleHighlightStyle)];
+const consoleDarkExtension = [consoleTheme, /*@__PURE__*/syntaxHighlighting(consoleHighlightStyle)];
 
-export { color, consoleExtension, consoleHighlightStyle, consoleTheme };
+export { consoleDarkExtension };

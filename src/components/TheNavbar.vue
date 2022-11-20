@@ -3,13 +3,10 @@
 //!
 //! A Vue component representing the top navbar on pages
 //!
-//! Props:
-//! - dark - True if should be shown in dark mode
-//!
 
 <template>
 
-<nav :class="{ navbar:true, 'has-shadow':true, dark:dark }" role="navigation" aria-label="main navigation">
+<nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <div class="nav-left">
             <img src="/static/gfx/logo.png" class="navbar-item" alt="Nathans Python Console" />
@@ -49,10 +46,3 @@
 </nav>
 
 </template>
-
-
-<script setup>
-
-const props = defineProps([ 'dark' ]);
-
-</script>

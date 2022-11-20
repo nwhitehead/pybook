@@ -5,13 +5,13 @@
 //!
 
 <template>
-    <TheNavbar :dark="configuration.darkmode" />
-    <section :class="{ section:true, dark:configuration.darkmode }">
+    <TheNavbar />
+    <section class="section">
         <KeepAlive>
             <component :is="currentView" @codeAppComponentMounted="codeAppComponentMounted" />
         </KeepAlive>
-        <Feedback :disable="configuration.disableFeedback" :dark="configuration.darkmode" @send="send" />
-    <TheFooter :dark="configuration.darkmode" />
+        <Feedback :disable="configuration.disableFeedback" @send="send" />
+    <TheFooter />
     </section>
 </template>
 
@@ -68,7 +68,6 @@ eventbus.on('example', (payload) => {
 });
 
 function codeAppComponentMounted(evt) {
-    console.log("CodeApp Component mounted", evt);
     if (examplePayload !== null) {
         eventbus.emit('example', examplePayload);
         examplePayload = null;

@@ -17,6 +17,10 @@
     --primaryhover: #00c4a7;
     --danger: hsl(348, 100%, 61%);
     --dangerhover: hsl(348, 100%, 55%);
+    --console-fg: #444;
+    --feedback-button-bg: #000;
+    --feedback-button-fg: #eee;
+    --checkbox-border: #888;
 }
 
 [data-theme="dark"] {
@@ -34,6 +38,10 @@
     --primaryhover: #00c4a7;
     --danger: hsl(348, 100%, 45%);
     --dangerhover: hsl(348, 100%, 40%);
+    --console-fg: #eee;
+    --feedback-button-bg: #444;
+    --feedback-button-fg: #eee;
+    --checkbox-border: var(--grey-dark);
 }
 
 html {
@@ -91,7 +99,7 @@ input[type=checkbox] {
     appearance: none;
     width: 18px;
     height: 18px;
-    border: solid 1px var(--grey-light);
+    border: solid 1px var(--checkbox-border);
     margin-right: 8px;
     position: relative;
     vertical-align: -3px;
