@@ -41,7 +41,7 @@
         </div>
         <img v-if="isSVG(value)" :src="dataURI('image/svg+xml', value)" />
         <img v-if="isPNG(value)" :src="dataURI('image/png', value)" />
-        <audio v-if="isWAV(value)" controls autoplay :src="dataURI('audio/wav', value)" />
+        <audio v-if="isWAV(value)" controls :src="dataURI('audio/wav', value)" />
         <FileSave v-if="isDownload(value)" :filename="value.filename" :data="value.data" />
         <FileUpload v-if="isUpload(value)" :filename="value.filename" @data="(data) => value.handler(data)" />
     </div>
@@ -57,6 +57,12 @@
 .dataoutput div.html {
     margin: 0;
     padding: 1px 15px 1px 15px;
+}
+[data-theme=""] .dataoutput audio::-webkit-media-controls-panel {
+    background-color: var(--white);
+}
+[data-theme="dark"] .dataoutput audio::-webkit-media-controls-panel {
+    background-color: var(--grey-dark);
 }
 </style>
 
