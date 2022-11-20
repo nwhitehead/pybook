@@ -17,6 +17,7 @@
 //!     - fixedHeight - Whether to fix the size (false will shrink/grow vertically between min/max sizes, true will always be max size)
 //!     - alternateInput - Use Ctrl-I instead of Ctrl-C
 //!     - dark - Render with dark mode
+//!     - markStderr - Whether to mark stderr output with styling to distinguish from stdout
 //! - pyoptions - Options for python interpreter
 //!     - usePyPI - If true imports will automatically look in PyPI and install dependencies, otherwise just Pyodide packages will be loaded as needed
 //!
@@ -39,7 +40,7 @@
 
 <template>
     <div class="consoleappholder">
-        <div :class="{ consoleoutputholder:true, fixedheight:options.fixedHeight }" ref="holder">
+        <div :class="{ consoleoutputholder:true, fixedheight:options.fixedHeight, markStderr:options.markStderr }" ref="holder">
             <ConsoleOutput :values="outputs" :wrap="options.wrap" />
             <div class="busyiconholder">
                 <span class="material-icons spin" v-if="busy">autorenew</span>
@@ -119,12 +120,18 @@ div.inputiconholder {
 }
 
 /* Set output backgrounds */
-div.dataoutput pre.stdout {
+div.dataoutput pre {
     background-color: transparent;
 }
-div.dataoutput pre.stderr {
-    background-color: #ff01;
-    border-left: solid 5px #ff04;
+div.consoleoutputholder.markStderr div.dataoutput pre.stderr {
+    color: var(--stderr-fg);
+    background-color: var(--stderr-bg);
+    border-left: solid 5px var(--stderr-border);
+}
+[data-theme="dark"] div.consoleoutputholder.markStderr div.dataoutput pre.stderr {
+    color: var(--stderr-fg);
+    background-color: var(--stderr-bg);
+    border-left: solid 5px var(--stderr-border);
 }
 </style>
 

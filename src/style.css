@@ -17,10 +17,13 @@
     --primaryhover: #00c4a7;
     --danger: hsl(348, 100%, 61%);
     --dangerhover: hsl(348, 100%, 55%);
-    --console-fg: #444;
+    --console-fg: var(--dark);
     --feedback-button-bg: #000;
     --feedback-button-fg: #eee;
     --checkbox-border: #888;
+    --stderr-fg: var(--black);
+    --stderr-bg: #ff01;
+    --stderr-border: #ff08;
 }
 
 [data-theme="dark"] {
@@ -42,6 +45,9 @@
     --feedback-button-bg: #444;
     --feedback-button-fg: #eee;
     --checkbox-border: var(--grey-dark);
+    --stderr-fg: var(--black);
+    --stderr-bg: #aa01;
+    --stderr-border: #aa06;
 }
 
 html {

@@ -23,6 +23,7 @@ export const configuration = storageBacked('config', reactive({
     'wrap':true,
     'lineNumbers':false,
     'fixedHeight':false,
+    'markStderr':true,
     'closeBrackets':false,
     'editLineNumbers':true,
     'alternateInterrupt':false,

@@ -58,6 +58,9 @@
                     <div class="control">
                         <label><input type="checkbox" id="fixedHeightId" v-model="configuration.fixedHeight" /> Fixed full height</label>
                     </div>
+                    <div class="control">
+                        <label><input type="checkbox" id="markStderrId" v-model="configuration.markStderr" /> Mark <tt>stderr</tt> output</label>
+                    </div>
                 </div>
             </template>
             <template v-if="showPython">

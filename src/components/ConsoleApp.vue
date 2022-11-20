@@ -41,6 +41,7 @@ const options = computed(() => {
         fixedHeight:configuration.fixedHeight,
         alternateInterrupt:configuration.alternateInterrupt,
         dark:configuration.darkmode,
+        markStderr:configuration.markStderr,
     };
 });
 

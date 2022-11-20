@@ -104,6 +104,7 @@ const optionsConsole = computed(() => {
         fixedHeight:true,
         alternateInterrupt:configuration.alternateInterrupt,
         dark:configuration.darkmode,
+        markStderr:configuration.markStderr,
     };
 });
 
