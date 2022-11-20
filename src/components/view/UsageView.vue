@@ -95,7 +95,7 @@ plt.clf()
 
 <p>Finally, output the PNG file to the browser.</p>
 
-<Example :code="String.raw`import pybook
+<Example :disabled="true" :code="String.raw`import pybook
 pybook.output_file('image/png', 'plot.png')
 `" />
 

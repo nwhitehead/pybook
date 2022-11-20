@@ -3,10 +3,14 @@
 //!
 //! A Vue component representing an example. Syntax highlighting, click to send to editor.
 //!
+//! Props:
+//! - code - String of code for the example
+//! - disabled - True if the example should not be playable (default is playable)
+//!
 
 <template>
     <div class="wrapper">
-        <div class="control" @click="sendToEditor">
+        <div v-if="!disabled" class="control" @click="sendToEditor">
             <span class="material-icons large">play_circle</span>
         </div>
         <pre><code class="language-python">{{ code }}</code></pre>
@@ -44,7 +48,7 @@ import Prism from 'prismjs';
 
 import { eventbus } from './globals.js';
 
-const props = defineProps([ 'code' ]);
+const props = defineProps([ 'code', 'disabled' ]);
 
 onMounted(() => {
     Prism.highlightAll();
