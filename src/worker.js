@@ -150,7 +150,7 @@ async function configure(config) {
     // Install pbexec
     await pyodide.runPythonAsync('await micropip.install("' + absurl + '/static/lib/pyodide/pbexec_nwhitehead-0.0.1-py3-none-any.whl' + '")');
     pyodide.runPython('from pbexec import pbexec');
-    pyodide.runPython('import sys; sys.setrecursionlimit(150)');
+    pyodide.runPython('import sys; sys.setrecursionlimit(250)');
     // Start with fresh state as base
     states = {
         base:pyodide.globals.get('pbexec').fresh_state()
@@ -213,6 +213,7 @@ async function configure(config) {
                 const name = packages[i];
                 let packagename = import_name_to_package_name.get(name) ? import_name_to_package_name.get(name) : name;
                 try {
+                    pybook.output_stdout('Installing ' + packagename + '\n');
                     await pyodide.runPythonAsync('await micropip.install("' + packagename + '")');
                 } catch(err) {
                     // Catch the Python exception here and ignore besides a log message
