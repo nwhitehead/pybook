@@ -13,3 +13,14 @@ export function storageBacked(name, rValue) {
     });
     return rValue;
 }
+
+export function storageBackedRef(name, rValue) {
+    const stored = localStorage.getItem(name);
+    const stringValue = stored === null ? JSON.stringify(rValue) : stored;
+    const parsed = JSON.parse(stringValue);
+    rValue.value = parsed;
+    watch(rValue, (newValue) => {
+        localStorage.setItem(name, JSON.stringify(newValue));
+    });
+    return rValue;
+}

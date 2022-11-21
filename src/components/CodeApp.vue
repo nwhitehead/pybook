@@ -71,8 +71,9 @@ import { computed, ref, onMounted } from 'vue';
 import mitt from 'mitt';
 
 import { configuration, updateBodyDark, eventbus } from './globals.js';
+import { storageBackedRef } from './storageBacked.js';
 
-const script = ref('');
+const script = storageBackedRef('editcontents', ref(''));
 
 const emit = defineEmits([ 'codeAppComponentMounted' ]);
 

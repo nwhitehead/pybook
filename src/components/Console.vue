@@ -228,11 +228,6 @@ onMounted(() => {
     });
 });
 
-function getLocalStorage(tag, defaultValue) {
-    const stored = localStorage.getItem(tag);
-    return stored === null ? defaultValue : stored;
-}
-
 const inputOptions = computed(() => {
     const numLines = entry.value.split('\n').length;
     const options = props.options ? props.options : {};
@@ -383,6 +378,7 @@ function historyRegister(entry) {
     const last = history[mode].entries.length > 0 ? history[mode].entries[history[mode].entries.length - 1] : null;
     if (entry === last) {
         // Ignore same entry multiple times in a row
+        history[mode].position = history[mode].entries.length;
     } else {
         history[mode].entries.push(entry);
         history[mode].position = history[mode].entries.length;
