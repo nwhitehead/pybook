@@ -31,6 +31,7 @@ import axios from 'axios';
 import { ref, computed, onMounted } from 'vue';
 
 import { configuration, updateBodyDark, eventbus } from './globals.js';
+import { hasSharedArrayBuffer } from '../polyfill.js';
 
 const currentPath = ref(window.location.hash);
 window.addEventListener('hashchange', () => {
@@ -45,8 +46,19 @@ const routes = {
     '#/usage': UsageView,
 };
 
+const noSABRoutes = {
+    '#/': MainView,
+    '#/console': NotFoundView,
+    '#/code': NotFoundView,
+    '#/configuration': ConfigurationView,
+    '#/usage': UsageView,
+};
+
 const currentView = computed(() => {
-    return routes[ currentPath.value || '#/' ] || NotFoundView;
+    if (hasSharedArrayBuffer) {
+        return routes[ currentPath.value || '#/' ] || NotFoundView;
+    }
+    return noSABRoutes[ currentPath.value || '#/' ] || NotFoundView;
 });
 
 onMounted(() => updateBodyDark());

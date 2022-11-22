@@ -10,9 +10,9 @@
             <p class="subtitle is-4">Python Hints</p>
 
 <p class="subtitle is-5">Output</p>
-<p>When you evaluate input, the Python interpreter will evaluate all the expressions in your input. Values that are not <tt>None</tt> will
-be shown in the output with an arrow, like this: <tt>→ 4</tt>.</p>
-<p>You can print to <tt>stdout</tt> and <tt>stderr</tt> as well.</p>
+<p>When you evaluate input, the Python interpreter will evaluate all the expressions in your input. Values that are not <code>None</code> will
+be shown in the output with an arrow, like this: <code>→ 4</code>.</p>
+<p>You can print to <code>stdout</code> and <code>stderr</code> as well.</p>
 <Example :code="String.raw`4
 print('🐍' * 10 + ' Hello world!')
 import sys
@@ -31,57 +31,57 @@ You can interrupt evaluation with <span class="tag">Ctrl</span>-<span class="tag
     pass`" />
 
 <p class="subtitle is-5">Python Packages</p>
-<p>Packages provided in the Python standard library can be imported with <tt>import</tt>.</p>
+<p>Packages provided in the Python standard library can be imported with <code>import</code>.</p>
 <p>For example:</p>
 <Example :code="String.raw`import math`" />
 <p>See the list of <a href="https://docs.python.org/3.10/library/">Python packages</a>.</p>
 
 <p class="subtitle is-5">Pyodide Packages</p>
-<p>Packages provided by Pyodide can be imported with <tt>import</tt>.</p>
+<p>Packages provided by Pyodide can be imported with <code>import</code>.</p>
 <p>For example:</p>
 <Example :code="String.raw`import numpy`" />
 <p>See the list of <a href="https://pyodide.org/en/stable/usage/packages-in-pyodide.html">supported packages</a>.</p>
 
 <p class="subtitle is-5">Pure Python Packages</p>
-<p>Packages available on PyPI that are pure Python can be installed automatically with <tt>import</tt>.</p>
+<p>Packages available on PyPI that are pure Python can be installed automatically with <code>import</code>.</p>
 <p>For example:</p>
 <Example :code="String.raw`import hypothesis`" />
 <p>See the projects on <a href="https://pypi.org/">https://pypi.org/</a>. Due to browser limitations not all packages
 are supported directly.</p>
 
 <p class="subtitle is-5">Debugging</p>
-<p>Simple interactive debugging can be done using <tt>pdb</tt>. Within your code, set breakpoints by
-calling <tt>breakpoint()</tt>. When your code hits a breakpoint the interactive debugger will be started.
+<p>Simple interactive debugging can be done using <code>pdb</code>. Within your code, set breakpoints by
+calling <code>breakpoint()</code>. When your code hits a breakpoint the interactive debugger will be started.
 You can examine state, continue execution, or quit.</p>
 <Example :code="String.raw`def factorial(n):
     breakpoint()
     return n * factorial(n - 1)
 
 factorial(2)`" />
-<p>To debug the example, try entering <tt>c</tt> four times when the interactive debugger starts.
-Then try <tt>p n</tt> to see the value of <tt>n</tt>. Try <tt>bt</tt> to get a backtrace. Enter <tt>q</tt> to quit.
+<p>To debug the example, try entering <code>c</code> four times when the interactive debugger starts.
+Then try <code>p n</code> to see the value of <code>n</code>. Try <code>bt</code> to get a backtrace. Enter <code>q</code> to quit.
 What's wrong with the function?</p>
 
 <p class="subtitle is-5">Rich Output (HTML)</p>
-<p>Using the <tt>pybook</tt> package you can output sanitized HTML. Here is an example showing an
+<p>Using the <code>pybook</code> package you can output sanitized HTML. Here is an example showing an
 icon from Google Material Icons.</p>
 
 <Example :code="sailingExample" />
 
-<p>Allowed content types include <tt>text/plain</tt>, <tt>text/html</tt>, <tt>image/png</tt>, <tt>image/svg+xml</tt>, and <tt>audio/wav</tt>. HTML output
+<p>Allowed content types include <code>text/plain</code>, <code>text/html</code>, <code>image/png</code>, <code>image/svg+xml</code>, and <code>audio/wav</code>. HTML output
 is sanitized through <a href="https://github.com/cure53/DOMPurify">DOMPurify</a>
-which only allows a subset of content. The <tt>pybook</tt> package is specific to <emph>Nathan's Python Console</emph> tools.</p>
+which only allows a subset of content. The <code>pybook</code> package is specific to <em>Nathan's Python Console</em> tools.</p>
 
-<p class="subtitle is-5"><tt>matplotlib</tt> graphs</p>
+<p class="subtitle is-5"><code>matplotlib</code> graphs</p>
 
-<p>You can use <tt>matplotlib</tt> to generate and show graphs. There are several important steps. First, choose a non-interactive backend that allows
-generating PNG or SVG images. For PNG generation you can use the <tt>agg</tt> backend like this:</p>
+<p>You can use <code>matplotlib</code> to generate and show graphs. There are several important steps. First, choose a non-interactive backend that allows
+generating PNG or SVG images. For PNG generation you can use the <code>agg</code> backend like this:</p>
 
 <Example :code="String.raw`import matplotlib
 matplotlib.use('agg')
 `" />
 
-<p>Next, after creating a plot use the <tt>savefig()</tt> method to save the plot. Here is an example:</p>
+<p>Next, after creating a plot use the <code>savefig()</code> method to save the plot. Here is an example:</p>
 
 <Example :code="String.raw`import matplotlib
 matplotlib.use('agg')
@@ -117,7 +117,7 @@ pybook.output_file('image/png', 'plot.png')
 `" />
 
 
-<p>Here is a similar example generating a vector SVG graph using the <tt>svg</tt> backend. This example also sets dark mode for the generated output.</p>
+<p>Here is a similar example generating a vector SVG graph using the <code>svg</code> backend. This example also sets dark mode for the generated output.</p>
 
 <Example :code="String.raw`import matplotlib
 matplotlib.use('svg')
@@ -198,11 +198,11 @@ is to interrupt the interpreter. You may be able to use a right click to copy in
 <p>You can use regular file operations from Python in the console. The filesystem is a temporary filesystem kept in memory and only
 persists as long as the interpreter is running. Restarting the interpreter will lose any changes to the filesystem.</p>
 
-<p>If you want to persist files between page loads you can put files in the <tt>persistent</tt> directory. The contents of the <tt>persistent</tt>
+<p>If you want to persist files between page loads you can put files in the <code>persistent</code> directory. The contents of the <code>persistent</code>
 directory are stored in the browsers local storage area. Don't forget that if you visit from another computer the file contents will <em>not</em>
 be visible.</p>
 
-<p>Another option is to download files generated by Python to the local system. You can use <tt>pybook</tt> to show a download link, then click the
+<p>Another option is to download files generated by Python to the local system. You can use <code>pybook</code> to show a download link, then click the
 link to save your file. Here is an example with a PNG file:</p>
 
 <Example :code="String.raw`import png
@@ -222,7 +222,7 @@ with open('test.png', 'wb') as f:
 import pybook
 pybook.download_file('test.png')`" />
 
-<p>To work on saved files, you can use <tt>pybook</tt> to show an upload link. Click the link and
+<p>To work on saved files, you can use <code>pybook</code> to show an upload link. Click the link and
 choose the file to upload. Once the contents are uploaded, the Python program continues. Files up to 16 MB are allowed.</p>
 
 <Example :code="String.raw`import pybook
@@ -235,10 +235,10 @@ f.seek(0, os.SEEK_END)
 print(f.tell())
 `" />
 
-<p class="subtitle is-5">PyPI packages with <tt>micropip</tt></p>
+<p class="subtitle is-5">PyPI packages with <code>micropip</code></p>
 
-<p>In case the <tt>import</tt> statement cannot be mapped to a specific PyPI package, you can directly import PyPI packages using
-<tt>micropip</tt>. Here is a hypothetical example:</p>
+<p>In case the <code>import</code> statement cannot be mapped to a specific PyPI package, you can directly import PyPI packages using
+<code>micropip</code>. Here is a hypothetical example:</p>
 
 <Example :code="String.raw`import micropip
 await micropip.install('hypothesis')
@@ -247,13 +247,13 @@ import hypothesis
 
 <p class="subtitle is-5">Async IO</p>
 
-<p>There is some support for asynchronous IO in the console. In particular, top-level <tt>await</tt> is allowed. The module <tt>asyncio</tt>
-can be imported and used. Note that the browser has a top-level event loop running. You cannot start a new top-level event loop using <tt>asyncio</tt>.
+<p>There is some support for asynchronous IO in the console. In particular, top-level <code>await</code> is allowed. The module <code>asyncio</code>
+can be imported and used. Note that the browser has a top-level event loop running. You cannot start a new top-level event loop using <code>asyncio</code>.
 This means some examples may need to be edited for the browser.</p>
 
 <p class="subtitle is-5">Tracing program flow</p>
 
-<p>To debug small Python programs it can be convenient to use <a href=""><tt>snoop</tt></a>. This package lets you decorate a function and it will
+<p>To debug small Python programs it can be convenient to use <a href=""><code>snoop</code></a>. This package lets you decorate a function and it will
 show debug output for each line of the function as it executes. Here is an example:</p>
 
 <Example :code="String.raw`import snoop

@@ -1,3 +1,5 @@
+import _ from './polyfill.js';
+
 //!
 //! Signal map for shared buffer.
 //!
