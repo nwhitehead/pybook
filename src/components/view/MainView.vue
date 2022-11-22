@@ -9,12 +9,12 @@
         <div class="content">
             <h2>Python Console</h2>
             <p>
-                The <a href="#/console">Python Console</a> is an online Python interpreter that runs entirely in your browser.
+                The <a href="/#/console">Python Console</a> is an online Python interpreter that runs entirely in your browser.
                 It lets you quickly try out Python ideas while being as similar to the normal Python command line interpreter as possible.
                 No setup is needed. Packages automatically install when you import them.
             </p>
             <figure>
-                <a href="#/console">
+                <a href="/#/console">
                     <img v-if="!configuration.darkmode" src="/static/gfx/console.png" alt="Screenshot showing the Python Console and a hello print command." />
                     <img v-if="configuration.darkmode" src="/static/gfx/console-dark.png" alt="Screenshot showing the Python Console and a hello print command." />
                 </a>
@@ -22,12 +22,12 @@
             </figure>
             <h2>Python Editor</h2>
             <p>
-                The <a href="#/code">Python Editor</a> is a simple Python development environment. It has a program editor on the left side
+                The <a href="/#/code">Python Editor</a> is a simple Python development environment. It has a program editor on the left side
                 and a Python console on the right side. Press the "Play" button to execute your code and see the results in the console. You can
                 also interact directly with the Python console.
             </p>
             <figure>
-                <a href="#/code">
+                <a href="/#/code">
                     <img v-if="!configuration.darkmode" src="/static/gfx/editor.png" alt="Screenshot showing editor doing factorial" />
                     <img v-if="configuration.darkmode" src="/static/gfx/editor-dark.png" alt="Screenshot showing editor doing factorial" />
                 </a>
@@ -51,7 +51,7 @@
                 immediately without any barriers to getting started.
                 </p>
             </ul>
-            <p>For more examples of what can be done with the Python Console tools, see the <a href="#/usage">Usage Guide</a>.
+            <p>For more examples of what can be done with the Python Console tools, see the <a href="/#/usage">Usage Guide</a>.
             </p>
             <!-- <p>Some of the reasons you might <b>not</b> want to use these Python Console tools:</p>
             <ul>
@@ -65,11 +65,27 @@
                 </p>
             </ul> -->
         </div>
+
+        <iframe v-if="!hasSharedArrayBuffer" class="mj-w-res-iframe" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://app.mailjet.com/widget/iframe/8EpM/OLa" width="100%" @load="iframeLoaded" v-resize></iframe>
+
     </div>
 </template>
 
 <script setup>
 
+import iframeResize from 'iframe-resizer/js/iframeResizer';
+
 import { configuration } from '../globals.js';
+import { hasSharedArrayBuffer } from '../../polyfill.js';
+
+// Tiny v-resize directive to do the iframe-resize call at the right time. Use by adding: v-resize="{...config...}"
+const vResize = {
+    mounted: (el, binding, vnode, prevnode) => {
+        el.addEventListener('load', () => iframeResize(binding.value || {}, el));
+    },
+    unmounted: (el) => {
+        el.iFrameResizer.removeListeners();
+    },
+};
 
 </script>

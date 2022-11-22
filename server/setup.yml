@@ -17,10 +17,6 @@
         enabled: yes
     - name: Ensure Nginx is at the latest version
       apt: name=nginx state=latest
-    - name: Start Nginx
-      service:
-          name: nginx
-          state: started
     - name: Allow Nginx through ufw firewall
       ufw:
         rule: allow
@@ -37,6 +33,10 @@
         dest: /etc/nginx/sites-enabled/default
         state: link
       notify: Restart Nginx
+    - name: Start Nginx
+      service:
+          name: nginx
+          state: started
 
   handlers:
     - name: Restart Nginx

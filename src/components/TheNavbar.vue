@@ -20,11 +20,11 @@
 
     <div :class="{ 'navbar-menu':true, 'is-active':active }">
         <div class="navbar-start">
-            <a class="navbar-item" href="#/">Home</a>
-            <a class="navbar-item" href="#/console">Console</a>
-            <a class="navbar-item" href="#/code">Editor</a>
-            <a class="navbar-item" href="#/usage">Usage</a>
-            <a class="navbar-item" href="#/configuration">Config</a>
+            <a class="navbar-item" href="/nosab/#/">Home</a>
+            <a class="navbar-item" href="/#/console">Console</a>
+            <a class="navbar-item" href="/#/code">Editor</a>
+            <a class="navbar-item" href="/#/usage">Usage</a>
+            <a class="navbar-item" href="/#/configuration">Config</a>
             <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">More</a>
                 <div class="navbar-dropdown">
