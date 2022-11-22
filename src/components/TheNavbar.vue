@@ -20,19 +20,19 @@
 
     <div :class="{ 'navbar-menu':true, 'is-active':active }">
         <div class="navbar-start">
-            <a class="navbar-item" href="/nosab/#/">Home</a>
-            <a class="navbar-item" href="/#/console">Console</a>
-            <a class="navbar-item" href="/#/code">Editor</a>
-            <a class="navbar-item" href="/#/usage">Usage</a>
-            <a class="navbar-item" href="/#/configuration">Config</a>
+            <a class="navbar-item" href="/#/">Home</a>
+            <a class="navbar-item" href="/sab/#/console">Console</a>
+            <a class="navbar-item" href="/sab/#/code">Editor</a>
+            <a class="navbar-item" href="/sab/#/usage">Usage</a>
+            <a class="navbar-item" href="/sab/#/configuration">Config</a>
             <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">More</a>
                 <div class="navbar-dropdown">
-                    <a class="navbar-item" href="#/about">About</a>
-                    <a class="navbar-item" href="#/roadmap">Roadmap</a>
-                    <a class="navbar-item" href="#/contact">Contact</a>
+                    <a class="navbar-item" href="/#/about">About</a>
+                    <a class="navbar-item" href="/#/roadmap">Roadmap</a>
+                    <a class="navbar-item" href="/#/contact">Contact</a>
                     <hr class="navbar-divider">
-                    <a class="navbar-item" href="#/feedback">Report an issue</a>
+                    <a class="navbar-item" href="/#/feedback">Report an issue</a>
                 </div>
             </div>
         </div>

@@ -12,7 +12,8 @@ server {
         proxy_pass http://127.0.0.1:8080/;
     }
 
-    location /nosab/ {
+    # Root index.html gets no headers, to allow signups
+    location = /index.html {
         # Get default MIME types
         include /etc/nginx/mime.types;
         # Add WASM type

@@ -11,10 +11,10 @@
       synchronize:
         src: ../dist/
         dest: /var/www/app
-    - name: Synchronize build files for nosab
+    - name: Synchronize build files for sab
       synchronize:
         src: ../dist/
-        dest: /var/www/app/nosab
+        dest: /var/www/app/sab
     - name: Synchronize executable files
       synchronize:
         src: ../rustserver/target/release/pybook-rustserver
