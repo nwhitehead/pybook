@@ -41,7 +41,7 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest && pytest -vv src/parser.py",
     "local_setup": "ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 server/setup.yml --become",
     "local": "vite build && ansible-playbook --connection=local --inventory 127.0.0.1, --limit 127.0.0.1 server/deploy.yml --become",
-    "deploy": "vite build && ansible-playbook server/deploy.yml"
+    "deploy": "vite build --mode production && ansible-playbook server/deploy.yml"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^3.2.0",
