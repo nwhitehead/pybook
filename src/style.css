@@ -26,6 +26,8 @@
     --stderr-border: #ff08;
     --generic-code-fg: #aa1111;
     --generic-code-bg: var(--light);
+    --toolbar-bg: var(--grey-lighter);
+    --toolbar-fg: var(--dark);
 }
 
 [data-theme="dark"] {
@@ -76,6 +78,10 @@ section {
 
 section.section {
     padding-bottom: 0;
+}
+
+.button {
+    border-color: transparent;
 }
 
 .box.console {

@@ -10,10 +10,18 @@
 
 <template>
     <div class="wrapper">
-        <div v-if="!disabled" class="control" @click="sendToConsole">
-            <span class="material-icons large">play_circle</span>
-        </div>
         <pre><code class="language-python">{{ code }}</code></pre>
+        <div class="controls">
+            <button v-if="!disabled" class="button is-small" title="Copy to clipboard" @click="copyToClipboard">
+                <span class="material-icons">content_copy</span>
+            </button>
+            <button v-if="!disabled" class="button is-small" title="Send to editor" @click="sendToEditor">
+                <span class="material-icons">edit</span>
+            </button>
+            <button v-if="!disabled" class="button is-small" title="Send to console" @click="sendToConsole">
+                <span class="material-icons">computer</span>
+            </button>
+        </div>
     </div>
 </template>
 
@@ -24,20 +32,23 @@
 .wrapper pre {
     display: block;
 }
-.wrapper div.control {
+
+.wrapper .controls {
     position: absolute;
-    top: 50%;
+    top: 0;
     right: 0;
-    padding-top: 5px;
-    transform: translateY(-50%) scale(3.0);
-    color: var(--primary);
+    padding: 5px 5px 5px 1.5em;
+    color: var(--dark);
     cursor: pointer;
+    user-select: none;
+    display: flex;
 }
-[data-theme=""] .wrapper div.control {
-    text-shadow: var(--grey) -3px 2px 6px;
+.wrapper .controls .button {
+    color: var(--toolbar-fg);
+    background-color: var(--toolbar-bg);
 }
-.wrapper div.control:hover {
-    color: var(--primaryhover);
+.wrapper .controls .button span {
+    transform: scale(0.75);
 }
 </style>
 
@@ -53,6 +64,14 @@ const props = defineProps([ 'code', 'disabled' ]);
 onMounted(() => {
     Prism.highlightAll();
 });
+
+async function copyToClipboard(evt) {
+    try {
+        await navigator.clipboard.writeText(props.code);
+    } catch(e) {
+        console.log('Error: could not copy text to clipboard');
+    }
+}
 
 function sendToEditor(evt) {
     eventbus.emit('editor:example', { code:props.code });

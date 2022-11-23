@@ -94,9 +94,9 @@ plt.savefig('plot.png')
 plt.clf()
 `" />
 
-<p>Finally, output the PNG file to the browser.</p>
+<p>Finally, output the PNG file to the browser. (Below snippet assumes you have saved the file already).</p>
 
-<Example :disabled="true" :code="String.raw`import pybook
+<Example :code="String.raw`import pybook
 pybook.output_file('image/png', 'plot.png')
 `" />
 
