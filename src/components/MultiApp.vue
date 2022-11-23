@@ -8,7 +8,10 @@
     <TheNavbar />
     <section class="section">
         <KeepAlive>
-            <component :is="currentView" @codeAppComponentMounted="codeAppComponentMounted" />
+            <component :is="currentView"
+                @codeAppComponentMounted="codeAppComponentMounted"
+                @consoleAppComponentMounted="consoleAppComponentMounted"
+            />
         </KeepAlive>
         <Feedback :disable="configuration.disableFeedback" @send="send" />
     <TheFooter />
@@ -28,7 +31,7 @@ import NotFoundView from './view/NotFoundView.vue';
 import UsageView from './view/UsageView.vue';
 
 import axios from 'axios';
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 import { configuration, updateBodyDark, eventbus } from './globals.js';
 import { hasSharedArrayBuffer } from '../polyfill.js';
@@ -61,6 +64,12 @@ const currentView = computed(() => {
     return noSABRoutes[ currentPath.value || '#/' ] || NotFoundView;
 });
 
+watch(currentView, (newValue, oldValue) => {
+    // Scroll main page to top when switching components
+    // (Fixes issue with going low on Usage page, then switching to code editor, scrolled too far down)
+    window.scrollTo(0, 0);
+});
+
 onMounted(() => updateBodyDark());
 
 function send(evt) {
@@ -68,21 +77,36 @@ function send(evt) {
     axios.post('/api/feedback', evt);
 }
 
-let examplePayload = null;
+let editorExamplePayload = null;
+let consoleExamplePayload = null;
 
-eventbus.on('example', (payload) => {
+eventbus.on('editor:example', (payload) => {
     window.location.hash = '#/code';
     // Changing the hash triggers event listener, is enough to change component
     // CodeApp component listens for same event, will handle update state for itself
 
     // If code editor was lazy loaded and not present, remember it and re-send the event once editor component is mounted
-    examplePayload = payload;
+    editorExamplePayload = payload;
+});
+
+eventbus.on('console:example', (payload) => {
+    window.location.hash = '#/console';
+    consoleExamplePayload = payload;
 });
 
 function codeAppComponentMounted(evt) {
-    if (examplePayload !== null) {
-        eventbus.emit('example', examplePayload);
-        examplePayload = null;
+    // Look for missed events that we need to handle now that component is mounted
+    if (editorExamplePayload !== null) {
+        eventbus.emit('editor:example', editorExamplePayload);
+        editorExamplePayload = null;
+    }
+}
+
+function consoleAppComponentMounted(evt) {
+    // Look for missed events that we need to handle now that component is mounted
+    if (consoleExamplePayload !== null) {
+        eventbus.emit('console:example', consoleExamplePayload);
+        consoleExamplePayload = null;
     }
 }
 

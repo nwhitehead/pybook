@@ -10,7 +10,7 @@
 
 <template>
     <div class="wrapper">
-        <div v-if="!disabled" class="control" @click="sendToEditor">
+        <div v-if="!disabled" class="control" @click="sendToConsole">
             <span class="material-icons large">play_circle</span>
         </div>
         <pre><code class="language-python">{{ code }}</code></pre>
@@ -55,7 +55,11 @@ onMounted(() => {
 });
 
 function sendToEditor(evt) {
-    eventbus.emit('example', { code:props.code });
+    eventbus.emit('editor:example', { code:props.code });
+}
+
+function sendToConsole(evt) {
+    eventbus.emit('console:example', { code:props.code });
 }
 
 </script>

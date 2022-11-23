@@ -557,4 +557,15 @@ props.eventbus.on('clear', () => {
 props.eventbus.on('reset', () => {
     reset();
 });
+
+props.eventbus.on('update:input', (text) => {
+    entry.value = text;
+    nextTick(() => {
+        // Wait for the value to propagate to codemirror entirely
+        // (Otherwise it will truncate selecting end of input)
+        consoleInputEventbus.emit('focus');
+        consoleInputEventbus.emit('selectend');
+    });
+});
+
 </script>

@@ -3,12 +3,15 @@
 //!
 //! A Vue component representing the top level single-page console app.
 //!
+//! Emits:
+//! - consoleAppComponentMounted - When component is ready. This is needed when clicking on examples in case the ConsoleApp is lazy loaded.
+//!
 
 <template>
     <div class="columns">
         <div class="column is-four-fifths">
             <div class="box console">
-                <Console :eventbus="eventbus" :options="options" :pyoptions="pyoptions" />
+                <Console :eventbus="consoleEventbus" :options="options" :pyoptions="pyoptions" />
             </div>
         </div>
         <div class="column is-one-fifth">
@@ -27,10 +30,16 @@ import TheKeyboardControls from './TheKeyboardControls.vue';
 import { computed, onMounted } from 'vue';
 import mitt from 'mitt';
 
-import { configuration, updateBodyDark } from './globals.js';
+import { configuration, updateBodyDark, eventbus } from './globals.js';
+
+const emit = defineEmits([ 'consoleAppComponentMounted' ]);
 
 // Event bus for communicating back and forth with Console directly
-const eventbus = mitt();
+const consoleEventbus = mitt();
+
+onMounted(() => {
+    emit('consoleAppComponentMounted');
+});
 
 const options = computed(() => {
     return {
@@ -49,6 +58,11 @@ const pyoptions = computed(() => {
     return {
         usePyPI:configuration.usePyPI,
     };
+});
+
+eventbus.on('console:example', (payload) => {
+    // Paste in example to input text
+    consoleEventbus.emit('update:input', payload.code);
 });
 
 </script>

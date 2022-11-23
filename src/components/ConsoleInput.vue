@@ -65,7 +65,7 @@ div.consoleinput {
 
 <script setup>
 
-import { computed, ref, watch, nextTick } from 'vue';
+import { computed, ref, watch, nextTick, shallowRef } from 'vue';
 import { Codemirror } from 'vue-codemirror';
 import { python } from '@codemirror/lang-python';
 import { EditorView, keymap, highlightSpecialChars, drawSelection, highlightActiveLine, dropCursor,
@@ -118,7 +118,7 @@ function down(editorView) {
 }
 
 let cmElement = ref(null);
-let cmComponent = ref(null);
+let cmComponent = shallowRef(null);
 
 function handleReady(payload) {
     cmComponent.value = payload.view;
@@ -276,32 +276,17 @@ const evalSingleLine = computed(() => {
 
 watch(disabled, (newValue, oldValue) => {
   // Watch for CellInput that goes from disabled to not disabled
-  // Need to focus textbox of editor in that case (avoid needing to click 2 times to get focus)
+  // Need to focus editor in that case (avoid needing to click 2 times to get focus)
   if (!newValue && oldValue) {
-    // We need the DOM element of the codemirror component, get it with $el
-    const cmDomElement = cmElement.value.$el;
-    // Now find the right part that accepts focus
-    const textBox = cmDomElement.querySelectorAll('[role="textbox"]');
-    // Need to wait for DOM update to do actual focus
-    // At this point we have flag changed, but DOM not updated yet
-    nextTick(() => {
-      textBox.forEach( (el) => {
-        el.focus();
-      });
-    });
+    setTimeout(() => cmComponent.value.dom.childNodes[1].childNodes[0].focus(), 0);
   }
 });
 
 props.eventbus.on('focus', () => {
-    // We need the DOM element of the codemirror component, get it with $el
-    const cmDomElement = cmElement.value.$el;
-    // Now find the right part that accepts focus
-    const textBox = cmDomElement.querySelectorAll('[role="textbox"]');
-    // Need to wait for DOM update to do actual focus
-    // At this point we have flag changed, but DOM not updated yet
-    textBox.forEach( (el) => {
-        el.focus();
-    });
+    globalThis.foo = cmComponent.value;
+    // Not sure why we have to wait for DOM refresh?
+    // nextTick does not fix this, it is a DOM issue somehow
+    setTimeout(() => cmComponent.value.focus(), 1);
 });
 
 props.eventbus.on('selectend', () => {
