@@ -45,7 +45,8 @@
 }
 .wrapper .controls .button {
     color: var(--toolbar-fg);
-    background-color: var(--toolbar-bg);
+    background-color: transparent; /* var(--toolbar-bg); */
+    width: 3.0em;
 }
 .wrapper .controls .button span {
     transform: scale(0.75);
