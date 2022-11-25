@@ -19,7 +19,7 @@
                 <span class="material-icons">edit</span>
             </button>
             <button v-if="!disabled" class="button is-small" title="Send to console" @click="sendToConsole">
-                <span class="material-icons">computer</span>
+                <img src="/static/gfx/console-icon.png" alt="Console icon" />
             </button>
         </div>
     </div>
@@ -50,6 +50,9 @@
 }
 .wrapper .controls .button span {
     transform: scale(0.75);
+}
+.wrapper .button img {
+    min-width: 18px;
 }
 </style>
 
