@@ -19,7 +19,7 @@
                 <span class="material-icons">edit</span>
             </button>
             <button v-if="!disabled" class="button is-small" title="Send to console" @click="sendToConsole">
-                <img src="/static/gfx/console-icon.png" alt="Console icon" />
+                <span class="icon-terminal" />
             </button>
         </div>
     </div>
@@ -62,6 +62,7 @@ import { onMounted, ref } from 'vue';
 import Prism from 'prismjs';
 
 import { eventbus } from './globals.js';
+import _ from '../icomoon.css';
 
 const props = defineProps([ 'code', 'disabled' ]);
 
