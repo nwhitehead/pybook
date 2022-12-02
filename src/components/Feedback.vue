@@ -17,7 +17,7 @@
 
 <template>
     <div :class="{ modal:true, 'is-active':active }">
-        <div class="modal-background"></div>
+        <div class="modal-background" @click="active=false; thanks=false"></div>
         <div class="modal-card">
 
             <div class="modal-card-body" v-if="!thanks">

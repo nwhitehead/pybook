@@ -26,6 +26,7 @@ export const configuration = storageBacked('config', reactive({
     'markStderr':true,
     'closeBrackets':false,
     'editLineNumbers':true,
+    'editHighlightLine':true,
     'alternateInterrupt':false,
     'usePyPI':true,
 }));

@@ -90,7 +90,7 @@ const optionsCode = computed(() => {
         dark:configuration.darkmode,
         lineNumbers:configuration.editLineNumbers,
         closeBrackets:configuration.closeBrackets,
-        highlightLine:true,
+        highlightLine:configuration.editHighlightLine,
         alternateInterrupt:configuration.alternateInterrupt,
         fixedHeight:true,
     };

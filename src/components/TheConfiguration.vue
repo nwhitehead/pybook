@@ -18,7 +18,7 @@
 <template>
 
 <div :class="{ modal:true, 'is-active':active }">
-    <div class="modal-background"></div>
+    <div class="modal-background" @click="$emit('close')"></div>
     <div class="modal-content">
         <nav class="panel">
             <p class="panel-heading">Configuration</p>
@@ -46,6 +46,9 @@
                     <label class="label">Editor</label>
                     <div class="control">
                         <label><input type="checkbox" id="editLineNumbersId" v-model="configuration.editLineNumbers" /> Show line numbers</label>
+                    </div>
+                    <div class="control">
+                        <label><input type="checkbox" id="editHighlightLineId" v-model="configuration.editHighlightLine" /> Highlight current line</label>
                     </div>
                 </div>
             </template>
