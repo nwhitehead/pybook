@@ -24,7 +24,7 @@
             <a class="navbar-item" href="/sab/#/console">Console</a>
             <a class="navbar-item" href="/sab/#/code">Editor</a>
             <a class="navbar-item" href="/sab/#/usage">Usage</a>
-            <a class="navbar-item" href="/sab/#/configuration">Config</a>
+            <a class="navbar-item" @click="$emit('config')">Config</a>
             <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">More</a>
                 <div class="navbar-dropdown">
@@ -50,6 +50,8 @@
 <script setup>
 
 import { ref } from 'vue';
+
+const emit = defineEmits([ 'config' ]);
 
 let active = ref(false);
 

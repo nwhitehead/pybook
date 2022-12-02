@@ -4,17 +4,23 @@
 //! A Vue component representing config options
 //!
 //! Props:
+//! - active - Whether to show as modal overlay or not
 //! - configuration - Object with keys of all the options
 //! - showGeneral - Show general options
 //! - showConsole - Show options relevant to console
 //! - showEditor - Show options relevant to editor
 //! - showPython - Show options related to Python kernel
 //!
+//! Emits:
+//! - close - When close button is clicked (expected to make active false)
+//!
 
 <template>
 
-<nav class="panel">
-
+<div :class="{ modal:true, 'is-active':active }">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+        <nav class="panel">
             <p class="panel-heading">Configuration</p>
             <template v-if="showGeneral">
                 <div class="title-box">
@@ -71,7 +77,10 @@
                     </div>
                 </div>
             </template>
-</nav>
+        </nav>
+    </div>
+    <button class="modal-close is-large" aria-label="close" @click="$emit('close')"></button>
+</div>
 
 </template>
 
@@ -79,6 +88,7 @@
 
 import { configuration } from './globals.js';
 
-const props = defineProps([ 'showGeneral', 'showConsole', 'showEditor', 'showPython' ]);
+const props = defineProps([ 'active', 'showGeneral', 'showConsole', 'showEditor', 'showPython' ]);
+const emit = defineEmits([ 'close' ]);
 
 </script>

@@ -172,7 +172,7 @@ a:hover {
 .subtitle {
     color: var(--dark);
 }
-nav.navbar {
+nav, nav.navbar {
     color: var(--dark);
     background-color: var(--white);
 }

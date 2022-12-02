@@ -15,7 +15,7 @@
             </div>
         </div>
         <div class="column is-one-fifth">
-            <TheConfiguration :configuration="configuration" :showGeneral="true" :showConsole="true" :showPython="true" />
+            <!-- <TheConfiguration :configuration="configuration" :showGeneral="true" :showConsole="true" :showPython="true" /> -->
             <TheKeyboardControls :configuration="configuration" />
         </div>
     </div>

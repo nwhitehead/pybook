@@ -5,7 +5,8 @@
 //!
 
 <template>
-    <TheNavbar />
+    <TheNavbar @config="configActive=true;" />
+    <TheConfiguration :active="configActive" :showGeneral="true" :showConsole="true" :showEditor="true" :showPython="true" @close="configActive=false;" />
     <section class="section">
         <KeepAlive>
             <component :is="currentView"
@@ -25,7 +26,7 @@ import CodeApp from './CodeApp.vue';
 import Feedback from './Feedback.vue';
 import TheFooter from './TheFooter.vue';
 import TheNavbar from './TheNavbar.vue';
-import ConfigurationView from './view/ConfigurationView.vue';
+import TheConfiguration from './TheConfiguration.vue';
 import MainView from './view/MainView.vue';
 import NotFoundView from './view/NotFoundView.vue';
 import UsageView from './view/UsageView.vue';
@@ -41,11 +42,12 @@ window.addEventListener('hashchange', () => {
     currentPath.value = window.location.hash;
 });
 
+let configActive = ref(false);
+
 const routes = {
     '#/': MainView,
     '#/console': ConsoleApp,
     '#/code': CodeApp,
-    '#/configuration': ConfigurationView,
     '#/usage': UsageView,
 };
 
@@ -53,7 +55,6 @@ const noSABRoutes = {
     '#/': MainView,
     '#/console': NotFoundView,
     '#/code': NotFoundView,
-    '#/configuration': ConfigurationView,
     '#/usage': UsageView,
 };
 
