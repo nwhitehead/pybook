@@ -241,3 +241,7 @@ code {
     background-color: var(--generic-code-bg);
     font-size: 16px;
 }
+
+div.control, label {
+    user-select: none;
+}

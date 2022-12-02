@@ -42,6 +42,7 @@ window.addEventListener('hashchange', () => {
     currentPath.value = window.location.hash;
 });
 
+// Whether to show configuration modal overlay (default is not to show)
 let configActive = ref(false);
 
 const routes = {
