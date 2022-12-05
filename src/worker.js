@@ -129,6 +129,13 @@ async function configure(config) {
             pyodide.FS.writeFile(filename, sharedFileArray.slice(0, size));
         },
     };
+    // Make '/dev/null' seekable to fix issue with dill package (it expects /dev/null to be standin for all files when looking up types)
+    // Device 1:3 is /dev/null
+    pyodide.FS.registerDevice(pyodide.FS.makedev(1, 3), {
+        read: () => 0,
+        write: (stream,buffer,offset,length,pos) => length,
+        llseek: (stream, offset, whence) => offset,
+    });
     // Setup local filesystem (persistent storage local to browser)
     pyodide.FS.mkdir('persistent');
     pyodide.FS.mount(pyodide.FS.filesystems.IDBFS, {}, 'persistent');

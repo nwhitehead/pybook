@@ -90,7 +90,7 @@ section.section {
 .box.editor {
     background-color: var(--light);
 }
-section .tag {
+section .tag, .panel .tag {
     background-color: var(--grey-lighter);
     color: var(--dark);
 }
@@ -240,6 +240,7 @@ code {
     color: var(--generic-code-fg);
     background-color: var(--generic-code-bg);
     font-size: 16px;
+    border-radius: 3px;
 }
 
 div.control, label {
