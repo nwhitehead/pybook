@@ -53,7 +53,7 @@
             </p>
             <h2>Personal Project History</h2>
             <p>
-                I'm Nathan of Nathan's Python Console. I've been working on and off on this project for several years.
+                I've been working on and off on this project for several years.
                 My initial motivation was trying Emscripten and seeing that it
                 actually worked pretty well at compiling things for the browser. I did some performance tests and was surprised that my test code ended up
                 running at about half speed of being natively compiled. That made me think that compiling things for the browser was not just for toy demos
