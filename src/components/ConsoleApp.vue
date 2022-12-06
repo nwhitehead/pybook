@@ -57,6 +57,7 @@ const options = computed(() => {
 const pyoptions = computed(() => {
     return {
         usePyPI:configuration.usePyPI,
+        showArrows:configuration.showArrows,
     };
 });
 

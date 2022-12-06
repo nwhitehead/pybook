@@ -38,7 +38,7 @@
             <ul>
                 <li><em>Simplicity</em></li>
                 <p>You don't need to setup Python, install packages, and mess around with configuration to get things done. You may appreciate this if you often switch around
-                between different computers and environments.
+                between different computers and environments, or if you use an environment where you don't have permission to install things.
                 </p>
                 <li><em>Features</em></li>
                 <p>Many packages are supported without any setup needed. You can also directly output graphics and sound to the browser without going through other

@@ -2,9 +2,11 @@
 //! Feedback component
 //!
 //! Props:
+//! - active - Whether to show modal overlay (starts false, should be set to true when active emit sent)
 //! - disable - Set to true to disable tag from showing at all
 //!
 //! Emits:
+//! - update:active - Sent when feedback button clicked, expected to set active prop to value in payload
 //! - send - Emitted when feedback is to be sent, has payload with fields:
 //!     - choice - One of 'issue', 'idea', 'other'
 //!     - message - What user typed
@@ -16,8 +18,8 @@
 //!
 
 <template>
-    <div :class="{ modal:true, 'is-active':active }">
-        <div class="modal-background" @click="active=false; thanks=false"></div>
+    <div :class="{ modal:true, 'is-active':props.active }">
+        <div class="modal-background" @click="$emit('update:active', false); thanks=false"></div>
         <div class="modal-card">
 
             <div class="modal-card-body" v-if="!thanks">
@@ -74,10 +76,10 @@
             <div class="modal-card-body" v-if="thanks">
                 <p class="title is-4">Thank you for your feedback!</p>
             </div>
-            <button class="modal-close is-large" aria-label="close" @click="active=false; thanks=false"></button>
+            <button class="modal-close is-large" aria-label="close" @click="$emit('update:active', false); thanks=false"></button>
         </div>
     </div>
-    <div v-if="!disable" class="fixed"><button class="feedbackbutton" @click="active=true"><span>Feedback</span></button></div>
+    <div v-if="!disable" class="fixed"><button class="feedbackbutton" @click="$emit('update:active', true);"><span>Feedback</span></button></div>
 </template>
 
 <style>
@@ -159,10 +161,8 @@
 import { ref, watch, nextTick } from 'vue';
 import html2canvas from 'html2canvas';
 
-const props = defineProps([ 'disable' ]);
-const emit = defineEmits([ 'send' ]);
-
-let active = ref(false); // When active, modal takes over all display
+const props = defineProps([ 'active', 'disable' ]);
+const emit = defineEmits([ 'update:active', 'send' ]) ;
 
 let choice = ref('');
 let message = ref('');
@@ -213,7 +213,7 @@ function readyToSend() {
 
 function scheduleAutoClose() {
     setTimeout(() => {
-        active.value = false;
+        emit('update:active', false);
         thanks.value = false;
     }, 3000);
 }
@@ -222,14 +222,14 @@ function send() {
     let payload = { choice:choice.value, message:message.value, email:email.value, location:document.location.href };
     if (screenshot.value) {
         // Turn off modal to get screenshot (otherwise we are screenshotting the feedback form...)
-        active.value = false;
+        emit('update:active', false);
         nextTick(() => {
             html2canvas(document.body).then((canvas) => {
                 payload.screenshot = canvas.toDataURL('image/png');
                 emit('send', payload);
                 choice.value = '';
                 message.value = '';
-                active.value = true;
+                emit('update:active', true);
                 thanks.value = true;
                 scheduleAutoClose();
             });
@@ -238,7 +238,7 @@ function send() {
         emit('send', payload);
         choice.value = '';
         message.value = '';
-        active.value = true;
+        emit('update:active', true);
         thanks.value = true;
         scheduleAutoClose();
     }

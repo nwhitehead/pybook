@@ -78,6 +78,9 @@
                     <div class="control">
                         <label><input type="checkbox" id="usePyPIid" v-model="configuration.usePyPI" /> Automatically install PyPI packages when used</label>
                     </div>
+                    <div class="control">
+                        <label><input type="checkbox" id="showArrowsid" v-model="configuration.showArrows" /> Show arrows for evaluation results</label>
+                    </div>
                 </div>
             </template>
         </nav>

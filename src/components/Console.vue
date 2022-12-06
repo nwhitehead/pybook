@@ -20,6 +20,7 @@
 //!     - markStderr - Whether to mark stderr output with styling to distinguish from stdout
 //! - pyoptions - Options for python interpreter
 //!     - usePyPI - If true imports will automatically look in PyPI and install dependencies, otherwise just Pyodide packages will be loaded as needed
+//!     - showArrows - Whether to show arrows before evaluated values
 //!
 //! Emits:
 //! - update:history - When command history is changed this is emitted to inform parent, payload is:
@@ -399,7 +400,10 @@ function evaluate(src, console) {
         });
     }
     emit('evaluate', src);
-    let options = { usePyPI:props.pyoptions.usePyPI };
+    let options = {
+        usePyPI:props.pyoptions.usePyPI,
+        showArrows:props.pyoptions.showArrows,
+    };
     if (!console) {
         // For code evaluation, do not print "-> 4" for "2+2", only output for explicit prints.
         options.no_default_func = true;

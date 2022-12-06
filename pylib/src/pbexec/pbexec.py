@@ -55,6 +55,17 @@ def default_func(value):
     if value is not None:
         sys.stdout.write(f'→ {repr(value)}\n')
 
+def show_value_noarrow(value):
+    """
+    Function to call on evaluated values to mimic Python REPL
+
+    Ignore None values, print repr of other values.
+
+    """
+    if value is not None:
+        sys.stdout.write(f'{repr(value)}\n')
+
+
 async def run_cell(script, globals_=None, locals_=None, func=default_func, history=True, write=True, print_exception=True, propagate_exception=False, strip=1):
     """
     Run script with given globals and locals environment

@@ -193,6 +193,7 @@ img:hover {
 nav.navbar .navbar-item {
     color: var(--dark);
     background-color: var(--white);
+    user-select: none;
 }
 nav.navbar .navbar-item:hover {
     color: var(--blue);

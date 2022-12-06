@@ -112,6 +112,7 @@ const optionsConsole = computed(() => {
 const pyoptionsConsole = computed(() => {
     return {
         usePyPI:configuration.usePyPI,
+        showArrows:configuration.showArrows,
     };
 });
 

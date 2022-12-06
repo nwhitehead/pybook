@@ -29,6 +29,7 @@ export const configuration = storageBacked('config', reactive({
     'editHighlightLine':true,
     'alternateInterrupt':false,
     'usePyPI':true,
+    'showArrows':true,
 }));
 
 //! This eventbus is global to all components, used for ad hoc component communication

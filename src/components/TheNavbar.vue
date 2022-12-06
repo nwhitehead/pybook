@@ -3,6 +3,10 @@
 //!
 //! A Vue component representing the top navbar on pages
 //!
+//! Emits:
+//! - config - When config choice is chosen
+//! - report - When "report issue" is chosen
+//!
 
 <template>
 
@@ -28,11 +32,10 @@
             <div class="navbar-item has-dropdown is-hoverable">
                 <a class="navbar-link">More</a>
                 <div class="navbar-dropdown">
-                    <a class="navbar-item" href="/#/about">About</a>
-                    <a class="navbar-item" href="/#/roadmap">Roadmap</a>
-                    <a class="navbar-item" href="/#/contact">Contact</a>
+                    <a class="navbar-item" href="/sab/#/about">About</a>
+                    <a class="navbar-item" href="/sab/#/roadmap">Roadmap</a>
                     <hr class="navbar-divider">
-                    <a class="navbar-item" href="/#/feedback">Report an issue</a>
+                    <a class="navbar-item" @click="$emit('report')">Report an issue</a>
                 </div>
             </div>
         </div>
@@ -51,7 +54,7 @@
 
 import { ref } from 'vue';
 
-const emit = defineEmits([ 'config' ]);
+const emit = defineEmits([ 'config', 'report' ]);
 
 let active = ref(false);
 

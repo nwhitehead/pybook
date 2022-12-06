@@ -5,7 +5,7 @@
 //!
 
 <template>
-    <TheNavbar @config="configActive=true;" />
+    <TheNavbar @config="configActive=true;" @report="feedbackActive=true" />
     <TheConfiguration :active="configActive" :showGeneral="true" :showConsole="true" :showEditor="true" :showPython="true" @close="configActive=false;" />
     <section class="section">
         <KeepAlive>
@@ -14,7 +14,7 @@
                 @consoleAppComponentMounted="consoleAppComponentMounted"
             />
         </KeepAlive>
-        <Feedback :disable="configuration.disableFeedback" @send="send" />
+        <Feedback :active="feedbackActive" :disable="configuration.disableFeedback" @send="send" @update:active="newValue => { feedbackActive = newValue; }" />
     <TheFooter />
     </section>
 </template>
@@ -30,6 +30,8 @@ import TheConfiguration from './TheConfiguration.vue';
 import MainView from './view/MainView.vue';
 import NotFoundView from './view/NotFoundView.vue';
 import UsageView from './view/UsageView.vue';
+import AboutView from './view/AboutView.vue';
+import RoadmapView from './view/RoadmapView.vue';
 
 import axios from 'axios';
 import { ref, computed, onMounted, watch } from 'vue';
@@ -45,25 +47,28 @@ window.addEventListener('hashchange', () => {
 // Whether to show configuration modal overlay (default is not to show)
 let configActive = ref(false);
 
+// Whether to show feedback modal overlay (default is not to show)
+let feedbackActive = ref(false);
+
 const routes = {
     '#/': MainView,
     '#/console': ConsoleApp,
     '#/code': CodeApp,
     '#/usage': UsageView,
-};
-
-const noSABRoutes = {
-    '#/': MainView,
-    '#/console': NotFoundView,
-    '#/code': NotFoundView,
-    '#/usage': UsageView,
+    '#/about': AboutView,
+    '#/roadmap': RoadmapView,
 };
 
 const currentView = computed(() => {
+    const view = routes[ currentPath.value || '#/' ] || NotFoundView;
     if (hasSharedArrayBuffer) {
-        return routes[ currentPath.value || '#/' ] || NotFoundView;
+        return view;
     }
-    return noSABRoutes[ currentPath.value || '#/' ] || NotFoundView;
+    // If we don't have SharedArrayBuffer, never even try to render ConsoleApp or CodeApp
+    if (view === CodeApp || view === ConsoleApp) {
+        return NotFoundView;
+    }
+    return view;
 });
 
 watch(currentView, (newValue, oldValue) => {
