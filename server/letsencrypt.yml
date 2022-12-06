@@ -1,6 +1,4 @@
 - hosts: all
-  vars:
-    acme_email: nwhitehe@gmail.com
   tasks:
     - name: Make sure snap installed
       shell: |
