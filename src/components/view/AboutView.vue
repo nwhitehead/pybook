@@ -18,7 +18,8 @@
                     <li><a href="https://bulma.io/">Bulma</a> - a CSS framework for styling the pages.</li>
                     <li><a href="https://vitejs.dev/">Vite</a> - for frontend building and development serving.</li>
                 </ul>
-                There are many more packages and tools involved in the project. The project itself is open source on GitHub.
+                There are many more packages and tools involved in the project. The project itself is open source on GitHub
+                at <a href="https://github.com/nwhitehead/pybook">https://github.com/nwhitehead/pybook</a>.
             </p>
             <h2>Features</h2>
             <p>
@@ -89,7 +90,14 @@
             </p>
             <h2>About Me</h2>
             <p>
+                I'm Nathan, I'm a programmer that likes working on different things. Lately I've been working on Nathan's Python Console and
+                related things. I'm also writing some programming lessons on various topics.
             </p>
+            <p>
+                My <a href="https://github.com/nwhitehead">GitHub profile</a>. I also have lots of secret unpublished projects. In my professional life
+                I've worked on CUDA, low power device performance, and TensorRT for deep learning inference. I also taught a bunch of computer science
+                classes at UCSC for a while.
+             </p>
         </div>
     </div>
 </template>

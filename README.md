@@ -36,6 +36,11 @@ If you change Python package code in `pbexec`, you will need to rebuild the whee
 
 This will create a wheel file that needs to be copied to `static/lib/pyodide`.
 
+## Website
+
+The site is built using VueJS. This is my first VueJS project so organization is ongoing. I tried to split out components in a logical way.
+The main entry point is the `index.html` file. From there the VueJS application handles navigation internally.
+
 ## Unit Testing
 
 (Unit testing is setup but only covers some experimental parsing files at the moment).
