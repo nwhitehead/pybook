@@ -38,7 +38,7 @@
                     is reassigned to an atomic wait on the <code>SharedArrayBuffer</code>.</li>
                     <li>Files - Pyodide enables the default Emscripten filesystem. Nathan's Python Console additionally sets up persistent storage at <code>/persistent</code>
                     using the <code>IDBFS</code> filesystem.</li>
-                    <li>Auto PyPI import - This is a feature copied from <a href="https://futurecoder.io/">FutureCoder.io</a>. Using <code>micropip</code> packages from PyPI
+                    <li>Auto PyPI import - This is a feature copied from <a href="https://futurecoder.io/">futurecoder</a>. Using <code>micropip</code> packages from PyPI
                     are installed when imported.</li>
                     <li>PNG - I added <code>pypng</code> as the package to install when importing <code>png</code> (there is more than one choice here).</li>
                     <li><code>dill</code> - The <code>dill</code> package had some trouble with <code>/dev/null</code> that I managed to fix by setting up seek access to <code>/dev/null</code>
@@ -46,7 +46,8 @@
                     <li>Recursion limit - Some scientific packages hit the recursion depth limit during importso I set the default recursion limit to 250 which fixed the issues
                     and still allowed debugging infinite recursions without crashing Python inside the browser (at least on my system).</li>
                     <li>Security - Turning on <code>SharedArrayBuffers</code> requires some restrictive headers for web security reasons. For the design of the website I wanted some
-                    external scripts (for email signups), I could not figure out how to mix the headers with things like iframes. I split out pages requiring no headers from others.</li>
+                    external scripts (for email signups), I could not figure out how to mix the headers with things like iframes. I split out pages requiring
+                    less restrictive headers from others.</li>
                     <li>Styling - There are various syntax highlighting tools being used with different themes to help make editing code easier. I also tweaked things to work in dark
                     mode. I added JavaScript processing to handle some ANSI escape codes, but not too many. Nathan's Python Console is not a full terminal emulator.</li>
                 </ul>
