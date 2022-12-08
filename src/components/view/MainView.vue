@@ -53,6 +53,8 @@
             </ul>
             <p>For more examples of what can be done with the Python Console tools, see the <a href="/sab/#/usage">Usage Guide</a>.
             </p>
+            <p>For more info about this project, check out the <a href="/sab/#/about">About Page</a>.
+            </p>
             <!-- <p>Some of the reasons you might <b>not</b> want to use these Python Console tools:</p>
             <ul>
                 <li><em>Performance</em></li>

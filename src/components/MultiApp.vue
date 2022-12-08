@@ -6,6 +6,7 @@
 
 <template>
     <TheNavbar @config="configActive=true;" @report="feedbackActive=true" />
+    <Feedback :active="feedbackActive" :disable="configuration.disableFeedback" @send="send" @update:active="newValue => { feedbackActive = newValue; }" />
     <TheConfiguration :active="configActive" :showGeneral="true" :showConsole="true" :showEditor="true" :showPython="true" @close="configActive=false;" />
     <section class="section">
         <KeepAlive>
@@ -14,7 +15,6 @@
                 @consoleAppComponentMounted="consoleAppComponentMounted"
             />
         </KeepAlive>
-        <Feedback :active="feedbackActive" :disable="configuration.disableFeedback" @send="send" @update:active="newValue => { feedbackActive = newValue; }" />
     <TheFooter />
     </section>
 </template>

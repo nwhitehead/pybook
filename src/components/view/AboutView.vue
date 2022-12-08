@@ -18,7 +18,7 @@
                     <li><a href="https://bulma.io/">Bulma</a> - a CSS framework for styling the pages.</li>
                     <li><a href="https://vitejs.dev/">Vite</a> - for frontend building and development serving.</li>
                 </ul>
-                There are many more packages and tools involved in the project. The project itself is open source on GitHub
+                There are many more packages and tools involved in the project. Nathan's Python Console tools project is open source on GitHub
                 at <a href="https://github.com/nwhitehead/pybook">https://github.com/nwhitehead/pybook</a>.
             </p>
             <h2>Features</h2>
@@ -32,14 +32,14 @@
                     to <code>stdout</code>. This involves some plumbing for communicating and waiting on atomics in the <code>SharedArrayBuffer</code>.</li>
                     <li>REPL evaluation - The Python command line REPL behaves slightly differently from the Pyodide and Jupyter Python kernel. If you evaluate
                     something like <code>2; 3</code> then the Python REPL will show you both values. The Pyodide and Jupyter Python kernels will only show the last
-                    value. Nathan's Pythonn Console behaves like the Python REPL and shows all the values by working through the AST of the compiled expression. It
+                    value. Nathan's Python Console behaves like the Python REPL and shows all the values by working through the AST of the compiled expression. It
                     optionally also inserts an arrow, which I think helps clarify which outputs are evaluated values and which are output directly.</li>
                     <li>Sleep - The Python kernel runs in a separate web worker so there is no problem if Python sleeps. The <code>time.sleep</code> function
                     is reassigned to an atomic wait on the <code>SharedArrayBuffer</code>.</li>
                     <li>Files - Pyodide enables the default Emscripten filesystem. Nathan's Python Console additionally sets up persistent storage at <code>/persistent</code>
                     using the <code>IDBFS</code> filesystem.</li>
-                    <li>Auto PyPI import - This is a feature copied from <a href="https://futurecoder.io/">futurecoder</a>. Using <code>micropip</code> packages from PyPI
-                    are installed when imported.</li>
+                    <li>Auto PyPI import - This is a feature copied from <a href="https://futurecoder.io/">futurecoder</a>. Using <code>micropip</code>, packages from PyPI
+                    are installed when imported. Mapping from import names to package names is done using <code>pyodide._api._import_name_to_package_name</code>.</li>
                     <li>PNG - I added <code>pypng</code> as the package to install when importing <code>png</code> (there is more than one choice here).</li>
                     <li><code>dill</code> - The <code>dill</code> package had some trouble with <code>/dev/null</code> that I managed to fix by setting up seek access to <code>/dev/null</code>
                     in the Emscripten filesystem.</li>
@@ -87,7 +87,7 @@
             <p>
                 The current Python Console project is focused on releasing a polished Python console in the browser and a simple Python code editor
                 in the browser. The goal is to get something useful and working up and running and available to everyone. Having a working console
-                is also a prerequisite to a more complicated interface anyway.
+                is also a prerequisite to more complicated interfaces anyway.
             </p>
             <h2>About Me</h2>
             <p>

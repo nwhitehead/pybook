@@ -85,9 +85,19 @@
 <style>
 .fixed {
     position: fixed;
+    top: 0px;
+    right: 100px;
+    float: right;
+    z-index: 200;
+}
+@media screen and (min-width: 1024px) {
+.fixed {
+    position: fixed;
     top: 40vh;
     left: 0;
 }
+}
+
 .feedbackbutton {
     display: inline-block;
     border: 2px solid var(--feedback-button-bg);
@@ -101,11 +111,32 @@
     background-color: var(--feedback-button-bg);
     color: var(--feedback-button-fg);
     transform-origin: top left;
-    transform: rotate(-90deg) translate(0px, -5px);
+    transform: translate(0px, -3px);
+    font-size: 1em;
+}
+.feedbackbutton:hover {
+    transform: translate(0px, 0px);
+}
+@media screen and (min-width: 1024px) {
+.feedbackbutton {
+    display: inline-block;
+    border: 2px solid var(--feedback-button-bg);
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-left: none;
+    border-right: none;
+    border-top: 5px solid var(--feedback-button-bg);
+    padding: 7px;
+    margin: 0px;
+    background-color: var(--feedback-button-bg);
+    color: var(--feedback-button-fg);
+    transform-origin: top left;
+    transform: rotate(-90deg) translate(0px, -3px);
     font-size: 1em;
 }
 .feedbackbutton:hover {
     transform: rotate(-90deg);
+}
 }
 
 [data-theme="dark"] div.modal-card-body {
