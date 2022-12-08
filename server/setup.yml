@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: "{{ variable_host | default('server') }}"
   vars:
     server_name: "{{ inventory_hostname }}"
     document_root: /var/www/app
@@ -7,6 +7,15 @@
       file:
         path: /app
         state: directory
+    - name: Create mailjet keys file
+      copy:
+        dest: /app/mailjet.keys
+        content: |
+          {{ mailjet_apikey }}
+          {{ mailjet_secret }}
+          {{ feedback_sender }}
+          {{ feedback_name }}
+          {{ feedback_destination }}
     - name: Create rust service
       copy:
         src: pybook-rustserver.service

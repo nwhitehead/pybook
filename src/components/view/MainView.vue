@@ -11,7 +11,7 @@
             <p>
                 The <a href="/sab/#/console">Python Console</a> is an online Python interpreter that runs entirely in your browser.
                 It lets you quickly try out Python ideas while being as similar to the normal Python command line interpreter as possible.
-                No setup is needed. Packages automatically install when you import them.
+                No setup is needed. By default packages automatically install when you import them.
             </p>
             <figure>
                 <a href="/sab/#/console">

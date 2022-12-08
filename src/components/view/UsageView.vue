@@ -87,7 +87,7 @@ matplotlib.use('agg')
 matplotlib.use('agg')
 
 import matplotlib.pyplot as plt
-plt.style.use('fivethirtyeight')
+plt.style.use('ggplot')
 plt.plot([1, 3, 2, 4])
 plt.ylabel('some numbers')
 plt.savefig('plot.png')
@@ -106,7 +106,7 @@ pybook.output_file('image/png', 'plot.png')
 matplotlib.use('agg')
 
 import matplotlib.pyplot as plt
-plt.style.use('fivethirtyeight')
+plt.style.use('ggplot')
 plt.plot([1, 3, 2, 4])
 plt.ylabel('some numbers')
 plt.savefig('plot.png')

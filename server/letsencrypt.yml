@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: "{{ variable_host | default('server') }}"
   tasks:
     - name: Make sure snap installed
       shell: |
