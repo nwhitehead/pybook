@@ -26,6 +26,7 @@
     "vue": "^3.2.37",
     "vue-axios": "^3.4.1",
     "vue-codemirror": "^6.0.0",
+    "vue-cookie-accept-decline": "^6.1.0",
     "vuedraggable": "^2.24.3",
     "xterm": "^5.0.0"
   },

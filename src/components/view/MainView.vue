@@ -68,26 +68,31 @@
             </ul> -->
         </div>
 
-        <iframe v-if="!hasSharedArrayBuffer" class="mj-w-res-iframe" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://app.mailjet.com/widget/iframe/8EpM/OLa" width="100%" @load="iframeLoaded" v-resize></iframe>
+        <div v-if="cookieConsent=='accept'"
+            class="ml-form-embed"
+            data-account="2182024:v3g2g1m0t4"
+            data-form="5834274:a2z0z0">
+        </div>
 
     </div>
 </template>
 
 <script setup>
 
-import iframeResize from 'iframe-resizer/js/iframeResizer';
-
-import { configuration } from '../globals.js';
+import { configuration, cookieConsent } from '../globals.js';
 import { hasSharedArrayBuffer } from '../../polyfill.js';
+import { watch } from 'vue';
 
-// Tiny v-resize directive to do the iframe-resize call at the right time. Use by adding: v-resize="{...config...}"
-const vResize = {
-    mounted: (el, binding, vnode, prevnode) => {
-        el.addEventListener('load', () => iframeResize(binding.value || {}, el));
-    },
-    unmounted: (el) => {
-        el.iFrameResizer.removeListeners();
-    },
-};
+function loadMailerLiteScript() {
+    let externalScript = document.createElement('script');
+    externalScript.setAttribute('src', '/static/lib/mailerlite_universal.js');
+    document.head.appendChild(externalScript);
+}
+
+watch(cookieConsent, (newValue, oldValue) => {
+    if (cookieConsent.value === 'accept') {
+        loadMailerLiteScript();
+    }
+});
 
 </script>

@@ -48,6 +48,8 @@ export function updateBodyDark() {
     }
 }
 
+export const cookieConsent = ref(null);
+
 watch(
     // Getter
     () => configuration.darkmode,

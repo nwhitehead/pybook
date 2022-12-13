@@ -16,8 +16,47 @@
             />
         </KeepAlive>
     <TheFooter />
+    <vue-cookie-accept-decline
+        :debug="false"
+        :disableDecline="false"
+        :showPostponeButton="false"
+        @clicked-accept="clickAccept"
+        @clicked-decline="clickDecline"
+        @status="setCookieValue"
+        elementId="myCookiePanel"
+        position="bottom-left"
+        ref="myCookiePanel"
+        transitionName="slideFromBottom"
+        type="floating">
+        <!-- Optional -->
+        <template #postponeContent>&times;</template>
+
+        <!-- Optional -->
+        <template #message>
+            We use cookies to ensure you get the best experience on our website.
+            Consenting to these cookies is not required to use the tools on this site.
+            Cookies are used for the newsletter subscription form.
+            <a href="/sab/#/about">Learn More...</a>
+        </template>
+
+        <!-- Optional -->
+        <template #declineContent>Decline</template>
+
+        <!-- Optional -->
+        <template #acceptContent>Accept</template>
+    </vue-cookie-accept-decline>
     </section>
 </template>
+
+<style>
+.cookie__floating {
+    max-width: 500px;
+}
+.cookie__floating__content
+{
+    max-height: none;
+}
+</style>
 
 <script setup>
 
@@ -35,9 +74,23 @@ import RoadmapView from './view/RoadmapView.vue';
 
 import axios from 'axios';
 import { ref, computed, onMounted, watch } from 'vue';
+import VueCookieAcceptDecline from 'vue-cookie-accept-decline';
+import 'vue-cookie-accept-decline/dist/vue-cookie-accept-decline.css';
 
-import { configuration, updateBodyDark, eventbus } from './globals.js';
+import { configuration, cookieConsent, updateBodyDark, eventbus } from './globals.js';
 import { hasSharedArrayBuffer } from '../polyfill.js';
+
+function clickAccept() {
+    cookieConsent.value = 'accept';
+}
+
+function clickDecline() {
+    cookieConsent.value = 'decline';
+}
+
+function setCookieValue(payload) {
+    cookieConsent.value = payload;
+}
 
 const currentPath = ref(window.location.hash);
 window.addEventListener('hashchange', () => {

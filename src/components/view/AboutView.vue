@@ -43,7 +43,7 @@
                     <li>PNG - I added <code>pypng</code> as the package to install when importing <code>png</code> (there is more than one choice here).</li>
                     <li><code>dill</code> - The <code>dill</code> package had some trouble with <code>/dev/null</code> that I managed to fix by setting up seek access to <code>/dev/null</code>
                     in the Emscripten filesystem.</li>
-                    <li>Recursion limit - Some scientific packages hit the recursion depth limit during importso I set the default recursion limit to 250 which fixed the issues
+                    <li>Recursion limit - Some scientific packages hit the recursion depth limit during import so I set the default recursion limit to 250 which fixed the issues
                     and still allowed debugging infinite recursions without crashing Python inside the browser (at least on my system).</li>
                     <li>Security - Turning on <code>SharedArrayBuffers</code> requires some restrictive headers for web security reasons. For the design of the website I wanted some
                     external scripts (for email signups), I could not figure out how to mix the headers with things like iframes. I split out pages requiring
@@ -51,6 +51,17 @@
                     <li>Styling - There are various syntax highlighting tools being used with different themes to help make editing code easier. I also tweaked things to work in dark
                     mode. I added JavaScript processing to handle some ANSI escape codes, but not too many. Nathan's Python Console is not a full terminal emulator.</li>
                 </ul>
+            </p>
+            <h2>Privacy Policy</h2>
+            <p>
+                This site uses local storage in your browser to keep track of your preferences and store the data you are working on to help avoid data loss on page reload.
+                This data is private and not shared with anyone unless you explicitly request it by choosing to take a screenshot when using the
+                Feedback feature.
+            </p>
+            <p>
+                Cookies are used by the email subscription form provided by <a href="https://www.mailerlite.com/help/which-cookies-are-used-by-mailerlite-forms">MailerLite</a>.
+                The form uses cookies to track who has seen the form already. Cookies are only set if you consent using the cookie banner. Consenting to these
+                cookies is not required to use the tools on this site.
             </p>
             <h2>Personal Project History</h2>
             <p>
