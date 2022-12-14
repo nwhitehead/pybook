@@ -39,7 +39,7 @@
     "build": "vite build",
     "build_production": "vite build --mode production",
     "preview": "vite preview",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest && pytest -vv src/parser.py",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "local_setup": "ansible-playbook --connection=local --extra-vars \"variable_host=localhost\" server/setup.yml --become",
     "local": "vite build && ansible-playbook --connection=local --extra-vars \"variable_host=localhost\" server/deploy.yml --become",
     "deploy": "vite build --mode production && ansible-playbook server/deploy.yml"

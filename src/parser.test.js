@@ -1,6 +1,6 @@
 import { splitByLines,
-         isSpecialDelimiter,
          parseSpecialDelimiterLine,
+         parsePrefix,
          parsePages,
          parse,
          unparse } from './parser.js';
@@ -14,112 +14,80 @@ test('splitByLines', () => {
         ['abc']);
 });
 
-test('isSpecialDelimiter', () => {
-    expect(isSpecialDelimiter('#%'));
-    expect(isSpecialDelimiter('#% markdown\n'));
-    expect(!isSpecialDelimiter(''));
-    expect(!isSpecialDelimiter('#'));
-    expect(!isSpecialDelimiter('%#'));
+test('parseSpecialDelimiterLine', () => {
+    expect(parseSpecialDelimiterLine('#---#')).toStrictEqual('cell');
+    expect(parseSpecialDelimiterLine('#---page---#')).toStrictEqual('page');
+    expect(parseSpecialDelimiterLine('# Title')).toStrictEqual(null);
+    expect(parseSpecialDelimiterLine('')).toStrictEqual(null);
 });
 
-test('parseSpecialDelimiterLine1', () => {
-    expect(parseSpecialDelimiterLine('#%%')).toStrictEqual(
-        { 'type': 'markdown', options: []});
-    expect(parseSpecialDelimiterLine('#%')).toStrictEqual(
-        { 'type': 'code', options: []});
-    expect(() => parseSpecialDelimiterLine('#%md')).toThrow('Unknown delimiter');
-    expect(parseSpecialDelimiterLine('#% auto')).toStrictEqual(
-        { 'type': 'code', options: ['auto']});
-    expect(parseSpecialDelimiterLine('#% md')).toStrictEqual(
-        { 'type': 'markdown', options: []});
-    expect(parseSpecialDelimiterLine('#% hidden auto')).toStrictEqual(
-        { 'type': 'code', options: ['hidden', 'auto']});
-    expect(() => parseSpecialDelimiterLine('#% fulloutput')).toThrow('Illegal option fulloutput');
-    expect(() => parseSpecialDelimiterLine('#% abc=def')).toThrow('Illegal key option abc=def');
-    expect(parseSpecialDelimiterLine('#% id=1234')).toStrictEqual(
-        { 'type': 'code', options: ['id=1234' ]});
+test('parsePrefix', () => {
+    expect(parsePrefix('#m> # Title')).toStrictEqual([ 'markdown', '# Title']);
+    expect(parsePrefix('#m Blah')).toStrictEqual([ 'python', '#m Blah']);
+    expect(parsePrefix('import numpy as np')).toStrictEqual([ 'python', 'import numpy as np']);
+    expect(parsePrefix('')).toStrictEqual([ 'python', '']);
+    expect(parsePrefix('# Test')).toStrictEqual([ 'python', '# Test']);
 });
 
 test('parser1', () => {
-    const tst = `#%% hidden
-# Headline
-#%
-print(42)
-`;
-    const res = parsePages(tst);
-    expect(parsePages(tst)).toStrictEqual(
+    const tst = '#m> # Headline\nprint(42)\n';
+    expect(parse(tst)).toStrictEqual(
         [[
             {
-                'id': 1,
                 'cell_type': 'markdown',
-                'hidden': true,
-                'subtype': 'view',
                 'source': '# Headline',
-                'outputs': [],
             },
             {
-                'id': 2,
-                'cell_type': 'code',
+                'cell_type': 'python',
                 'source': 'print(42)',
-                'outputs': [],
             },
         ]]
     );
-    expect(unparse(parse(tst))).toStrictEqual(tst);
-    expect(parse(unparse(parse(tst)))).toStrictEqual(parse(tst));
+     expect(unparse(parse(tst))).toStrictEqual(tst); // This only works because there is no eliminated newlines
+     expect(parse(unparse(parse(tst)))).toStrictEqual(parse(tst));
 });
 
 test('parser2', () => {
-    const tst = `
-#% md
-# Title
-more
-#% end
+    const tst = `#m> # Title
+#m> more
 
-
-#% startup
+# This is python
 print(42)
-#% end
+x = 5
 
-#% page
-#%%
-hello
-#% submit
-# hi
+#m> What is going on here?
+#m> * Asterisk
+
+y = 3
+
+#---#
+
+x = 1
 `;
     expect(parsePages(tst)).toStrictEqual(
     [
         [
             {
-                'id': 1,
                 'cell_type': 'markdown',
-                'subtype': 'view',
                 'source': '# Title\nmore',
-                'outputs': [],
             },
             {
-                'id': 2,
-                'cell_type': 'code',
-                'startup': true,
-                'source': 'print(42)',
-                'outputs': [],
+                'cell_type': 'python',
+                'source': '# This is python\nprint(42)\nx = 5',
             },
-        ], [
             {
-                'id': 3,
                 'cell_type': 'markdown',
-                'subtype': 'view',
-                'source': 'hello',
-                'outputs': [],
+                'source': 'What is going on here?\n* Asterisk',
             },
             {
-                'id': 4,
-                'cell_type': 'submit',
-                'source': '# hi',
-                'user': '',
-                'outputs': [],
+                'cell_type': 'python',
+                'source': 'y = 3',
+            },
+            {
+                'cell_type': 'python',
+                'source': 'x = 1',
             },
         ]
     ]);
-    expect(parse(unparse(parse(tst)))).toStrictEqual(parse(tst));
+     expect(parse(unparse(parse(tst)))).toStrictEqual(parse(tst));
 });
