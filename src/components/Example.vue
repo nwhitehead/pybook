@@ -3,6 +3,8 @@
 //!
 //! A Vue component representing an example. Syntax highlighting, click to send to editor.
 //!
+//! Note: uses global eventbus for communication to MultiApp/ConsoleApp/CodeApp
+//!
 //! Props:
 //! - code - String of code for the example
 //! - disabled - True if the example should not be playable (default is playable)

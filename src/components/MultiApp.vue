@@ -10,7 +10,7 @@
     <TheConfiguration :active="configActive" :showGeneral="true" :showConsole="true" :showEditor="true" :showPython="true" @close="configActive=false;" />
     <section class="section">
         <KeepAlive>
-            <component :is="currentView"
+            <component :is="currentView.component" v-bind="currentView.props"
                 @codeAppComponentMounted="codeAppComponentMounted"
                 @consoleAppComponentMounted="consoleAppComponentMounted"
             />
@@ -71,6 +71,7 @@ import NotFoundView from './view/NotFoundView.vue';
 import UsageView from './view/UsageView.vue';
 import AboutView from './view/AboutView.vue';
 import RoadmapView from './view/RoadmapView.vue';
+import ExampleFromFileView from './view/ExampleFromFileView.vue';
 
 import axios from 'axios';
 import { ref, computed, onMounted, watch } from 'vue';
@@ -79,6 +80,8 @@ import 'vue-cookie-accept-decline/dist/vue-cookie-accept-decline.css';
 
 import { configuration, cookieConsent, updateBodyDark, eventbus } from './globals.js';
 import { hasSharedArrayBuffer } from '../polyfill.js';
+
+import waveFileContents from '../../examples/wave.py?raw';
 
 function clickAccept() {
     cookieConsent.value = 'accept';
@@ -104,22 +107,24 @@ let configActive = ref(false);
 let feedbackActive = ref(false);
 
 const routes = {
-    '#/': MainView,
-    '#/console': ConsoleApp,
-    '#/code': CodeApp,
-    '#/usage': UsageView,
-    '#/about': AboutView,
-    '#/roadmap': RoadmapView,
+    '#/':  { component: MainView, props: {} },
+    '#/console': { component: ConsoleApp, props: {} },
+    '#/code': { component: CodeApp, props: {} },
+    '#/usage': { component: UsageView, props: {} },
+    '#/about': { component: AboutView, props: {} },
+    '#/roadmap': { component: RoadmapView, props: {} },
+    '#/example': { component: ExampleFromFileView, props: { fileContents: waveFileContents, } },
 };
 
 const currentView = computed(() => {
-    const view = routes[ currentPath.value || '#/' ] || NotFoundView;
+    const notFound = { component: NotFoundView, props: {} };
+    const view = routes[ currentPath.value || '#/' ] || notFound;
     if (hasSharedArrayBuffer) {
         return view;
     }
     // If we don't have SharedArrayBuffer, never even try to render ConsoleApp or CodeApp
-    if (view === CodeApp || view === ConsoleApp) {
-        return NotFoundView;
+    if (view.component === CodeApp || view.component === ConsoleApp) {
+        return notFound;
     }
     return view;
 });

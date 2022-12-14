@@ -1,7 +1,7 @@
 //!
-//! MainView
+//! UsageView
 //!
-//! A Vue component representing the main landing page of site
+//! A Vue component representing the usage landing page of site
 //!
 
 <template>
