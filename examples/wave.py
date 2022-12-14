@@ -1,4 +1,10 @@
-#%
+#m> # Sound Generation Example
+#m>
+#m> Using some simple math formulas we can generate waveforms to do FM synthesis.
+#m>
+#m> The basic FM synthesis equation is:
+#m> $$ f(t) = \sin(t) $$
+#m>
 
 import wave
 import struct

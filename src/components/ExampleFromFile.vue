@@ -13,21 +13,44 @@
 //!
 
 <template>
-
-    <pre><code>{{props.fileContents}}</code></pre>
-
+    <div ref="element">
+        <template v-for="cell in cells">
+            <Example v-if="cell.cell_type === 'python'" :code="cell.source" />
+            <template v-if="cell.cell_type === 'markdown'">
+                <div class="content" v-html="markdownContent(cell.source)" />
+            </template>
+        </template>
+    </div>
 </template>
 
 <script setup>
 
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 
 import Example from './Example.vue';
+import { parse } from '../parser.js';
 
 const props = defineProps([ 'fileContents' ]);
 
-onMounted(() => {
-//    Prism.highlightAll();
+const cells = computed(() => {
+    // Just return first page
+    return parse(props.fileContents)[0];
 });
 
+const element = ref(null);
+
+function typesetMath() {
+    MathJax.typesetClear([element.value]);
+    MathJax.typesetPromise([element.value]);
+}
+
+onMounted(() => {
+    typesetMath();
+});
+
+function markdownContent(src) {
+    return DOMPurify.sanitize(marked(src));
+}
 </script>
