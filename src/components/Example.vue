@@ -14,13 +14,13 @@
     <div class="wrapper">
         <pre><code class="language-python">{{ code }}</code></pre>
         <div class="controls">
-            <button v-if="!disabled" class="button is-small" title="Copy to clipboard" @click="copyToClipboard">
+            <button v-if="!disabled" class="button is-small" data-tooltip="Copy to clipboard" @click="copyToClipboard">
                 <span class="material-icons">content_copy</span>
             </button>
-            <button v-if="!disabled" class="button is-small" title="Send to editor" @click="sendToEditor">
+            <button v-if="!disabled" class="button is-small" data-tooltip="Send to editor" @click="sendToEditor">
                 <span class="material-icons">edit</span>
             </button>
-            <button v-if="!disabled" class="button is-small" title="Send to console" @click="sendToConsole">
+            <button v-if="!disabled" class="button is-small" data-tooltip="Send to console" @click="sendToConsole">
                 <span class="icon-terminal" />
             </button>
         </div>
@@ -72,9 +72,20 @@ onMounted(() => {
     Prism.highlightAll();
 });
 
+// Time to clear "Copied!" message after clicking
+const TOOLTIP_COPIED_CLEAR_DELAY = 2000;
+
 async function copyToClipboard(evt) {
     try {
+        const target = evt.currentTarget;
+        const oldText = target.getAttribute('data-tooltip');
+        target.setAttribute('data-tooltip', 'Copied!');
         await navigator.clipboard.writeText(props.code);
+        // Clear data-tooltip update and blur to remove message after timeout
+        setTimeout(() => {
+            target.setAttribute('data-tooltip', oldText);
+            target.blur();
+        }, TOOLTIP_COPIED_CLEAR_DELAY);
     } catch(e) {
         console.log('Error: could not copy text to clipboard');
     }

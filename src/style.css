@@ -1,5 +1,6 @@
 
 @import '../node_modules/bulma/css/bulma.css';
+@import '../node_modules/bulma-tooltip/dist/css/bulma-tooltip.min.css';
 
 /* My colors */
 :root {
