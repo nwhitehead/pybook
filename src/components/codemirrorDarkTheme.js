@@ -19,7 +19,7 @@ const chalky = "#e5c07b",
       violet = "#c678dd",
       darkBackground = "#222", // "#21252b",
       highlightBackground = "#2c313a",
-      background = "transparent",
+      background = "var(--light)",
       tooltipBackground = "#353a42",
       selection = "#3E4451",
       cursor = "#dddddd";
@@ -76,7 +76,7 @@ const consoleTheme = /*@__PURE__*/EditorView.theme({
         outline: "1px solid #515a6b"
     },
     ".cm-gutters": {
-        backgroundColor: background,
+        backgroundColor: "var(--line-gutter)",
         color: stone,
         border: "none"
     },

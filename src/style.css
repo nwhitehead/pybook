@@ -12,7 +12,7 @@
     --grey-light: #aaa;
     --grey: #888;
     --grey-dark: #555;
-    --line-gutter: transparent;
+    --line-gutter: var(--light);
     --primary: #00d1b2;
     --primaryhover: #00c4a7;
     --danger: hsl(348, 100%, 61%);
@@ -40,7 +40,7 @@
     --grey-light: #666;
     --grey: #888;
     --grey-dark: #bbb;
-    --line-gutter: transparent;
+    --line-gutter: var(--light);
     --primary: #00d1b2;
     --primaryhover: #00c4a7;
     --danger: hsl(348, 100%, 45%);
