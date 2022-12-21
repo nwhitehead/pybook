@@ -42,7 +42,7 @@ export function parsePrefix(text) {
     if (text === '#m>') {
         return [ 'markdown', '' ];
     }
-    if (text.length > 4 && text.slice(0, 4) === '#m> ') {
+    if (text.length >= 4 && text.slice(0, 4) === '#m> ') {
         return [ 'markdown', text.slice(4)];
     }
     return [ 'python', text ];
@@ -97,7 +97,11 @@ export function parsePages(text, filename) {
                 }
             } else {
                 // Now look at prefixes
-                const [ prefix, rest ] = parsePrefix(line);
+                let [ prefix, rest ] = parsePrefix(line);
+                // If line is blank, just assume it matches last one
+                if (rest === '') {
+                    prefix = currentType;
+                }
                 if (prefix !== currentType) {
                     if (currentType === '') {
                         currentType = prefix;

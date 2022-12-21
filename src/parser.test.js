@@ -27,6 +27,7 @@ test('parsePrefix', () => {
     expect(parsePrefix('import numpy as np')).toStrictEqual([ 'python', 'import numpy as np']);
     expect(parsePrefix('')).toStrictEqual([ 'python', '']);
     expect(parsePrefix('# Test')).toStrictEqual([ 'python', '# Test']);
+    expect(parsePrefix('#m> ')).toStrictEqual([ 'markdown', '']);
 });
 
 test('parser1', () => {

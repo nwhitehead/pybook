@@ -68,7 +68,6 @@ import TheNavbar from './TheNavbar.vue';
 import TheConfiguration from './TheConfiguration.vue';
 import MainView from './view/MainView.vue';
 import NotFoundView from './view/NotFoundView.vue';
-import UsageView from './view/UsageView.vue';
 import AboutView from './view/AboutView.vue';
 import RoadmapView from './view/RoadmapView.vue';
 import ExampleFromFileView from './view/ExampleFromFileView.vue';
@@ -82,6 +81,7 @@ import { configuration, cookieConsent, updateBodyDark, eventbus } from './global
 import { hasSharedArrayBuffer } from '../polyfill.js';
 
 import waveFileContents from '../../examples/wave.py?raw';
+import usageFileContents from '../../examples/usage.py?raw';
 
 function clickAccept() {
     cookieConsent.value = 'accept';
@@ -110,7 +110,7 @@ const routes = {
     '#/':  { component: MainView, props: {} },
     '#/console': { component: ConsoleApp, props: {} },
     '#/code': { component: CodeApp, props: {} },
-    '#/usage': { component: UsageView, props: {} },
+    '#/usage': { component: ExampleFromFileView, props: { fileContents: usageFileContents, } },
     '#/about': { component: AboutView, props: {} },
     '#/roadmap': { component: RoadmapView, props: {} },
     '#/example': { component: ExampleFromFileView, props: { fileContents: waveFileContents, } },

@@ -148,7 +148,7 @@ const leftButtons = computed(() => {
 const rightButtons = computed(() => {
     let result = [];
     result.push({
-        name:'Clear',
+        name:'Clear Output',
         icon:'remove',
         class:{ },
     });
@@ -164,7 +164,7 @@ function pressed(evt) {
     if (evt === 'Stop') {
         consoleEventbus.emit('interrupt');
     }
-    if (evt === 'Clear') {
+    if (evt === 'Clear Output') {
         consoleEventbus.emit('clear');
     }
 }
