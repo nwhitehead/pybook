@@ -189,7 +189,7 @@ for i in range(N):
     phase += phase_delta
     ramp = (N - i) / N
     output = math.sin(phase + 10 * ramp * math.sin(phase) + ramp * feedback * output)
-    obj.writeframesraw(struct.pack('&lt;h', int(output * 32767.0)))
+    obj.writeframesraw(struct.pack('<h', int(output * 32767.0)))
 obj.close()
 
 import pybook

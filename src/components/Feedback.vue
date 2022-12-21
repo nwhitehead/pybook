@@ -89,6 +89,8 @@
     right: 100px;
     float: right;
     z-index: 200;
+    width: 0;
+    height: 0;
 }
 @media screen and (min-width: 1024px) {
 .fixed {
