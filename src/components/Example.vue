@@ -60,7 +60,7 @@
 
 <script setup>
 
-import { onMounted, ref } from 'vue';
+import { onUpdated, ref } from 'vue';
 import Prism from 'prismjs';
 
 import { eventbus } from './globals.js';
@@ -68,7 +68,7 @@ import _ from '../icomoon.css';
 
 const props = defineProps([ 'code', 'disabled' ]);
 
-onMounted(() => {
+onUpdated(() => {
     Prism.highlightAll();
 });
 

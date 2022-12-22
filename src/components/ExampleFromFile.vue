@@ -25,7 +25,7 @@
 
 <script setup>
 
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUpdated, ref } from 'vue';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 
@@ -47,6 +47,10 @@ function typesetMath() {
 }
 
 onMounted(() => {
+    typesetMath();
+});
+
+onUpdated(() => {
     typesetMath();
 });
 
