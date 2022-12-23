@@ -143,19 +143,49 @@ class Undoable:
 
 ### Demo
 
+# Strings and numbers are immutable in Python, so they should be fine in this example.
+
 x = Undoable('Blank slate')
 x.state = 'For all the cruelty and hardship of our world, we are not mere prisoners of fate.'
 x.state = 'The mind once enlightened cannot again become dark.'
 print(x.state)
 x.undo()
 x.undo()
-print(x.state)
+print(x.state) # Back to the blank slate
 
 y = Undoable(11)
 y.state = 720
 y.state = 7920
 y.undo_as_new()
-print(y.state)
+print(y.state) # Should be 720
 y.undo_as_new()
-# This will undo the undo action, we now have [11, 720, 7920, 720, 7920] in history
-print(y.state)
+# That will undo the undo action, we now have [11, 720, 7920, 720, 7920] in history
+print(y.state) # Should be 7920
+
+#m>
+#m> ## Notes on redo
+#m>
+#m> In the example implementation there are two ways to undo. The `undo` method updates the state
+#m> to a previous value and resets the history to that point in time. This will lose all the updates
+#m> after that point. The other method `undo_as_new` extracts the older state and adds it as a new
+#m> state. This means no history is removed, but multiple undos become unintuitive this way.
+#m>
+#m> The right way to implement redo is probably to keep the history of state values and also keep
+#m> an index into the array. This allows a linear history with undo/redo. But there is still a question
+#m> about what to do if the state value is updated and the index into the history is somewhere in the
+#m> middle. Zaboople calls this the [Great Undo-Redo Quandary](https://github.com/zaboople/klonk/blob/master/TheGURQ.md).
+#m> 
+#m> The key idea is that if we are asked to update the state from the middle of the history, we don't
+#m> need to lose any states or deal with branching trees for states. Instead we can linearize the state
+#m> history at that point.
+#m>
+#m> Suppose we have `[A, B, C, D]` as the history. The user does "undo" twice to get back to state `B`.
+#m> The user then updates the state to `E`.
+#m>
+#m> Losing redo state would be making the history: `[A, B, E]`
+#m>
+#m> Linearizing history would be making the history: `[A, B, C, D, B, E]`
+#m>
+#m> Writing this undo/redo algorithm is left for you. Combining the purely functional stack with the undo class
+#m> is also left for you to do.
+#m>
