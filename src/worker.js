@@ -1,6 +1,9 @@
 // The worker
 
 import { loadPyodide } from '/static/lib/pyodide/pyodide.mjs';
+import '/static/lib/via.js/via/controller/object.js';
+import '/static/lib/via.js/via/controller/property.js';
+import '/static/lib/via.js/via/controller/controller.js';
 
 // First message will be config object to setup shared arrays and other configuration
 
@@ -245,13 +248,26 @@ async function configure(config) {
         theState.set(identifier, value);
     }
 
+    // Setup Via on worker side
+    Via.postMessage = (data => {
+        console.log('Via posting', data);
+        self.postMessage({'type':'via', data:data});
+    });
+
+
+    const document = via.document;
+    const h1 = document.createElement('h1');
+
     // Switch our message response to update from waiting for config to responding to inputs
     onmessage = async function(e) {
         let input = e.data;
-        if (input.type === 'execute' || input.type === 'setglobal' || input.type === 'freshstate' || input.type === 'duplicatestate' || input.type === 'deletestate') {
+        if (input.type === 'execute' || input.type === 'setglobal' || input.type === 'freshstate' || input.type === 'duplicatestate' || input.type === 'deletestate' || input.type === 'via') {
             if (!loaded) {
                 postMessage({ type:'notready' });
             } else {
+                if (input.type === 'via') {
+                    console.log('Via onmessage', input);
+                }
                 if (input.type === 'execute') {
                     // Now run the code (only send response once code finishes)
                     await runCellAsync(input.expr, input.name, input.options);
