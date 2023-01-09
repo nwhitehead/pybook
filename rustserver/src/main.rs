@@ -28,22 +28,28 @@ struct Feedback {
 async fn feedback(data: web::Data<std::sync::Mutex<MailSetup>>, req_body: String) -> impl Responder {
     let mailsetup = data.lock().unwrap();
     let v:Feedback = serde_json::from_str(&req_body).unwrap();
-    let msg = format!("Location: {}\nEmail: {}\nChoice: {}\nMesage:\n{}\n", v.location, v.email, v.choice, v.message);
+    let msg = format!("Location: {}\nEmail: {}\nChoice: {}\nMessage:\n{}\n", v.location, v.email, v.choice, v.message);
     let mut message = Message::new(
         &mailsetup.email_from,
         &mailsetup.name_from,
-        Some("Feedback!".to_string()),
-        Some(msg.to_string())
+        /* subject= */ Some("Feedback!".to_string()),
+        /* body= */ Some(msg.to_string())
     );
-
     message.push_recipient(Recipient::new(&mailsetup.email_to));
 
-    let screenshot_data = v.screenshot.unwrap_or("".to_string());
-    let screenshot_stripped = screenshot_data.strip_prefix("data:image/png;base64,").unwrap_or("");
-    let screenshot = Attachment::new("image/png", "screenshot.png", &screenshot_stripped);
-    message.attach_inline(screenshot);
-    let html_msg = format!("<h3>Feedback</h3>\n<p>Location: {}</p>\n<p>Email: {}</p>\n<p>Choice: {}</p>\n<p>Message:</p>\n<pre>{}</pre>\n<img src=\"cid:screenshot.png\">\n", v.location, v.email, v.choice, v.message);
-    message.html_part = Some(html_msg.to_string());
+    match v.screenshot {
+        Some(screenshot_data) => {
+            let screenshot_stripped = screenshot_data.strip_prefix("data:image/png;base64,").unwrap_or("");
+            let screenshot = Attachment::new("image/png", "screenshot.png", &screenshot_stripped);
+            message.attach_inline(screenshot);
+            let html_msg = format!("<h3>Feedback</h3>\n<p>Location: {}</p>\n<p>Email: {}</p>\n<p>Choice: {}</p>\n<p>Message:</p>\n<pre>{}</pre>\n<img src=\"cid:screenshot.png\">\n", v.location, v.email, v.choice, v.message);
+            message.html_part = Some(html_msg.to_string());
+        }
+        None => {
+            let html_msg = format!("<h3>Feedback</h3>\n<p>Location: {}</p>\n<p>Email: {}</p>\n<p>Choice: {}</p>\n<p>Message:</p>\n<pre>{}</pre>\n", v.location, v.email, v.choice, v.message);
+            message.html_part = Some(html_msg.to_string());
+        }
+    }
     let _response = mailsetup.client.send(message).await;
 
     HttpResponse::Ok()
