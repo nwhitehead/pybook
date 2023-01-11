@@ -168,7 +168,7 @@ export function newPythonKernel(opts) {
     var callbacks = [];
     function startup() {
         var worker = newPythonWorker();
-        ViaReceiver.postMessage = (data => { console.log('ViaReceiver: sending message', data); worker.postMessage({type:'via', data:data}); });
+        ViaReceiver.postMessage = (data => worker.postMessage({type:'via', data:data}));
         worker.on('message', function(msg) {
             const defaultHandler = function() { console.log('default handler'); };
             const callback = callbacks;
@@ -192,7 +192,6 @@ export function newPythonKernel(opts) {
             } else if (msg.type === 'response') {
                 findHandler('onResponse', callback, opts, defaultHandler)();
             } else if (msg.type === 'via') {
-                console.log('ViaReceiver: Got Via message', msg);
                 ViaReceiver.OnMessage(msg.data);
             } else {
                 throw 'Unknown message type in main thread onmessage';

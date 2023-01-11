@@ -60,6 +60,8 @@
                 />
             </div>
         </div>
+        <div class="consoleinteractive">
+        </div>
     </div>
 </template>
 

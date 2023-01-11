@@ -131,6 +131,32 @@ async function configure(config) {
             // Synchronous emscripten FS write
             pyodide.FS.writeFile(filename, sharedFileArray.slice(0, size));
         },
+        closure_test: function() {
+            let val = 0;
+            return {
+                get: function() {
+                    return val;
+                },
+                set: function(newVal) {
+                    val = newVal;
+                }
+            };
+        },
+        create_interactive: function() {
+            pyodide.checkInterrupt();
+            const elem = via.document.createElement('h2');
+            elem.textContent = "Hello there";
+            const loc = via.document.querySelector('.consoleinteractive');
+            loc.appendChild(elem);
+            return {
+                action: function(f) {
+                    return f(elem);
+                }
+            };
+        },
+        set_interactive: function(id, txt) {
+
+        }
     };
     // Make '/dev/null' seekable to fix issue with dill package (it expects /dev/null to be standin for all files when looking up types)
     // Device 1:3 is /dev/null
@@ -250,13 +276,9 @@ async function configure(config) {
 
     // Setup Via on worker side
     Via.postMessage = (data => {
-        console.log('Via posting', data);
         self.postMessage({'type':'via', data:data});
     });
 
-
-    const document = via.document;
-    const h1 = document.createElement('h1');
 
     // Switch our message response to update from waiting for config to responding to inputs
     onmessage = async function(e) {
@@ -266,7 +288,7 @@ async function configure(config) {
                 postMessage({ type:'notready' });
             } else {
                 if (input.type === 'via') {
-                    console.log('Via onmessage', input);
+                    Via.OnMessage(input.data);
                 }
                 if (input.type === 'execute') {
                     // Now run the code (only send response once code finishes)
