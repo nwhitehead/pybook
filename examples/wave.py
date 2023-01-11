@@ -23,12 +23,19 @@ obj.setnchannels(1) # mono
 obj.setsampwidth(1) # 8-bit
 obj.setframerate(samplerate)
 for t in range(samplerate * duration):
-    # The song itself
+    # "Crowd" by Kragen Sitaker, Copyright 2011, CC-BY
+    # The song itself, literally the following formula
     o = ((t<<1)^((t<<1)+(t>>7)&t>>12))|t>>(4-(1^7&(t>>19)))|t>>7
-    # "Crowd" by
     obj.writeframesraw(bytearray([o & 0xff]))
 obj.close()
 
 import pybook
 pybook.output_content('audio/wav', buffer.getvalue())
 
+#m> You can play around with how many seconds to generate by editing the `duration` value. Or try modifying the song.
+#m>
+#m> For lots more examples of bytebeat songs, and songs of other similar types, I would recommend [Viraya's page](https://dollchan.net/bytebeat/).
+#m> That page lets you browse and play many examples of "classic" bytebeat as well as other forms such as floatbeat or JavaScript beats.
+#m>
+#m> I would also recommend the [YouTube video by `viznut`](https://www.youtube.com/watch?v=tCRPUv8V22o)
+#m>
