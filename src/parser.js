@@ -4,6 +4,7 @@
 //! File format is custom, based on ideas from https://github.com/mrzv/saturn
 //! Lines starting with "#m> " are for Markdown.
 //! No prefix lines are Python.
+//! Python can have a line like: "#p> [options]" where options is "file=FILENAME"
 //! Multiple Python examples are split with "#---#"
 //! Pages are split with "#---page---#"
 //!
@@ -13,6 +14,10 @@
 //! - cell_type - 'python', 'markdown' (maybe more someday...)
 //! - source - string of content of the cell (no prefix comments for Markdown)
 //!
+//! Python special syntax: #p> [options]
+//! Currently only option is: file=FILENAME
+//! All python gets collected, any with file marks are put in filesystem of all code examples.
+//! This lets code be referred to from anywhere with "import" etc.
 
 //! Split a long text string into array of lines
 export function splitByLines(txt) {
@@ -36,7 +41,7 @@ export function parseSpecialDelimiterLine(txt) {
     return null;
 }
 
-//! Get prefix type for line, return type and stripped line
+//! Get prefix type for line, return type and stripped line, and special options if present
 //! Doesn't worry about delimiters
 export function parsePrefix(text) {
     if (text === '#m>') {
@@ -44,6 +49,10 @@ export function parsePrefix(text) {
     }
     if (text.length >= 4 && text.slice(0, 4) === '#m> ') {
         return [ 'markdown', text.slice(4)];
+    }
+    if (text.length >= 4 && text.slice(0, 4) === '#p> ') {
+        // No normal python text, just special options here
+        return [ 'python', '', text.slice(4)];
     }
     return [ 'python', text ];
 }
@@ -59,17 +68,20 @@ export function parsePages(text, filename) {
     let page = []; // Array of items
     let item = []; // Array of lines
     let currentType = ''; // Assume we start in unknown type
+    let currentOptions = {}; // Array of options set for current cell
 
     function finishItem() {
         if (currentType === '') {
             item = [];
+            currentOptions = {};
             return;
         }
         // Trim newlines at start and end of item source
         const itemStr = item.join('\n').replace(/^\s+|\s+$/g, '');
-        let cell = { cell_type:currentType, source:itemStr };
+        let cell = { cell_type:currentType, source:itemStr, options:currentOptions };
         page.push(cell);
         item = [];
+        currentOptions = {};
         currentType = '';
     }
     function finishPage() {
@@ -97,9 +109,9 @@ export function parsePages(text, filename) {
                 }
             } else {
                 // Now look at prefixes
-                let [ prefix, rest ] = parsePrefix(line);
+                let [ prefix, rest, special ] = parsePrefix(line);
                 // If line is blank, just assume it matches last one
-                if (rest === '') {
+                if (rest === '' && special === undefined) {
                     prefix = currentType;
                 }
                 if (prefix !== currentType) {
@@ -111,6 +123,12 @@ export function parsePages(text, filename) {
                     }
                 }
                 item.push(rest);
+                if (special !== undefined) {
+                    special.split(' ').map(option => {
+                        const split = option.split('=');
+                        currentOptions[split[0]] = split[1];
+                    });
+                }
             }
         } catch (error) {
             throw new Error(`${filename}:${linenum + 1} Error parsing line ${linenum + 1}\n${error}`);
@@ -140,6 +158,15 @@ function unparseCell(cell) {
     if (cell_type === 'markdown') {
         return prefixLines('#m> ', source) + '\n';
     } else if (cell_type === 'python') {
+        const options = cell['options'];
+        let options_txt = '';
+        if (options !== {}) {
+            options_txt = '#p>';
+            for (const [key, value] of Object.entries(options)) {
+                options_txt += ' ' + key + '=' + value;
+            }
+            options_txt += '\n';
+        }
         return source + '\n';
     }
     throw new Error(`Unknown cell type ${cell_type}`);

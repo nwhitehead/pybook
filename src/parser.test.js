@@ -37,10 +37,12 @@ test('parser1', () => {
             {
                 'cell_type': 'markdown',
                 'source': '# Headline',
+                'options': {},
             },
             {
                 'cell_type': 'python',
                 'source': 'print(42)',
+                'options': {},
             },
         ]]
     );
@@ -71,22 +73,27 @@ x = 1
             {
                 'cell_type': 'markdown',
                 'source': '# Title\nmore',
+                'options': {},
             },
             {
                 'cell_type': 'python',
                 'source': '# This is python\nprint(42)\nx = 5',
+                'options': {},
             },
             {
                 'cell_type': 'markdown',
                 'source': 'What is going on here?\n* Asterisk',
+                'options': {},
             },
             {
                 'cell_type': 'python',
                 'source': 'y = 3',
+                'options': {},
             },
             {
                 'cell_type': 'python',
                 'source': 'x = 1',
+                'options': {},
             },
         ]
     ]);

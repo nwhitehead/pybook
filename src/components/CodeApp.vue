@@ -197,6 +197,7 @@ eventbus.on('editor:example', (payload) => {
     // Switch to example
     // CodeMirror will see this as a big edit, user can do Undo and Redo with it to get back to their work if needed.
     script.value = payload.code;
+    consoleEventbus.emit('files', payload.files);
 });
 
 </script>

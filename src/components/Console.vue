@@ -572,4 +572,14 @@ props.eventbus.on('update:input', (text) => {
     });
 });
 
+props.eventbus.on('files', (files) => {
+    console.log('Setting python filesystem to include', files);
+    setTimeout(() => {
+        for (const [filename, data] of Object.entries(files)) {
+            console.log(`Setting ${filename} to contents [${data}]`);
+            python.savefile(filename, data);
+        }
+    }, 3000.0);
+});
+
 </script>

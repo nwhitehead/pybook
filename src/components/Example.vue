@@ -8,6 +8,7 @@
 //! Props:
 //! - code - String of code for the example
 //! - disabled - True if the example should not be playable (default is playable)
+//! - files - Dictionary of file contents to make available when running this example (keys filenames, values are file contents)
 //!
 
 <template>
@@ -66,7 +67,7 @@ import Prism from 'prismjs';
 import { eventbus } from './globals.js';
 import _ from '../icomoon.css';
 
-const props = defineProps([ 'code', 'disabled' ]);
+const props = defineProps([ 'code', 'disabled', 'files' ]);
 
 onUpdated(() => {
     Prism.highlightAll();
@@ -92,11 +93,11 @@ async function copyToClipboard(evt) {
 }
 
 function sendToEditor(evt) {
-    eventbus.emit('editor:example', { code:props.code });
+    eventbus.emit('editor:example', { code:props.code, files:props.files });
 }
 
 function sendToConsole(evt) {
-    eventbus.emit('console:example', { code:props.code });
+    eventbus.emit('console:example', { code:props.code, files:props.files });
 }
 
 </script>

@@ -248,7 +248,7 @@ async function configure(config) {
     // Switch our message response to update from waiting for config to responding to inputs
     onmessage = async function(e) {
         let input = e.data;
-        if (input.type === 'execute' || input.type === 'setglobal' || input.type === 'freshstate' || input.type === 'duplicatestate' || input.type === 'deletestate') {
+        if (input.type === 'execute' || input.type === 'setglobal' || input.type === 'freshstate' || input.type === 'duplicatestate' || input.type === 'deletestate' || input.type === 'savefile') {
             if (!loaded) {
                 postMessage({ type:'notready' });
             } else {
@@ -273,6 +273,9 @@ async function configure(config) {
                 if (input.type === 'deletestate') {
                     deleteState(input.name);
                     postMessage({ type: 'response' });
+                }
+                if (input.type === 'savefile') {
+                    console.log("Saving file from worker");
                 }
             }
         } else {

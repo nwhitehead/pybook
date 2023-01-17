@@ -15,12 +15,14 @@
 <template>
     <div ref="element">
         <template v-for="cell in cells">
-            <Example v-if="cell.cell_type === 'python'" :code="cell.source" />
+            <Example v-if="cell.cell_type === 'python'" :code="cell.source" :files="files" />
             <template v-if="cell.cell_type === 'markdown'">
                 <div class="content" v-html="markdownContent(cell.source)" />
             </template>
         </template>
     </div>
+    <pre>{{ cells }}</pre>
+    <pre>{{ files }}</pre>
 </template>
 
 <script setup>
@@ -37,6 +39,16 @@ const props = defineProps([ 'fileContents' ]);
 const cells = computed(() => {
     // Just return first page
     return parse(props.fileContents)[0];
+});
+
+const files = computed(() => {
+    let result = {};
+    cells.value.map(cell => {
+        if (cell.cell_type === 'python' && cell.options && cell.options['file']) {
+            result[cell.options['file']] = cell.source;
+        }
+    });
+    return result;
 });
 
 const element = ref(null);

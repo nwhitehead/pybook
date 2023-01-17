@@ -83,6 +83,8 @@ import { hasSharedArrayBuffer } from '../polyfill.js';
 import waveFileContents from '../../examples/wave.py?raw';
 import usageFileContents from '../../examples/usage.py?raw';
 import undoFileContents from '../../examples/undo.py?raw';
+import testingFileContents from '../../examples/testing.py?raw';
+import testing2FileContents from '../../examples/testing2.py?raw';
 
 function clickAccept() {
     cookieConsent.value = 'accept';
@@ -116,6 +118,8 @@ const routes = {
     '#/roadmap': { component: RoadmapView, props: {} },
     '#/example': { component: ExampleFromFileView, props: { fileContents: waveFileContents, } },
     '#/example2': { component: ExampleFromFileView, props: { fileContents: undoFileContents, } },
+    '#/example3': { component: ExampleFromFileView, props: { fileContents: testingFileContents, } },
+    '#/example4': { component: ExampleFromFileView, props: { fileContents: testing2FileContents, } },
 };
 
 const currentView = computed(() => {
