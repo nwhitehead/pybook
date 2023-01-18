@@ -248,3 +248,8 @@ code {
 div.control, label {
     user-select: none;
 }
+
+figure {
+    border: solid 2px var(--grey-light);
+    border-radius: 4px;
+}

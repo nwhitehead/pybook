@@ -28,8 +28,8 @@
             </p>
             <figure>
                 <a href="/sab/#/code">
-                    <img v-if="!configuration.darkmode" src="/static/gfx/editor.png" alt="Screenshot showing editor doing factorial" />
-                    <img v-if="configuration.darkmode" src="/static/gfx/editor-dark.png" alt="Screenshot showing editor doing factorial" />
+                    <img v-if="!configuration.darkmode" src="/static/gfx/editor.png" alt="Screenshot showing editor with factorial" />
+                    <img v-if="configuration.darkmode" src="/static/gfx/editor-dark.png" alt="Screenshot showing editor with factorial" />
                 </a>
                 <figcaption>Screenshot showing the Python Editor with a simple factorial function.</figcaption>
             </figure>
@@ -46,10 +46,10 @@
                 </p>
                 <li><em>Privacy</em></li>
                 <p>The Python code you run is not being sent to a remote server, it is running privately in your browser.</p>
-                <li><em>Demonstration</em></li>
+                <!-- <li><em>Demonstration</em></li>
                 <p>If you want to show off Python code to demonstrate something, it is convenient to point people to a place where they can see the demonstration
                 immediately without any barriers to getting started.
-                </p>
+                </p> -->
             </ul>
             <p>For more examples of what can be done with the Python Console tools, see the <a href="/sab/#/usage">Usage Hints</a>.
             </p>
