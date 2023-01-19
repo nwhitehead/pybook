@@ -253,3 +253,12 @@ figure {
     border: solid 2px var(--grey-light);
     border-radius: 4px;
 }
+
+div.cookie {
+    color: var(--dark);
+    background-color: var(--white);
+}
+
+div.cookie button {
+    background-color: var(--light);
+}
