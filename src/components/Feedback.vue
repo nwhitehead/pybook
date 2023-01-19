@@ -62,7 +62,7 @@
                     <div class="field">
                         <div class="control">
                             <input type="checkbox" id="screenshotId" v-model="screenshot" />
-                            <label for="screenshotId"> Include screenshot</label>
+                            <label for="screenshotId"> Send screenshot of what you're working on</label>
                         </div>
                     </div>
 
