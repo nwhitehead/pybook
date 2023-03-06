@@ -13,7 +13,7 @@
 <nav class="navbar has-shadow" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
         <div class="nav-left">
-            <img src="/static/gfx/logo.png" class="navbar-item" alt="Nathans Python Console" />
+            <img src="/gfx/logo.png" class="navbar-item" alt="Nathans Python Console" />
         </div>
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample" @click="flip()">
             <span aria-hidden="true"></span>

@@ -2,6 +2,6 @@
 node_modules/
 dist/
 .vscode
-static/lib/pyodide/
+public/lib/pyodide/
 pylib/dist/
 rustserver/target/

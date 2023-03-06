@@ -61,7 +61,7 @@ async function configure(config) {
     }
 
     loaded = false;
-    let pyodide = await loadPyodide({indexURL : absurl + '/static/lib/pyodide'});
+    let pyodide = await loadPyodide({indexURL : absurl + '/lib/pyodide'});
     let version = '🐍 Python ' + pyodide.runPython('import sys; sys.version') + '\n🤖 Pyodide ' + pyodide.version;
 
     function wait_io_complete() {
@@ -155,7 +155,7 @@ async function configure(config) {
     await pyodide.loadPackage('micropip');
     pyodide.runPython('import micropip');
     // Install pbexec
-    await pyodide.runPythonAsync('await micropip.install("' + absurl + '/static/lib/pyodide/pbexec_nwhitehead-0.0.1-py3-none-any.whl' + '")');
+    await pyodide.runPythonAsync('await micropip.install("' + absurl + '/lib/pyodide/pbexec_nwhitehead-0.0.1-py3-none-any.whl' + '")');
     pyodide.runPython('from pbexec import pbexec');
     pyodide.runPython('import sys; sys.setrecursionlimit(250)');
     // Start with fresh state as base

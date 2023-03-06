@@ -15,8 +15,8 @@
             </p>
             <figure>
                 <a href="/sab/#/console">
-                    <img v-if="!configuration.darkmode" src="/static/gfx/console.png" alt="Screenshot showing the Python Console and a hello print command." />
-                    <img v-if="configuration.darkmode" src="/static/gfx/console-dark.png" alt="Screenshot showing the Python Console and a hello print command." />
+                    <img v-if="!configuration.darkmode" src="/gfx/console.png" alt="Screenshot showing the Python Console and a hello print command." />
+                    <img v-if="configuration.darkmode" src="/gfx/console-dark.png" alt="Screenshot showing the Python Console and a hello print command." />
                 </a>
                 <figcaption>Screenshot showing the Python Console and a "Hello, browser" print command.</figcaption>
             </figure>
@@ -28,8 +28,8 @@
             </p>
             <figure>
                 <a href="/sab/#/code">
-                    <img v-if="!configuration.darkmode" src="/static/gfx/editor.png" alt="Screenshot showing editor with factorial" />
-                    <img v-if="configuration.darkmode" src="/static/gfx/editor-dark.png" alt="Screenshot showing editor with factorial" />
+                    <img v-if="!configuration.darkmode" src="/gfx/editor.png" alt="Screenshot showing editor with factorial" />
+                    <img v-if="configuration.darkmode" src="/gfx/editor-dark.png" alt="Screenshot showing editor with factorial" />
                 </a>
                 <figcaption>Screenshot showing the Python Editor with a simple factorial function.</figcaption>
             </figure>
@@ -85,7 +85,7 @@ import { watch } from 'vue';
 
 function loadMailerLiteScript() {
     let externalScript = document.createElement('script');
-    externalScript.setAttribute('src', '/static/lib/mailerlite_universal.js');
+    externalScript.setAttribute('src', '/lib/mailerlite_universal.js');
     document.head.appendChild(externalScript);
 }
 
